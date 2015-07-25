@@ -46,7 +46,7 @@ if ! [ -e index.php -a -e libraries/cms/version/version.php ]; then
 
         if [ ! -e .htaccess ]; then
                 # NOTE: The "Indexes" option is disabled in the php:apache base image so we use a customized .htaccess
-                cp /joomla-htaccess .htaccess
+                cp /joomla-htaccess.txt .htaccess
                 chown www-data:www-data .htaccess
         fi
 
