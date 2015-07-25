@@ -28,4 +28,4 @@ COPY joomla-htaccess.txt /joomla-htaccess.txt
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
