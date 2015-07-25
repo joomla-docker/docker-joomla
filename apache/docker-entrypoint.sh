@@ -43,6 +43,13 @@ if ! [ -e index.php -a -e libraries/cms/version/version.php ]; then
         fi
 
         tar cf - --one-file-system -C /usr/src/joomla . | tar xf -
+
+        if [ ! -e .htaccess ]; then
+                # NOTE: The "Indexes" option is disabled in the php:apache base image so we use a customized .htaccess
+                cp /joomla-htaccess .htaccess
+                chown www-data:www-data .htaccess
+        fi
+
         echo >&2 "Complete! Joomla has been successfully copied to $(pwd)"
 fi
 
