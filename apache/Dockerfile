@@ -14,7 +14,6 @@ VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
 ENV JOOMLA_VERSION 3.4.3
-ENV JOOMLA_UPSTREAM_VERSION 3.4.3
 ENV JOOMLA_SHA1 cd35ed61029d2ed0dc38cc70073944786bba7979
 
 # Download package and extract to web volume
