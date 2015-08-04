@@ -24,7 +24,6 @@ RUN curl -o joomla.zip -SL https://github.com/joomla/joomla-cms/releases/downloa
 
 # Copy init scripts and custom .htaccess
 COPY docker-entrypoint.sh /entrypoint.sh
-COPY joomla-htaccess.txt /joomla-htaccess.txt
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]

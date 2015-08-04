@@ -45,8 +45,8 @@ if ! [ -e index.php -a -e libraries/cms/version/version.php ]; then
         tar cf - --one-file-system -C /usr/src/joomla . | tar xf -
 
         if [ ! -e .htaccess ]; then
-                # NOTE: The "Indexes" option is disabled in the php:apache base image so we use a customized .htaccess
-                cp /joomla-htaccess.txt .htaccess
+                # NOTE: The "Indexes" option is disabled in the php:apache base image so remove it as we enable .htaccess
+                sed -r 's/^(Options -Indexes.*)$/#\1/' htaccess.txt > .htaccess
                 chown www-data:www-data .htaccess
         fi
 

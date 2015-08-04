@@ -26,7 +26,8 @@ for variant in apache fpm; do
 
         # To make management easier, we use these files for all variants
 		cp docker-entrypoint.sh "$variant/docker-entrypoint.sh"
-		cp joomla-htaccess.txt "$variant/joomla-htaccess.txt"
 		cp makedb.php "$variant/makedb.php"
 	)
 done
+
+rm joomla.zip
