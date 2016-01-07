@@ -2,7 +2,7 @@
 set -e
 
 # TODO - We (Joomla) need to expose an alternate API to checking the latest version other than our XML files
-current="$(curl -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36' -sSL 'http://developer.joomla.org/latest_version.json' | sed -r 's/^.*"current":"([^"]+)".*$/\1/')"
+current="$(curl -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36' -sSL 'https://developer.joomla.org/latest_version.json' | sed -r 's/^.*"current":"([^"]+)".*$/\1/')"
 
 # We're putting a lot of trust in this process, once Joomla has an exposed API to query the SHA1 use that instead
 wget -O joomla.zip https://github.com/joomla/joomla-cms/releases/download/$current/Joomla_$current-Stable-Full_Package.zip
