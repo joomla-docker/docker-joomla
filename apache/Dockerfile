@@ -13,8 +13,8 @@ RUN docker-php-ext-install mysqli
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
-ENV JOOMLA_VERSION 3.4.8
-ENV JOOMLA_SHA1 0f1237c3a0a50143ef7b6688cda3d4fd0b6196be
+ENV JOOMLA_VERSION 3.5.0
+ENV JOOMLA_SHA1 8c88f079f31774adc9d2682067beabc057c541aa
 
 # Download package and extract to web volume
 RUN curl -o joomla.zip -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.zip \
