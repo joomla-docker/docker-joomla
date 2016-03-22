@@ -8,7 +8,7 @@ current="$(curl -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/
 wget -O joomla.zip https://github.com/joomla/joomla-cms/releases/download/$current/Joomla_$current-Stable-Full_Package.zip
 sha1="$(sha1sum joomla.zip | sed -r 's/ .*//')"
 
-for variant in apache fpm; do
+for variant in apache apache-php7 fpm fpm-php7; do
 	(
 		set -x
 

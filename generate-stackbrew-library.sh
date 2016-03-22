@@ -9,7 +9,7 @@ echo '# maintainer: Michael Babker <michael.babker@joomla.org> (@mbabker)'
 
 defaultVariant='apache'
 
-for variant in apache fpm; do
+for variant in apache apache-php7 fpm fpm-php7; do
 	commit="$(git log -1 --format='format:%H' -- "$variant")"
 	fullVersion="$(grep -m1 'ENV JOOMLA_VERSION ' "$variant/Dockerfile" | cut -d' ' -f3)"
 
