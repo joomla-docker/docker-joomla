@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
-url='git://github.com/joomla/docker-joomla'
+url='https://github.com/joomla/docker-joomla'
 
 echo '# maintainer: Michael Babker <michael.babker@joomla.org> (@mbabker)'
 
