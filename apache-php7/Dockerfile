@@ -14,8 +14,8 @@ RUN docker-php-ext-install mcrypt
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
-ENV JOOMLA_VERSION 3.6.2
-ENV JOOMLA_SHA1 fdaa25337aaabd0d673aafc0ff90e7375de2d6e3
+ENV JOOMLA_VERSION 3.6.3
+ENV JOOMLA_SHA1 01eb3724e191fcfd034b54f54745703a8a4f288e
 
 # Download package and extract to web volume
 RUN curl -o joomla.zip -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.zip \
