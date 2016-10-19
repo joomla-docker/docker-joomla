@@ -2,9 +2,6 @@
 
 set -e
 
-#wait for dockercompose to start the mysql
-sleep 3
-
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         if [ -n "$MYSQL_PORT_3306_TCP" ]; then
                 if [ -z "$JOOMLA_DB_HOST" ]; then
