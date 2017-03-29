@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y libpng12-dev libjpeg-dev libmcrypt-dev 
 	&& docker-php-ext-install gd
 RUN docker-php-ext-install mysqli
 RUN docker-php-ext-install mcrypt
+RUN docker-php-ext-install zip
 
 VOLUME /var/www/html
 
