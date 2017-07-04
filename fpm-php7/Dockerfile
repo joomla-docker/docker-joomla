@@ -12,8 +12,8 @@ RUN docker-php-ext-install zip
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
-ENV JOOMLA_VERSION 3.7.0
-ENV JOOMLA_SHA1 4ad7d7c88aae9d1f86c04dae1a497b6f300f15d2
+ENV JOOMLA_VERSION 3.7.3
+ENV JOOMLA_SHA1 97aae624770491c75b441633a98da40eddf992ac
 
 # Download package and extract to web volume
 RUN curl -o joomla.zip -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.zip \
