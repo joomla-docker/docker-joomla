@@ -22,7 +22,7 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 
         # If the DB user is 'root' then use the MySQL root password env var
         : ${JOOMLA_DB_USER:=root}
-        if [ "$JOOMLA_DB_USER" = 'root' ] && [ "$JOOMLA_DB_PASSWORD_ALLOW_EMPTY" != 'yes' ]; then
+        if [ "$JOOMLA_DB_USER" = 'root' ]; then
                 : ${JOOMLA_DB_PASSWORD:=$MYSQL_ENV_MYSQL_ROOT_PASSWORD}
         fi
         : ${JOOMLA_DB_NAME:=joomla}
