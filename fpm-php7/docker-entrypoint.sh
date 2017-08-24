@@ -27,7 +27,7 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         fi
         : ${JOOMLA_DB_NAME:=joomla}
 
-        if [ -z "$JOOMLA_DB_PASSWORD" ]; then
+        if [ -z "$JOOMLA_DB_PASSWORD" ] && [ "$JOOMLA_DB_PASSWORD_ALLOW_EMPTY" != 'yes' ]; then
                 echo >&2 "error: missing required JOOMLA_DB_PASSWORD environment variable"
                 echo >&2 "  Did you forget to -e JOOMLA_DB_PASSWORD=... ?"
                 echo >&2
