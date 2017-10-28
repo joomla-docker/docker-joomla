@@ -35,7 +35,7 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 exit 1
         fi
 
-        if ! [ -e index.php -a -e libraries/cms/version/version.php ]; then
+        if ! [ -e index.php -a \( -e libraries/cms/version/version.php -o -e libraries/src/Version.php \) ]; then
                 echo >&2 "Joomla not found in $(pwd) - copying now..."
 
                 if [ "$(ls -A)" ]; then
