@@ -74,7 +74,7 @@ if (!isset($signature))
 	exit(1);
 }
 
-foreach (['apache', 'apache-php7.0', 'apache-php7.1', 'fpm', 'fpm-php7.0', 'fpm-php7.1'] as $variant)
+foreach (['apache', 'apache-php7.0', 'apache-php7.1', 'apache-php7.2', 'fpm', 'fpm-php7.0', 'fpm-php7.1', 'fpm-php7.2'] as $variant)
 {
 	$dockerfile = __DIR__ . "/$variant/Dockerfile";
 
