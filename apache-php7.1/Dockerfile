@@ -1,5 +1,5 @@
 FROM php:7.1-apache
-MAINTAINER Michael Babker <michael.babker@joomla.org> (@mbabker)
+LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
