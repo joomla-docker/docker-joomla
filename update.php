@@ -3,7 +3,6 @@
 // Fetch the current 3.x version from the downloads site API
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_URL, 'https://downloads.joomla.org/api/v1/latest/cms');
 
