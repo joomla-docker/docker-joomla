@@ -40,7 +40,7 @@ join() {
 	echo "${out#$sep}"
 }
 
-for variant in apache apache-php7.0 apache-php7.1 fpm fpm-php7.0 fpm-php7.1; do
+for variant in apache apache-php7.0 apache-php7.1 apache-php7.2 fpm fpm-php7.0 fpm-php7.1 fpm-php7.2; do
 	commit="$(dirCommit "$variant")"
 
 	fullVersion="$(git show "$commit":"$variant/Dockerfile" | awk '$1 == "ENV" && $2 == "JOOMLA_VERSION" { print $3; exit }')"
