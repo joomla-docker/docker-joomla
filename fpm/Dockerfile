@@ -5,25 +5,51 @@ LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 
 # Install PHP extensions
-RUN apt-get update && apt-get install -y libpng12-dev libjpeg-dev libmcrypt-dev zip unzip && rm -rf /var/lib/apt/lists/* \
-	&& docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
-	&& docker-php-ext-install gd
-RUN docker-php-ext-install mysqli
-RUN docker-php-ext-install mcrypt
-RUN docker-php-ext-install zip
+RUN set -ex; \
+	\
+	savedAptMark="$(apt-mark showmanual)"; \
+	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+		libjpeg-dev \
+		libmcrypt-dev \
+		libpng12-dev \
+	; \
+	\
+	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+	docker-php-ext-install \
+		gd \
+		mcrypt \
+		mysqli \
+		zip \
+	; \
+	\
+# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark; \
+	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
+		| awk '/=>/ { print $3 }' \
+		| sort -u \
+		| xargs -r dpkg-query -S \
+		| cut -d: -f1 \
+		| sort -u \
+		| xargs -rt apt-mark manual; \
+	\
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	rm -rf /var/lib/apt/lists/*
 
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
 ENV JOOMLA_VERSION 3.8.4
-ENV JOOMLA_SHA1 3d8a321e626cdf3823fc6bd62aee222fd12c19ec
+ENV JOOMLA_SHA1 9ef809f4f454d08d3fd98587c4c8aadb84e45f44
 
 # Download package and extract to web volume
-RUN curl -o joomla.zip -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.zip \
-	&& echo "$JOOMLA_SHA1 *joomla.zip" | sha1sum -c - \
+RUN curl -o joomla.tar.gz -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.gz \
+	&& echo "$JOOMLA_SHA1 *joomla.tar.gz" | sha1sum -c - \
 	&& mkdir /usr/src/joomla \
-	&& unzip joomla.zip -d /usr/src/joomla \
-	&& rm joomla.zip \
+	&& tar -xzf joomla.tar.gz -C /usr/src/joomla \
+	&& rm joomla.tar.gz \
 	&& chown -R www-data:www-data /usr/src/joomla
 
 # Copy init scripts and custom .htaccess
