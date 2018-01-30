@@ -1,4 +1,4 @@
-FROM php:5.6-apache
+FROM php:7.1-apache
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
