@@ -3,7 +3,6 @@
 // Fetch the current 3.x version from the downloads site API
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_URL, 'https://downloads.joomla.org/api/v1/latest/cms');
 
@@ -37,14 +36,14 @@ if (!isset($version))
 
 $urlVersion = str_replace('.', '-', $version);
 
-$filename = "Joomla_$version-Stable-Full_Package.zip";
+$filename = "Joomla_$version-Stable-Full_Package.tar.gz";
 
 // Fetch the SHA1 signature for the file
 $ch = curl_init();
 
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_URL, "https://downloads.joomla.org/api//v1/signatures/cms/$urlVersion");
+curl_setopt($ch, CURLOPT_URL, "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion");
 
 $result = curl_exec($ch);
 
@@ -69,7 +68,7 @@ foreach ($data['files'] as $file)
 
 if (!isset($signature))
 {
-	echo 'ZIP file SHA1 signature not included in API response.' . PHP_EOL;
+	echo 'tar.gz file SHA1 signature not included in API response.' . PHP_EOL;
 
 	exit(1);
 }
