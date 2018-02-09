@@ -36,7 +36,7 @@ if (!isset($version))
 
 $urlVersion = str_replace('.', '-', $version);
 
-$filename = "Joomla_$version-Stable-Full_Package.tar.gz";
+$filename = "Joomla_$version-Stable-Full_Package.tar.bz2";
 
 // Fetch the SHA1 signature for the file
 $ch = curl_init();
@@ -68,7 +68,7 @@ foreach ($data['files'] as $file)
 
 if (!isset($signature))
 {
-	echo 'tar.gz file SHA1 signature not included in API response.' . PHP_EOL;
+	echo 'tar.bz2 file SHA1 signature not included in API response.' . PHP_EOL;
 
 	exit(1);
 }
