@@ -16,6 +16,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libjpeg-dev \
+		libldap2-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
 		libpng12-dev \
@@ -23,9 +24,12 @@ RUN set -ex; \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install \
 		bz2 \
 		gd \
+		ldap \
 		mcrypt \
 		mysqli \
 		pdo \
