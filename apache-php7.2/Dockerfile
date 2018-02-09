@@ -16,6 +16,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libjpeg-dev \
+		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
 	; \
@@ -30,6 +31,18 @@ RUN set -ex; \
 		pdo_pgsql \
 		pgsql \
 		zip \
+	; \
+	\
+	pecl install \
+		APCu-5.1.9 \
+		memcached-3.0.4 \
+		redis-3.1.6 \
+	; \
+	\
+	docker-php-ext-enable \
+		apcu \
+		memcached \
+		redis \
 	; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
