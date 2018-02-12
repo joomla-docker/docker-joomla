@@ -1,8 +1,15 @@
 #!/bin/bash
 set -eu
 
+# Latest available version based on https://downloads.joomla.org/technical-requirements - PHP 7.1 due to known 7.2 bugs still present
+defaultPhpVersion='php7.1'
+defaultVariant='apache'
+
 self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
+
+phpVersions=( php*.*/ )
+phpVersions=( "${phpVersions[@]%/}" )
 
 # get the most recent commit which modified any of "$@"
 fileCommit() {
@@ -40,35 +47,62 @@ join() {
 	echo "${out#$sep}"
 }
 
-for variant in apache apache-php7.0 apache-php7.1 apache-php7.2 fpm fpm-php7.0 fpm-php7.1 fpm-php7.2; do
-	commit="$(dirCommit "$variant")"
+for phpVersion in "${phpVersions[@]}"; do
+	for variant in apache fpm; do
+		dir="$phpVersion/$variant"
+		[ -f "$dir/Dockerfile" ] || continue
 
-	fullVersion="$(git show "$commit":"$variant/Dockerfile" | awk '$1 == "ENV" && $2 == "JOOMLA_VERSION" { print $3; exit }')"
-	if [[ "$fullVersion" != *.*.* && "$fullVersion" == *.* ]]; then
-		fullVersion+='.0'
-	fi
+		commit="$(dirCommit "$dir")"
 
-	versionAliases=()
-	while [ "${fullVersion%.*}" != "$fullVersion" ]; do
-		versionAliases+=( $fullVersion )
-		fullVersion="${fullVersion%.*}"
+		fullVersion="$(git show "$commit":"$dir/Dockerfile" | awk '$1 == "ENV" && $2 == "JOOMLA_VERSION" { print $3; exit }')"
+		if [[ "$fullVersion" != *.*.* && "$fullVersion" == *.* ]]; then
+			fullVersion+='.0'
+		fi
+
+		versionAliases=()
+		while [ "${fullVersion%[.-]*}" != "$fullVersion" ]; do
+			versionAliases+=( $fullVersion )
+			fullVersion="${fullVersion%[.-]*}"
+		done
+		versionAliases+=(
+			$fullVersion
+			latest
+		)
+
+		phpVersionAliases=( "${versionAliases[@]/%/-$phpVersion}" )
+		phpVersionAliases=( "${phpVersionAliases[@]//latest-/}" )
+
+		variantAliases=( "${versionAliases[@]/%/-$variant}" )
+		variantAliases=( "${variantAliases[@]//latest-/}" )
+
+		phpVersionVariantAliases=( "${versionAliases[@]/%/-$phpVersion-$variant}" )
+		phpVersionVariantAliases=( "${phpVersionVariantAliases[@]//latest-/}" )
+
+		fullAliases=()
+
+		if [ "$phpVersion" = "$defaultPhpVersion" ]; then
+			fullAliases+=( "${variantAliases[@]}" )
+
+			if [ "$variant" = "$defaultVariant" ]; then
+				fullAliases+=( "${versionAliases[@]}" )
+			fi
+		fi
+
+		fullAliases+=(
+			"${phpVersionVariantAliases[@]}"
+		)
+
+		if [ "$variant" = "$defaultVariant" ]; then
+			fullAliases+=( "${phpVersionAliases[@]}" )
+		fi
+
+		variantParent="$(awk 'toupper($1) == "FROM" { print $2 }' "$dir/Dockerfile")"
+
+		echo
+		cat <<-EOE
+			Tags: $(join ', ' "${fullAliases[@]}")
+			GitCommit: $commit
+			Directory: $dir
+		EOE
 	done
-	versionAliases+=(
-		$fullVersion
-		latest
-	)
-
-	variantAliases=( "${versionAliases[@]/%/-$variant}" )
-	variantAliases=( "${variantAliases[@]//latest-/}" )
-
-	if [ "$variant" = 'apache' ]; then
-		variantAliases+=( "${versionAliases[@]}" )
-	fi
-
-	echo
-	cat <<-EOE
-		Tags: $(join ', ' "${variantAliases[@]}")
-		GitCommit: $commit
-		Directory: $variant
-	EOE
 done
