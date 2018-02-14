@@ -73,19 +73,34 @@ if (!isset($signature))
 	exit(1);
 }
 
-foreach (['apache', 'apache-php7.0', 'apache-php7.1', 'apache-php7.2', 'fpm', 'fpm-php7.0', 'fpm-php7.1', 'fpm-php7.2'] as $variant)
+$phpVersions = [];
+$platforms   = ['apache', 'fpm', 'fpm-alpine'];
+
+/** @var DirectoryIterator $dir */
+foreach (new DirectoryIterator(__DIR__) as $dir)
 {
-	$dockerfile = __DIR__ . "/$variant/Dockerfile";
+	if (substr($dir->getFilename(), 0, 3) === 'php')
+	{
+		$phpVersions[] = $dir->getFilename();
+	}
+}
 
-	$fileContents = file_get_contents($dockerfile);
-	$fileContents = preg_replace('#ENV JOOMLA_VERSION [^ ]*\n#', "ENV JOOMLA_VERSION $version\n", $fileContents);
-	$fileContents = preg_replace('#ENV JOOMLA_SHA1 [^ ]*\n#', "ENV JOOMLA_SHA1 $signature\n\n", $fileContents);
+foreach ($phpVersions as $phpVersion)
+{
+	foreach ($platforms as $platform)
+	{
+		$dockerfile = __DIR__ . "/$phpVersion/$platform/Dockerfile";
 
-	file_put_contents($dockerfile, $fileContents);
+		$fileContents = file_get_contents($dockerfile);
+		$fileContents = preg_replace('#ENV JOOMLA_VERSION [^ ]*\n#', "ENV JOOMLA_VERSION $version\n", $fileContents);
+		$fileContents = preg_replace('#ENV JOOMLA_SHA1 [^ ]*\n#', "ENV JOOMLA_SHA1 $signature\n\n", $fileContents);
 
-	// To make management easier, we use these files for all variants
-	copy(__DIR__ . '/docker-entrypoint.sh', __DIR__ . "/$variant/docker-entrypoint.sh");
-	copy(__DIR__ . '/makedb.php', __DIR__ . "/$variant/makedb.php");
+		file_put_contents($dockerfile, $fileContents);
+
+		// To make management easier, we use these files for all variants
+		copy(__DIR__ . '/docker-entrypoint.sh', __DIR__ . "/$phpVersion/$platform/docker-entrypoint.sh");
+		copy(__DIR__ . '/makedb.php', __DIR__ . "/$phpVersion/$platform/makedb.php");
+	}
 }
 
 echo 'Dockerfile variants updated' . PHP_EOL;
