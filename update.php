@@ -74,7 +74,7 @@ if (!isset($signature))
 }
 
 $phpVersions = [];
-$platforms   = ['apache', 'fpm'];
+$platforms   = ['apache', 'fpm', 'fpm-alpine'];
 
 /** @var DirectoryIterator $dir */
 foreach (new DirectoryIterator(__DIR__) as $dir)
