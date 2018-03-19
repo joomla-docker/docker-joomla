@@ -69,7 +69,7 @@ VOLUME /var/www/html
 ENV JOOMLA_VERSION 3.8.6
 ENV JOOMLA_SHA1 769d86c00b3add41b1fa6c85f3ec823a07df88d1
 
-# Download package and extract to web volume
+# Download package and extract to intermediate directory
 RUN curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2 \
 	&& echo "$JOOMLA_SHA1 *joomla.tar.bz2" | sha1sum -c - \
 	&& mkdir /usr/src/joomla \
