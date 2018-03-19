@@ -52,6 +52,50 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 fi
 
                 echo >&2 "Complete! Joomla has been successfully copied to $(pwd)"
+        else
+            # check if the extracted Joomla version from the Dockerfile
+            # is newer than the one currently installed in /var/www/ volume
+            # (e.g. if the Dockerfile was updated after the first install and no web-update was used)
+
+            # only implemented here for Joomla >= 3.8.x
+            # see https://docs.joomla.org/How_to_check_the_Joomla_version%3F#Other_Ways_6
+            INSTALLED_VERSION_FILE='libraries/src/Version.php'
+            NEW_VERSION_FILE='/usr/src/joomla/libraries/src/Version.php'
+
+            if [ -e $INSTALLED_VERSION_FILE ] && [ -e $NEW_VERSION_FILE ]; then
+                INSTALLED_MAJOR_VERSION=`grep -oP 'MAJOR_VERSION = \K(\d)' $INSTALLED_VERSION_FILE`
+                INSTALLED_MINOR_VERSION=`grep -oP 'MINOR_VERSION = \K(\d)' $INSTALLED_VERSION_FILE`
+                INSTALLED_PATCH_VERSION=`grep -oP 'PATCH_VERSION = \K(\d)' $INSTALLED_VERSION_FILE`
+                INSTALLED_VERSION="${INSTALLED_MAJOR_VERSION}.${INSTALLED_MINOR_VERSION}.${INSTALLED_PATCH_VERSION}"
+
+                NEW_MAJOR_VERSION=`grep -oP 'MAJOR_VERSION = \K(\d)' $NEW_VERSION_FILE`
+                NEW_MINOR_VERSION=`grep -oP 'MINOR_VERSION = \K(\d)' $NEW_VERSION_FILE`
+                NEW_PATCH_VERSION=`grep -oP 'PATCH_VERSION = \K(\d)' $NEW_VERSION_FILE`
+                NEW_VERSION="${NEW_MAJOR_VERSION}.${NEW_MINOR_VERSION}.${NEW_PATCH_VERSION}"
+
+                if [ $NEW_MAJOR_VERSION -ne $INSTALLED_MAJOR_VERSION ]; then
+                    echo >&2 "Incompatible major versions: $INSTALLED_VERSION --> $NEW_VERSION - please consider a manual update!"
+                elif [ $NEW_MINOR_VERSION -lt $INSTALLED_MINOR_VERSION ] || [ $NEW_PATCH_VERSION -lt $INSTALLED_PATCH_VERSION ]; then
+                    echo >&2 "You are trying to downgrade: $INSTALLED_VERSION --> $NEW_VERSION - please consider updating your Dockerfile!"
+                elif [ $NEW_MINOR_VERSION -gt $INSTALLED_MINOR_VERSION ] || [ $NEW_PATCH_VERSION -gt $INSTALLED_PATCH_VERSION ]; then
+                    echo >&2 "Newer version of Joomla detected! Upgrading $INSTALLED_VERSION --> $NEW_VERSION ..."
+                    echo >&2 "Press Ctrl+C now if this is an error!"
+                    ( set -x; sleep 10 )
+
+                    # OK, let's go!
+                    echo >&2 "Copying new Joomla core files..."
+                    tar cf - --one-file-system -C /usr/src/joomla . | tar xf - --overwrite
+                    echo >&2 "Running Post-Manual Update Script..."
+                    cp /postupdate.php administrator/
+                    php administrator/postupdate.php
+                    echo >&2 "Cleaning up..."
+                    rm administrator/postupdate.php
+                    rm -r installation
+                else
+                    # same versions - do nothing
+                    true
+                fi
+            fi
         fi
 
         # Ensure the MySQL Database is created

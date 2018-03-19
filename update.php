@@ -100,6 +100,7 @@ foreach ($phpVersions as $phpVersion)
 		// To make management easier, we use these files for all variants
 		copy(__DIR__ . '/docker-entrypoint.sh', __DIR__ . "/$phpVersion/$platform/docker-entrypoint.sh");
 		copy(__DIR__ . '/makedb.php', __DIR__ . "/$phpVersion/$platform/makedb.php");
+		copy(__DIR__ . '/postupdate.php', __DIR__ . "/$phpVersion/$platform/postupdate.php");
 	}
 }
 
