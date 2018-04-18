@@ -63,8 +63,8 @@ RUN set -ex; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
-ENV JOOMLA_VERSION 3.8.6
-ENV JOOMLA_SHA1 769d86c00b3add41b1fa6c85f3ec823a07df88d1
+ENV JOOMLA_VERSION 3.8.7
+ENV JOOMLA_SHA1 c917407cb9b3984b47173317a2d23cd63b74f65b
 
 # Download package and extract to web volume
 RUN curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2 \
