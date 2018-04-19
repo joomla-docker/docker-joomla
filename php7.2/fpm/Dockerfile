@@ -35,7 +35,7 @@ RUN set -ex; \
 	; \
 	\
 	pecl install \
-		APCu-5.1.10 \
+		APCu-5.1.11 \
 		memcached-3.0.4 \
 		redis-3.1.6 \
 	; \
