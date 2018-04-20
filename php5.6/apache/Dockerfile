@@ -32,7 +32,6 @@ RUN set -ex; \
 		ldap \
 		mcrypt \
 		mysqli \
-		pdo \
 		pdo_mysql \
 		pdo_pgsql \
 		pgsql \

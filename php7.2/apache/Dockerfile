@@ -30,7 +30,6 @@ RUN set -ex; \
 		gd \
 		ldap \
 		mysqli \
-		pdo \
 		pdo_mysql \
 		pdo_pgsql \
 		pgsql \
