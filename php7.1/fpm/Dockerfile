@@ -16,7 +16,7 @@ RUN set -ex; \
 		libldap2-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
-		libpng12-dev \
+		libpng-dev \
 		libpq-dev \
 	; \
 	\
