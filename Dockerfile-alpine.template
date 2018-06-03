@@ -12,7 +12,7 @@ RUN apk add --no-cache \
 RUN set -ex; \
 	\
 	apk add --no-cache --virtual .build-deps \
-		alpine-sdk \
+		$PHPIZE_DEPS \
 		autoconf \
 		bzip2-dev \
 		libjpeg-turbo-dev \
