@@ -11,7 +11,7 @@ phpVersions=( "${phpVersions[@]%/}" )
 
 current="$(curl -fsSL 'https://downloads.joomla.org/api/v1/latest/cms' | jq -r '.branches[3].version')"
 urlVersion=$(echo $current | sed -e 's/\./-/g')
-sha1="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion"  | jq -r '.files[9].sha1')"
+sha1="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion"  | jq -r --arg file "Joomla_${current}-Stable-Full_Package.tar.bz2" '.[] | .[] | select(.filename == $file).sha1')"
 
 declare -A variantExtras=(
 	[apache]='\n# Enable Apache Rewrite Module\nRUN a2enmod rewrite\n'
