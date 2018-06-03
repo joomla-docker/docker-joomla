@@ -69,6 +69,7 @@ for phpVersion in "${phpVersions[@]}"; do
 				"Dockerfile-${base}.template" > "$dir/Dockerfile"
 
 			cp -a "$entrypoint" "$dir/docker-entrypoint.sh"
+			cp -a "makedb.php" "$dir/makedb.php"
 
 			if [ $phpVersionDir = "php7.2" ]; then
 				sed \
