@@ -17,8 +17,8 @@ RUN set -ex; \
 		bzip2-dev \
 		libjpeg-turbo-dev \
 		libmcrypt-dev \
-		libpng-dev \
 		libmemcached-dev \
+		libpng-dev \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \

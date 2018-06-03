@@ -3,16 +3,16 @@ services: docker
 
 env:
   - VARIANT=php5.6/apache
-  - VARIANT=php7.0/apache
-  - VARIANT=php7.1/apache
-  - VARIANT=php7.2/apache
   - VARIANT=php5.6/fpm
-  - VARIANT=php7.0/fpm
-  - VARIANT=php7.1/fpm
-  - VARIANT=php7.2/fpm
   - VARIANT=php5.6/fpm-alpine
+  - VARIANT=php7.0/apache
+  - VARIANT=php7.0/fpm
   - VARIANT=php7.0/fpm-alpine
+  - VARIANT=php7.1/apache
+  - VARIANT=php7.1/fpm
   - VARIANT=php7.1/fpm-alpine
+  - VARIANT=php7.2/apache
+  - VARIANT=php7.2/fpm
   - VARIANT=php7.2/fpm-alpine
 
 install:

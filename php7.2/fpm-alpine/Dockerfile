@@ -16,8 +16,8 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		libjpeg-turbo-dev \
-		libpng-dev \
 		libmemcached-dev \
+		libpng-dev \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \
