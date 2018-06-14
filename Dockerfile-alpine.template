@@ -1,4 +1,4 @@
-FROM php:7.1-fpm-alpine
+FROM php:%%PHP_VERSION%%-%%VARIANT%%
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
@@ -39,9 +39,9 @@ RUN set -ex; \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.11; \
-	pecl install memcached-3.0.4; \
-	pecl install redis-3.1.6; \
+	pecl install APCu-%%APCU_VERSION%%; \
+	pecl install memcached-%%MEMCACHED_VERSION%%; \
+	pecl install redis-%%REDIS_VERSION%%; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -61,8 +61,8 @@ RUN set -ex; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
-ENV JOOMLA_VERSION 3.8.8
-ENV JOOMLA_SHA1 d905327bee0cd5b4806ef34f74cbd5214fc9da2c
+ENV JOOMLA_VERSION %%VERSION%%
+ENV JOOMLA_SHA1 %%SHA1%%
 
 # Download package and extract to web volume
 RUN curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2 \
@@ -77,4 +77,4 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["%%CMD%%"]
