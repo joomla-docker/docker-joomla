@@ -60,11 +60,9 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         echo >&2 "========================================================================"
         echo >&2
         echo >&2 "This server is now configured to run Joomla!"
-        echo >&2 "You will need the following database information to install Joomla:"
-        echo >&2 "Host Name: $JOOMLA_DB_HOST"
-        echo >&2 "Database Name: $JOOMLA_DB_NAME"
-        echo >&2 "Database Username: $JOOMLA_DB_USER"
-        echo >&2 "Database Password: $JOOMLA_DB_PASSWORD"
+        echo >&2
+        echo >&2 "NOTE: You will need your database server address, database name,"
+        echo >&2 "and database user credentials to install Joomla."
         echo >&2
         echo >&2 "========================================================================"
 fi
