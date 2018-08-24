@@ -20,6 +20,7 @@ RUN set -ex; \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
+		sendmail \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
