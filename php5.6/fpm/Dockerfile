@@ -38,7 +38,7 @@ RUN set -ex; \
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-4.0.11; \
 	pecl install memcached-2.2.0; \
-	pecl install redis-3.1.6; \
+	pecl install redis-4.1.1; \
 	\
 	docker-php-ext-enable \
 		apcu \
