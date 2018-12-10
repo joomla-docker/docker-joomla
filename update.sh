@@ -77,6 +77,13 @@ for phpVersion in "${phpVersions[@]}"; do
 					-e '/mcrypt/d' \
 					-i $dir/Dockerfile
 			fi
+
+			if [[ "$phpVersion" != 7.3 ]]; then
+				sed -ri \
+					-e '/libzip-dev/d' \
+					"$dir/Dockerfile"
+			fi
+
 		)
 
 		travisEnv+='\n  - VARIANT='"$dir"
