@@ -16,7 +16,6 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		libjpeg-turbo-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		openldap-dev \
@@ -30,7 +29,6 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \

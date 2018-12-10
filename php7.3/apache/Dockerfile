@@ -17,7 +17,6 @@ RUN set -ex; \
 		libbz2-dev \
 		libjpeg-dev \
 		libldap2-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
@@ -30,7 +29,6 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
