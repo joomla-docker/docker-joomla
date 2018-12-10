@@ -1,11 +1,8 @@
-FROM php:7.0-apache
+FROM php:7.3-fpm
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
-
-# Enable Apache Rewrite Module
-RUN a2enmod rewrite
 
 # Install PHP extensions
 RUN set -ex; \
@@ -82,4 +79,4 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]
