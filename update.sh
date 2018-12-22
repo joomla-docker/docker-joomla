@@ -33,7 +33,7 @@ declare -A pecl_versions=(
 	[php5-memcached]='2.2.0'
 	[php5-redis]='4.2.0'
 	[php7-APCu]='5.1.15'
-	[php7-memcached]='3.1.1'
+	[php7-memcached]='3.1.2'
 	[php7-redis]='4.2.0'
 )
 
