@@ -1,36 +1,32 @@
-FROM php:7.0-fpm-alpine
+FROM php:7.3-fpm
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 
-# entrypoint.sh dependencies
-RUN apk add --no-cache \
-	bash
-
 # Install PHP extensions
 RUN set -ex; \
 	\
-	apk add --no-cache --virtual .build-deps \
-		$PHPIZE_DEPS \
-		autoconf \
-		bzip2-dev \
-		libjpeg-turbo-dev \
-		libmcrypt-dev \
+	savedAptMark="$(apt-mark showmanual)"; \
+	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+		libbz2-dev \
+		libjpeg-dev \
+		libldap2-dev \
 		libmemcached-dev \
 		libpng-dev \
-		openldap-dev \
-		pcre-dev \
-		postgresql-dev \
+		libpq-dev \
+		libzip-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
-	docker-php-ext-configure ldap; \
+	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
@@ -39,8 +35,8 @@ RUN set -ex; \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.13; \
-	pecl install memcached-3.0.4; \
+	pecl install APCu-5.1.16; \
+	pecl install memcached-3.1.2; \
 	pecl install redis-4.2.0; \
 	\
 	docker-php-ext-enable \
@@ -49,14 +45,19 @@ RUN set -ex; \
 		redis \
 	; \
 	\
-	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-		| tr ',' '\n' \
+# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark; \
+	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
+		| awk '/=>/ { print $3 }' \
 		| sort -u \
-		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-		)"; \
-	apk add --virtual .joomla-phpext-rundeps $runDeps; \
-	apk del .build-deps
+		| xargs -r dpkg-query -S \
+		| cut -d: -f1 \
+		| sort -u \
+		| xargs -rt apt-mark manual; \
+	\
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	rm -rf /var/lib/apt/lists/*
 
 VOLUME /var/www/html
 

@@ -19,6 +19,7 @@ RUN set -ex; \
 		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
+		libzip-dev \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \

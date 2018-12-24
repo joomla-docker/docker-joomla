@@ -32,8 +32,8 @@ declare -A pecl_versions=(
 	[php5-APCu]='4.0.11'
 	[php5-memcached]='2.2.0'
 	[php5-redis]='4.2.0'
-	[php7-APCu]='5.1.13'
-	[php7-memcached]='3.0.4'
+	[php7-APCu]='5.1.16'
+	[php7-memcached]='3.1.2'
 	[php7-redis]='4.2.0'
 )
 
@@ -71,12 +71,19 @@ for phpVersion in "${phpVersions[@]}"; do
 			cp -a "$entrypoint" "$dir/docker-entrypoint.sh"
 			cp -a "makedb.php" "$dir/makedb.php"
 
-			if [ $phpVersionDir = "php7.2" ]; then
+			if [ $phpVersionDir = "php7.2" -o $phpVersionDir = "php7.3" ]; then
 				sed \
 					-e '/libmcrypt-dev/d' \
 					-e '/mcrypt/d' \
 					-i $dir/Dockerfile
 			fi
+
+			if [[ "$phpVersion" != 7.3 ]]; then
+				sed -ri \
+					-e '/libzip-dev/d' \
+					"$dir/Dockerfile"
+			fi
+
 		)
 
 		travisEnv+='\n  - VARIANT='"$dir"

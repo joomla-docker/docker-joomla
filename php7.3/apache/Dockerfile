@@ -1,4 +1,4 @@
-FROM php:7.0-apache
+FROM php:7.3-apache
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
@@ -17,10 +17,10 @@ RUN set -ex; \
 		libbz2-dev \
 		libjpeg-dev \
 		libldap2-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
+		libzip-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
@@ -30,7 +30,6 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
@@ -39,8 +38,8 @@ RUN set -ex; \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.13; \
-	pecl install memcached-3.0.4; \
+	pecl install APCu-5.1.16; \
+	pecl install memcached-3.1.2; \
 	pecl install redis-4.2.0; \
 	\
 	docker-php-ext-enable \
