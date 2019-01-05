@@ -2,9 +2,6 @@ language: bash
 services: docker
 
 env:
-  - VARIANT=php5.6/apache
-  - VARIANT=php5.6/fpm
-  - VARIANT=php5.6/fpm-alpine
   - VARIANT=php7.1/apache
   - VARIANT=php7.1/fpm
   - VARIANT=php7.1/fpm-alpine
