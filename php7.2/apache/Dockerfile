@@ -64,8 +64,8 @@ RUN set -ex; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 3.9.1
-ENV JOOMLA_SHA512 1a3b8d9788f657a97dc107bdea909792ba117c17587aaf05ce0f416bc1fddaf80c108431d6b9b1f1a212d10817cfe8f06c6178c474a4be1d73d232f98eb685e9
+ENV JOOMLA_VERSION 3.9.2
+ENV JOOMLA_SHA512 b6b551748a683bbdf7185f99092708257b6b1483e8ef4e762f5341f7479cd698cf2e309d4004a4eabafdf5f388518c426f2f1fb19c0003fa8dff215317102a95
 
 # Download package and extract to web volume
 RUN curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2 \
