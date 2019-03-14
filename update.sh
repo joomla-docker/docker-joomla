@@ -31,7 +31,7 @@ declare -A variantBases=(
 declare -A pecl_versions=(
 	[php7-APCu]='5.1.17'
 	[php7-memcached]='3.1.3'
-	[php7-redis]='4.2.0'
+	[php7-redis]='4.3.0'
 )
 
 travisEnv=
