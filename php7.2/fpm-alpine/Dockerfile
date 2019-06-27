@@ -25,7 +25,7 @@ RUN set -ex; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
 	docker-php-ext-configure ldap; \
-	docker-php-ext-install \
+	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
 		ldap \
