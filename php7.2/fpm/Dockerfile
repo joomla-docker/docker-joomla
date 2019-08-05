@@ -65,12 +65,13 @@ ENV JOOMLA_VERSION 3.9.10
 ENV JOOMLA_SHA512 335b0f15e267c0430bb5eed7ac84bef299602c48f58ab8f4370434c684b956ea4515c5e742b4eb59ffdc9d61fb14618625fd85e81157ee7185097c925bb08708
 
 # Download package and extract to web volume
-RUN curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2 \
-	&& echo "$JOOMLA_SHA512 *joomla.tar.bz2" | sha512sum -c - \
-	&& mkdir /usr/src/joomla \
-	&& tar -xf joomla.tar.bz2 -C /usr/src/joomla \
-	&& rm joomla.tar.bz2 \
-	&& chown -R www-data:www-data /usr/src/joomla
+RUN set -ex; \
+	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/${JOOMLA_VERSION}/Joomla_${JOOMLA_VERSION}-Stable-Full_Package.tar.bz2; \
+	echo "$JOOMLA_SHA512 *joomla.tar.bz2" | sha512sum -c -; \
+	mkdir /usr/src/joomla; \
+	tar -xf joomla.tar.bz2 -C /usr/src/joomla; \
+	rm joomla.tar.bz2; \
+	chown -R www-data:www-data /usr/src/joomla
 
 # Copy init scripts and custom .htaccess
 COPY docker-entrypoint.sh /entrypoint.sh
