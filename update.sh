@@ -68,14 +68,7 @@ for phpVersion in "${phpVersions[@]}"; do
 			cp -a "$entrypoint" "$dir/docker-entrypoint.sh"
 			cp -a "makedb.php" "$dir/makedb.php"
 
-			if [ $phpVersionDir = "php7.2" -o $phpVersionDir = "php7.3" ]; then
-				sed \
-					-e '/libmcrypt-dev/d' \
-					-e '/mcrypt/d' \
-					-i $dir/Dockerfile
-			fi
-
-			if [[ "$phpVersion" != 7.3 ]]; then
+			if [ "$phpVersion" = 7.2 ]; then
 				sed -ri \
 					-e '/libzip-dev/d' \
 					"$dir/Dockerfile"
