@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eu
 
-# Latest available version based on https://downloads.joomla.org/technical-requirements - PHP 7.1 due to known 7.2 bugs still present
-defaultPhpVersion='php7.2'
+# Latest available version based on https://downloads.joomla.org/technical-requirements
+defaultPhpVersion='php7.3'
 defaultVariant='apache'
 
 self="$(basename "$BASH_SOURCE")"
