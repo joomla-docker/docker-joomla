@@ -1,36 +1,35 @@
-FROM php:7.1-apache
+FROM php:7.4-fpm-alpine
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 
-# Enable Apache Rewrite Module
-RUN a2enmod rewrite
+# entrypoint.sh dependencies
+RUN apk add --no-cache \
+	bash
 
 # Install PHP extensions
 RUN set -ex; \
 	\
-	savedAptMark="$(apt-mark showmanual)"; \
-	\
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libbz2-dev \
-		libjpeg-dev \
-		libldap2-dev \
-		libmcrypt-dev \
+	apk add --no-cache --virtual .build-deps \
+		$PHPIZE_DEPS \
+		autoconf \
+		bzip2-dev \
+		libjpeg-turbo-dev \
 		libmemcached-dev \
 		libpng-dev \
-		libpq-dev \
+		libzip-dev \
+		openldap-dev \
+		pcre-dev \
+		postgresql-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
-	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
-	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
+	docker-php-ext-configure ldap; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
@@ -49,23 +48,18 @@ RUN set -ex; \
 		redis \
 	; \
 	\
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-	apt-mark auto '.*' > /dev/null; \
-	apt-mark manual $savedAptMark; \
-	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-		| awk '/=>/ { print $3 }' \
+	runDeps="$( \
+		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+		| tr ',' '\n' \
 		| sort -u \
-		| xargs -r dpkg-query -S \
-		| cut -d: -f1 \
-		| sort -u \
-		| xargs -rt apt-mark manual; \
-	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+		)"; \
+	apk add --virtual .joomla-phpext-rundeps $runDeps; \
+	apk del .build-deps
 
 VOLUME /var/www/html
 
-# Define Joomla version and expected SHA512 signature
+# Define Joomla version and expected SHA1 signature
 ENV JOOMLA_VERSION 3.9.13
 ENV JOOMLA_SHA512 366101203f24a19464d3c86472dd937bb4c192b2621f1245f8907a3c5565594417baa79a19002eda84ac939b92376501a5300dc35a64c0c06df163d2e460550f
 
@@ -83,4 +77,4 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["php-fpm"]

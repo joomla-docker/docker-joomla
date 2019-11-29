@@ -1,4 +1,4 @@
-FROM php:7.1-fpm
+FROM php:7.4-fpm
 LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
 
 # Disable remote database security requirements.
@@ -14,10 +14,10 @@ RUN set -ex; \
 		libbz2-dev \
 		libjpeg-dev \
 		libldap2-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
+		libzip-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
@@ -27,7 +27,6 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		ldap \
-		mcrypt \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
