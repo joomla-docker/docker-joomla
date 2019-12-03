@@ -23,7 +23,7 @@ RUN set -ex; \
 		libzip-dev \
 	; \
 	\
-	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
 	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
 	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install -j "$(nproc)" \
@@ -39,7 +39,7 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.18; \
-	pecl install memcached-3.1.4; \
+	pecl install memcached-3.1.5; \
 	pecl install redis-4.3.0; \
 	\
 	docker-php-ext-enable \
