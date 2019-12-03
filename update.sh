@@ -30,7 +30,7 @@ declare -A variantBases=(
 )
 declare -A pecl_versions=(
 	[php7-APCu]='5.1.18'
-	[php7-memcached]='3.1.4'
+	[php7-memcached]='3.1.5'
 	[php7-redis]='4.3.0'
 )
 
