@@ -23,7 +23,7 @@ RUN set -ex; \
 		postgresql-dev \
 	; \
 	\
-	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
 	docker-php-ext-configure ldap; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \

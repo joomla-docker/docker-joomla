@@ -73,6 +73,13 @@ for phpVersion in "${phpVersions[@]}"; do
 					-e '/libzip-dev/d' \
 					"$dir/Dockerfile"
 			fi
+			case "$phpVersion" in
+				7.2 | 7.3 )
+					sed -ri \
+						-e 's!gd --with-jpeg!gd --with-jpeg-dir=/usr --with-png-dir=/usr!g' \
+						"$dir/Dockerfile"
+					;;
+			esac
 
 		)
 

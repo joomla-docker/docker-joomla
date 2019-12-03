@@ -23,7 +23,7 @@ RUN set -ex; \
 		libzip-dev \
 	; \
 	\
-	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; \
+	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
 	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
 	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install -j "$(nproc)" \
