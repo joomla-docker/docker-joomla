@@ -21,7 +21,7 @@ RUN set -ex; \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \
-		libgmp-dev \
+		gmp-dev \
 		libmcrypt-dev \
 	; \
 	\
