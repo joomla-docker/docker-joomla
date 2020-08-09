@@ -17,6 +17,8 @@ RUN set -ex; \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
+		libgmp-dev \
+		libmcrypt-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
@@ -31,17 +33,20 @@ RUN set -ex; \
 		pdo_pgsql \
 		pgsql \
 		zip \
+		gmp \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.18; \
 	pecl install memcached-3.1.5; \
 	pecl install redis-4.3.0; \
+	pecl install mcrypt-1.0.3; \
 	\
 	docker-php-ext-enable \
 		apcu \
 		memcached \
 		redis \
+		mcrypt \
 	; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies

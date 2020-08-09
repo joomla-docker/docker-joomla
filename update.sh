@@ -32,6 +32,7 @@ declare -A pecl_versions=(
 	[php7-APCu]='5.1.18'
 	[php7-memcached]='3.1.5'
 	[php7-redis]='4.3.0'
+	[php7-mcrypt]='1.0.3'
 )
 
 travisEnv=
@@ -62,6 +63,7 @@ for phpVersion in "${phpVersions[@]}"; do
 				-e 's!%%APCU_VERSION%%!'"${pecl_versions[$phpMajorVersion-APCu]}"'!g' \
 				-e 's!%%MEMCACHED_VERSION%%!'"${pecl_versions[$phpMajorVersion-memcached]}"'!g' \
 				-e 's!%%REDIS_VERSION%%!'"${pecl_versions[$phpMajorVersion-redis]}"'!g' \
+				-e 's!%%MCRYPT_VERSION%%!'"${pecl_versions[$phpMajorVersion-mcrypt]}"'!g' \
 				-e 's!%%CMD%%!'"$cmd"'!g' \
 				"Dockerfile-${base}.template" > "$dir/Dockerfile"
 
