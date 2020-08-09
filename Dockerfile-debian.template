@@ -12,8 +12,10 @@ RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
+		libgmp-dev \
 		libjpeg-dev \
 		libldap2-dev \
+		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
@@ -26,6 +28,7 @@ RUN set -ex; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
+		gmp \
 		ldap \
 		mysqli \
 		pdo_mysql \

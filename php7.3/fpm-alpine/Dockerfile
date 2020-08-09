@@ -15,15 +15,15 @@ RUN set -ex; \
 		$PHPIZE_DEPS \
 		autoconf \
 		bzip2-dev \
+		gmp-dev \
 		libjpeg-turbo-dev \
+		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libzip-dev \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \
-		gmp-dev \
-		libmcrypt-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
@@ -31,26 +31,26 @@ RUN set -ex; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
+		gmp \
 		ldap \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
 		pgsql \
 		zip \
-		gmp \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.18; \
+	pecl install mcrypt-1.0.3; \
 	pecl install memcached-3.1.5; \
 	pecl install redis-4.3.0; \
-	pecl install mcrypt-1.0.3; \
 	\
 	docker-php-ext-enable \
 		apcu \
+		mcrypt \
 		memcached \
 		redis \
-		mcrypt \
 	; \
 	\
 	runDeps="$( \
