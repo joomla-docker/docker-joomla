@@ -15,13 +15,13 @@ RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
+		libgmp-dev \
 		libjpeg-dev \
 		libldap2-dev \
+		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
-		libgmp-dev \
-		libmcrypt-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
@@ -30,26 +30,24 @@ RUN set -ex; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
+		gmp \
 		ldap \
 		mysqli \
 		pdo_mysql \
 		pdo_pgsql \
 		pgsql \
 		zip \
-		gmp \
 	; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.18; \
 	pecl install memcached-3.1.5; \
 	pecl install redis-4.3.0; \
-	pecl install mcrypt-1.0.3; \
 	\
 	docker-php-ext-enable \
 		apcu \
 		memcached \
 		redis \
-		mcrypt \
 	; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
@@ -69,8 +67,8 @@ RUN set -ex; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 3.9.19
-ENV JOOMLA_SHA512 c1dfdc297b36531c71cc48ad0ffcd0a632a58b5402e105a8143514dbd17895ba3074291919db3ac4ddcb74cb3baf823acef6c6e8f805d8517ae33ffcb484be75
+ENV JOOMLA_VERSION 3.9.20
+ENV JOOMLA_SHA512 ed885916525e202267c6508156f69dcc9f4688231906ebae1e2ae9f823c9221202f9b88b4ee1ebc26827ba0992fd5a9f3ecc3651bedab7399a078603ad68e5bf
 
 # Download package and extract to web volume
 RUN set -ex; \
