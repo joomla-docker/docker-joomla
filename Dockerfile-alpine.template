@@ -1,5 +1,5 @@
 FROM php:%%PHP_VERSION%%-%%VARIANT%%
-LABEL maintainer="Michael Babker <michael.babker@joomla.org> (@mbabker)"
+LABEL maintainer="Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
