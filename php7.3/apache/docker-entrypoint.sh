@@ -2,6 +2,10 @@
 
 set -e
 
+if [[ -f "$JOOMLA_DB_PASSWORD_FILE" ]]; then
+        JOOMLA_DB_PASSWORD=$(cat "$JOOMLA_DB_PASSWORD_FILE")
+fi
+
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         if [ -n "$MYSQL_PORT_3306_TCP" ]; then
                 if [ -z "$JOOMLA_DB_HOST" ]; then
