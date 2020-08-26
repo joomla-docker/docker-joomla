@@ -50,10 +50,10 @@ getArches() {
 getArches 'joomla'
 
 cat <<-EOH
-# this file is generated via https://github.com/joomla/docker-joomla/blob/$(fileCommit "$self")/$self
+# this file is generated via https://github.com/joomla-docker/docker-joomla/blob/$(fileCommit "$self")/$self
 
 Maintainers: Michael Babker <michael.babker@joomla.org> (@mbabker)
-GitRepo: https://github.com/joomla/docker-joomla.git
+GitRepo: https://github.com/joomla-docker/docker-joomla.git
 EOH
 
 # prints "$2$1$3$1...$N"
