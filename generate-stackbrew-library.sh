@@ -52,7 +52,7 @@ getArches 'joomla'
 cat <<-EOH
 # this file is generated via https://github.com/joomla-docker/docker-joomla/blob/$(fileCommit "$self")/$self
 
-Maintainers: Michael Babker <michael.babker@joomla.org> (@mbabker)
+Maintainers: Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)
 GitRepo: https://github.com/joomla-docker/docker-joomla.git
 EOH
 
