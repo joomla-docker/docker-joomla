@@ -7,6 +7,9 @@ if [[ -f "$JOOMLA_DB_PASSWORD_FILE" ]]; then
 fi
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
+        
+        if [ -z "$IGNORE_DB_CREATING"]; then
+
         if [ -n "$MYSQL_PORT_3306_TCP" ]; then
                 if [ -z "$JOOMLA_DB_HOST" ]; then
                         JOOMLA_DB_HOST='mysql'
@@ -38,6 +41,11 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 echo >&2 "  (Also of interest might be JOOMLA_DB_USER and JOOMLA_DB_NAME.)"
                 exit 1
         fi
+        # Ensure the MySQL Database is created
+        php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME"
+
+        fi # if [[ -z "$IGNORE_DB_CREATING"]]; then
+
 
         if ! [ -e index.php -a \( -e libraries/cms/version/version.php -o -e libraries/src/Version.php \) ]; then
                 echo >&2 "Joomla not found in $(pwd) - copying now..."
@@ -58,8 +66,6 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 echo >&2 "Complete! Joomla has been successfully copied to $(pwd)"
         fi
 
-        # Ensure the MySQL Database is created
-        php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME"
 
         echo >&2 "========================================================================"
         echo >&2
