@@ -35,7 +35,6 @@ declare -A pecl_versions=(
 	[php7-mcrypt]='1.0.3'
 )
 
-travisEnv=
 for phpVersion in "${phpVersions[@]}"; do
 	phpVersionDir="$phpVersion"
 	phpVersion="${phpVersion#php}"
@@ -84,10 +83,5 @@ for phpVersion in "${phpVersions[@]}"; do
 			esac
 
 		)
-
-		travisEnv+='\n  - VARIANT='"$dir"
 	done
 done
-
-travis="$(awk -v 'RS=\n\n' '$1 == "env:" { $0 = "env:'"$travisEnv"'" } { printf "%s%s", $0, RS }' .travis.yml)"
-echo "$travis" > .travis.yml
