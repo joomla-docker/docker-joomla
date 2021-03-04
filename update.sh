@@ -29,9 +29,9 @@ declare -A variantBases=(
 	[fpm-alpine]='alpine'
 )
 declare -A pecl_versions=(
-	[php7-APCu]='5.1.19'
+	[php7-APCu]='5.1.20'
 	[php7-memcached]='3.1.5'
-	[php7-redis]='4.3.0'
+	[php7-redis]='5.3.3'
 	[php7-mcrypt]='1.0.3'
 )
 
