@@ -42,9 +42,9 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.20; \
-	pecl install mcrypt-1.0.3; \
+	pecl install mcrypt-1.0.4; \
 	pecl install memcached-3.1.5; \
-	pecl install redis-5.3.3; \
+	pecl install redis-5.3.4; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -52,6 +52,7 @@ RUN set -ex; \
 		memcached \
 		redis \
 	; \
+	rm -r /tmp/pear; \
 	\
 	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \

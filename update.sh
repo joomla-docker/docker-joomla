@@ -31,8 +31,8 @@ declare -A variantBases=(
 declare -A pecl_versions=(
 	[php7-APCu]='5.1.20'
 	[php7-memcached]='3.1.5'
-	[php7-redis]='5.3.3'
-	[php7-mcrypt]='1.0.3'
+	[php7-redis]='5.3.4'
+	[php7-mcrypt]='1.0.4'
 )
 
 for phpVersion in "${phpVersions[@]}"; do
