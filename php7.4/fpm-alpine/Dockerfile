@@ -65,7 +65,7 @@ RUN set -ex; \
 
 VOLUME /var/www/html
 
-# Define Joomla version and expected SHA512 signature
+# Define Joomla version and expected SHA1 signature
 ENV JOOMLA_VERSION 3.9.27
 ENV JOOMLA_SHA512 fe3310cdf4a94ebad1ead72eed5fdab481a0f8f80c89ee002a045ffec25d1a4de8afc26199003cee3ffbda7d42086132a70e9650a5415a0cf15444156acda18c
 
