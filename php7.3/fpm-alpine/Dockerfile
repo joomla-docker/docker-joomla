@@ -67,7 +67,7 @@ VOLUME /var/www/html
 
 # Define Joomla version and expected SHA1 signature
 ENV JOOMLA_VERSION 3.10.1
-ENV JOOMLA_SHA512 0da13da97ccb562314252cbfda1b291c0c6d2996d382f7e052435b671d99052f7ba691eb136736d9c07ee43ae938132872676f8575228b2cd92e727abf5e55c5
+ENV JOOMLA_SHA512 5565eab2bffc97a93f3ee9031015feff7517f77617e1746bd2dabc734a2df2772489bd08d238576d87faf4b8f930de110e2cc704b51154dadb94ea6a281e33a2
 
 # Download package and extract to web volume
 RUN set -ex; \
