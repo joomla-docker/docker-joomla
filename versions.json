@@ -1,0 +1,39 @@
+{
+  "3.10": {
+    "aliases": [
+      3
+    ],
+    "php": "7.4",
+    "phpVersions": [
+      "7.3",
+      "7.4"
+    ],
+    "sha512": "a397ecfc0c5f8a86ce871d691c8dd721ae2b40f2d05a5eb4f86a3a1598a486b332305de556a547b2e7d6613fa0f4daf4c2bb30a24ce4a50cb1369007302048fa",
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ],
+    "version": "3.10.1"
+  },
+  "4.0": {
+    "aliases": [
+      4,
+      "latest"
+    ],
+    "php": "8.0",
+    "phpVersions": [
+      "7.4",
+      "8.0"
+    ],
+    "sha512": "2e97febcfa3689a22de030b668232d41a42e70100731991a4eba68434eaf7c9600c4db372072fe5baf59fafb699e394b59768398b513176ba0e9652f8a0419b4",
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ],
+    "version": "4.0.2"
+  }
+}
