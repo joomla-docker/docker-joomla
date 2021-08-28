@@ -11,7 +11,7 @@ LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joo
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 # Enable Apache Rewrite Module
-RUN a2enmod rewrite\
+RUN a2enmod rewrite
 # Install the PHP extensions
 RUN set -ex; \
 	\

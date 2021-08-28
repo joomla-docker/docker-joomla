@@ -15,7 +15,7 @@ RUN apk add --no-cache \
 {{ ) else "" end -}}
 {{ if env.variant == "apache" then ( -}}
 # Enable Apache Rewrite Module
-RUN a2enmod rewrite\
+RUN a2enmod rewrite
 {{ ) else "" end -}}
 # Install the PHP extensions
 RUN set -ex; \
