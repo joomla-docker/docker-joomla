@@ -21,6 +21,7 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
+		icu-dev \
 		libjpeg-turbo-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
@@ -37,6 +38,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
+		icu \
 		ldap \
 		mysqli \
 		pdo_mysql \
