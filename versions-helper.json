@@ -6,7 +6,7 @@
     "phpVersions": {
       "8.0": {
         "pecl": {
-          "APCu": "5.1.20",
+          "APCu": "5.1.21",
           "memcached": "3.1.5",
           "redis": "5.3.4",
           "mcrypt": "1.0.4"
@@ -14,7 +14,7 @@
       },
       "7.4": {
         "pecl": {
-          "APCu": "5.1.20",
+          "APCu": "5.1.21",
           "memcached": "3.1.5",
           "redis": "5.3.4",
           "mcrypt": "1.0.4"
@@ -35,7 +35,7 @@
     "phpVersions": {
       "7.4": {
         "pecl": {
-          "APCu": "5.1.20",
+          "APCu": "5.1.21",
           "memcached": "3.1.5",
           "redis": "5.3.4",
           "mcrypt": "1.0.4"
@@ -43,7 +43,7 @@
       },
       "7.3": {
         "pecl": {
-          "APCu": "5.1.20",
+          "APCu": "5.1.21",
           "memcached": "3.1.5",
           "redis": "5.3.4",
           "mcrypt": "1.0.4"
