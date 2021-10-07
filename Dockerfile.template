@@ -26,6 +26,7 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
+		icu-dev \
 		libjpeg-turbo-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
@@ -46,6 +47,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
+		intl \
 		ldap \
 		mysqli \
 		pdo_mysql \
@@ -84,6 +86,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
+		libicu-dev \
 		libjpeg-dev \
 		libldap2-dev \
 		libmcrypt-dev \
@@ -104,6 +107,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
+		intl \
 		ldap \
 		mysqli \
 		pdo_mysql \
