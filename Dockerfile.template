@@ -2,6 +2,10 @@
 	def is_alpine:
 		env.variant | index("alpine")
 -}}
+{{
+	def is_joomla_4:
+		env.version == "4.0"
+-}}
 # from https://downloads.joomla.org/technical-requirements
 FROM php:{{ env.phpVersion }}-{{ env.variant }}
 LABEL maintainer="{{ env.joomlaMaintainers }}"
