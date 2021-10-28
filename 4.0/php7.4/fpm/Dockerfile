@@ -19,6 +19,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
+		libicu-dev \
 		libjpeg-dev \
 		libldap2-dev \
 		libmcrypt-dev \
@@ -35,6 +36,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
+		intl \
 		ldap \
 		mysqli \
 		pdo_mysql \
