@@ -111,8 +111,8 @@ Changes:
 - joomla-docker/docker-joomla@4bc3c7b: Update version of Joomla! 3.10.1 to 3.10.2
 ```
 - Basically denoting each commit to [our master branch](https://github.com/joomla-docker/docker-joomla/tree/master) since the last update to the official images.
-- Once this is done, the maintainers of the official image takes over.
+- Once this is done, the maintainers of the [official Docker images](https://github.com/docker-library/official-images) takes over.
 - Should there be any issue which you can't resolve, reach out to the [other maintainers](https://github.com/joomla-docker/docker-joomla/graphs/contributors).
 - Done!
 
-> The [Current Maintainers](https://github.com/joomla-docker/docker-joomla/graphs/contributors) of the official images. Let us know if you have any questions.
+> The [current maintainers](https://github.com/joomla-docker/docker-joomla/blob/master/maintainers.json) of the official images. Let us know if you have any questions.
