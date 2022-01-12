@@ -1,12 +1,12 @@
 {
-  "3.10": {
+  "2.15": {
     "aliases": [
       3
     ],
-    "php": "7.4",
+    "php": "5.3",
     "phpVersions": [
-      "7.3",
-      "7.4"
+      "5.3",
+      "6.0"
     ],
     "sha512": "c5c67067b2f8b7732b518f620a4a07e3471a9a682724e72ca64db27a7c85f8bddc66bc6abc73b4b10062db3228ebb65573a89ad9c026ff27d4cbe51f82f3d510",
     "variant": "apache",
@@ -15,7 +15,7 @@
       "fpm-alpine",
       "fpm"
     ],
-    "version": "3.10.4"
+    "version": "2.15.4"
   },
   "4.0": {
     "aliases": [
