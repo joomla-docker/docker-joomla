@@ -10,10 +10,17 @@ LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joo
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
-# entrypoint.sh dependencies
-RUN apk add --no-cache \
-	bash
-# Install the PHP extensions
+RUN set -eux; \
+	apk add --no-cache \
+# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
+		bash \
+# Ghostscript is required for rendering PDF previews
+		ghostscript \
+# Alpine package for "imagemagick" contains ~120 .so files
+		imagemagick \
+	;
+
+# install the PHP extensions we need.
 RUN set -ex; \
 	\
 	apk add --no-cache --virtual .build-deps \
@@ -22,20 +29,30 @@ RUN set -ex; \
 		bzip2-dev \
 		gmp-dev \
 		icu-dev \
+		freetype-dev \
+		imagemagick-dev \
 		libjpeg-turbo-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
+		libwebp-dev \
 		libzip-dev \
 		openldap-dev \
 		pcre-dev \
 		postgresql-dev \
 	; \
 	\
-	docker-php-ext-configure gd --with-jpeg; \
-	docker-php-ext-configure ldap; \
+	docker-php-ext-configure gd \
+		--with-freetype \
+		--with-jpeg \
+		--with-webp \
+	; \
+	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
+		bcmath \
+		exif \
 		gd \
 		gmp \
 		intl \
@@ -46,6 +63,20 @@ RUN set -ex; \
 		pgsql \
 		zip \
 	; \
+# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
+# https://pecl.php.net/package/imagick
+	pecl install imagick-3.6.0; \
+	docker-php-ext-enable imagick; \
+	rm -r /tmp/pear; \
+	\
+# some misbehaving extensions end up outputting to stdout
+	out="$(php -r 'exit(0);')"; \
+	[ -z "$out" ]; \
+	err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]; \
+	\
+	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
+	[ -d "$extDir" ]; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.21; \
@@ -62,13 +93,43 @@ RUN set -ex; \
 	rm -r /tmp/pear; \
 	\
 	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-		| tr ',' '\n' \
-		| sort -u \
-		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-		)"; \
-	apk add --virtual .joomla-phpext-rundeps $runDeps; \
-	apk del .build-deps
+		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
+	apk add --no-network --virtual .joomla-phpexts-rundeps $runDeps; \
+	apk del --no-network .build-deps; \
+	\
+	! { ldd "$extDir"/*.so | grep 'not found'; }; \
+# check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
+	err="$(php --version 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]
+
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN set -eux; \
+	docker-php-ext-enable opcache; \
+	{ \
+		echo 'opcache.memory_consumption=128'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4000'; \
+		echo 'opcache.revalidate_freq=2'; \
+		echo 'opcache.fast_shutdown=1'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+# set recommended error logging
+RUN { \
+# https://www.php.net/manual/en/errorfunc.constants.php
+		echo 'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR'; \
+		echo 'display_errors = Off'; \
+		echo 'display_startup_errors = Off'; \
+		echo 'log_errors = On'; \
+		echo 'error_log = /dev/stderr'; \
+		echo 'log_errors_max_len = 1024'; \
+		echo 'ignore_repeated_errors = On'; \
+		echo 'ignore_repeated_source = Off'; \
+		echo 'html_errors = Off'; \
+	} > /usr/local/etc/php/conf.d/error-logging.ini
 
 VOLUME /var/www/html
 
@@ -85,7 +146,7 @@ RUN set -ex; \
 	rm joomla.tar.bz2; \
 	chown -R www-data:www-data /usr/src/joomla
 
-# Copy init scripts and custom .htaccess
+# Copy init scripts
 COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
