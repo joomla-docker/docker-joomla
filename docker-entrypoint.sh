@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 if [ -n "$JOOMLA_DB_PASSWORD_FILE" ] && [ -f "$JOOMLA_DB_PASSWORD_FILE" ]; then
@@ -7,6 +6,42 @@ if [ -n "$JOOMLA_DB_PASSWORD_FILE" ] && [ -f "$JOOMLA_DB_PASSWORD_FILE" ]; then
 fi
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
+        uid="$(id -u)"
+        gid="$(id -g)"
+        if [ "$uid" = '0' ]; then
+                case "$1" in
+                apache2*)
+                        user="${APACHE_RUN_USER:-www-data}"
+                        group="${APACHE_RUN_GROUP:-www-data}"
+
+                        # strip off any '#' symbol ('#1000' is valid syntax for Apache)
+                        pound='#'
+                        user="${user#$pound}"
+                        group="${group#$pound}"
+                        ;;
+                *) # php-fpm
+                        user='www-data'
+                        group='www-data'
+                        ;;
+                esac
+        else
+                user="$uid"
+                group="$gid"
+        fi
+        # set user if not exist
+        if ! id "$user" &>/dev/null; then
+                # get the user name
+                : "${USER_NAME:=www-data}"
+                # change the user name
+                [[ "$USER_NAME" != "www-data" ]] &&
+                        usermod -l "$USER_NAME" www-data &&
+                        groupmod -n "$USER_NAME" www-data
+                # update the user ID
+                groupmod -o -g "$user" "$USER_NAME"
+                # update the user-group ID
+                usermod -o -u "$group" "$USER_NAME"
+        fi
+
         if [ -n "$MYSQL_PORT_3306_TCP" ]; then
                 if [ -z "$JOOMLA_DB_HOST" ]; then
                         JOOMLA_DB_HOST='mysql'
@@ -25,11 +60,11 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         fi
 
         # If the DB user is 'root' then use the MySQL root password env var
-        : ${JOOMLA_DB_USER:=root}
+        : "${JOOMLA_DB_USER:=root}"
         if [ "$JOOMLA_DB_USER" = 'root' ]; then
                 : ${JOOMLA_DB_PASSWORD:=$MYSQL_ENV_MYSQL_ROOT_PASSWORD}
         fi
-        : ${JOOMLA_DB_NAME:=joomla}
+        : "${JOOMLA_DB_NAME:=joomla}"
 
         if [ -z "$JOOMLA_DB_PASSWORD" ] && [ "$JOOMLA_DB_PASSWORD_ALLOW_EMPTY" != 'yes' ]; then
                 echo >&2 "error: missing required JOOMLA_DB_PASSWORD environment variable"
@@ -39,23 +74,48 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 exit 1
         fi
 
-        if ! [ -e index.php -a \( -e libraries/cms/version/version.php -o -e libraries/src/Version.php \) ]; then
-                echo >&2 "Joomla not found in $(pwd) - copying now..."
-
-                if [ "$(ls -A)" ]; then
-                        echo >&2 "WARNING: $(pwd) is not empty - press Ctrl+C now if this is an error!"
-                        ( set -x; ls -A; sleep 10 )
+        if [ ! -e index.php ] && [ ! -e libraries/src/Version.php ]; then
+                # if the directory exists and Joomla doesn't appear to be installed AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
+                if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' .)" = '0:0' ]; then
+                        chown "$user:$group" .
                 fi
 
-                tar cf - --one-file-system -C /usr/src/joomla . | tar xf -
+                echo >&2 "Joomla not found in $PWD - copying now..."
+                if [ "$(ls -A)" ]; then
+                        echo >&2 "WARNING: $PWD is not empty - press Ctrl+C now if this is an error!"
+                        (
+                                set -x
+                                ls -A
+                                sleep 10
+                        )
+                fi
+                # use full commands
+                # for clearer intent
+                sourceTarArgs=(
+                        --create
+                        --file -
+                        --directory /usr/src/joomla
+                        --one-file-system
+                        --owner "$user" --group "$group"
+                )
+                targetTarArgs=(
+                        --extract
+                        --file -
+                )
+                if [ "$uid" != '0' ]; then
+                        # avoid "tar: .: Cannot utime: Operation not permitted" and "tar: .: Cannot change mode to rwxr-xr-x: Operation not permitted"
+                        targetTarArgs+=(--no-overwrite-dir)
+                fi
+
+                tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
 
                 if [ ! -e .htaccess ]; then
                         # NOTE: The "Indexes" option is disabled in the php:apache base image so remove it as we enable .htaccess
-                        sed -r 's/^(Options -Indexes.*)$/#\1/' htaccess.txt > .htaccess
-                        chown www-data:www-data .htaccess
+                        sed -r 's/^(Options -Indexes.*)$/#\1/' htaccess.txt >.htaccess
+                        chown "$user":"$group" .htaccess
                 fi
 
-                echo >&2 "Complete! Joomla has been successfully copied to $(pwd)"
+                echo >&2 "Complete! Joomla has been successfully copied to $PWD"
         fi
 
         # Ensure the MySQL Database is created
