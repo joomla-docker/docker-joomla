@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ -f "$JOOMLA_DB_PASSWORD_FILE" ]]; then
+if [ -n "$JOOMLA_DB_PASSWORD_FILE" ] && [ -f "$JOOMLA_DB_PASSWORD_FILE" ]; then
         JOOMLA_DB_PASSWORD=$(cat "$JOOMLA_DB_PASSWORD_FILE")
 fi
 
