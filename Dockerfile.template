@@ -26,7 +26,7 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
-{{ if env.version == "4.0" then ( -}}
+{{ if env.version == "4.1" then ( -}}
 		icu-dev \
 {{ ) else "" end -}}
 		libjpeg-turbo-dev \
@@ -49,7 +49,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
-{{ if env.version == "4.0" then ( -}}
+{{ if env.version == "4.1" then ( -}}
 		intl \
 {{ ) else "" end -}}
 		ldap \
@@ -90,7 +90,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
-{{ if env.version == "4.0" then ( -}}
+{{ if env.version == "4.1" then ( -}}
 		libicu-dev \
 {{ ) else "" end -}}
 		libjpeg-dev \
@@ -113,7 +113,7 @@ RUN set -ex; \
 		bz2 \
 		gd \
 		gmp \
-{{ if env.version == "4.0" then ( -}}
+{{ if env.version == "4.1" then ( -}}
 		intl \
 {{ ) else "" end -}}
 		ldap \
