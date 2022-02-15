@@ -70,7 +70,9 @@ RUN set -ex; \
 	\
 	docker-php-ext-enable \
 		apcu \
+{{ if env.version == "3.10" then ( -}}
 		mcrypt \
+{{ ) else "" end -}}
 		memcached \
 		redis \
 	; \
