@@ -17,7 +17,7 @@
     ],
     "version": "3.10.5"
   },
-  "4.0": {
+  "4.1": {
     "aliases": [
       4,
       "latest"
@@ -27,13 +27,13 @@
       "7.4",
       "8.0"
     ],
-    "sha512": "a35f3181c594ef0c30e4f8ec122f32e2ebe1795ccd31f55656be0f214b1f6eed54ef7961aed0be772b2c4a6cc5d0e6454b9213f1ba8833dd52317c6d216d9fd8",
+    "sha512": "44173170fb1598c465415cba919339c26624322621efed17c95fdffca7b62a1089863615e415f0ec36a6a4c4f5c746b7ec06dddd08929757f737e1a2a15ff714",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.0.6"
+    "version": "4.1.0"
   }
 }

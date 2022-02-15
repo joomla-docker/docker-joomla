@@ -5,40 +5,38 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:7.4-apache
+FROM php:8.0-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
-# Enable Apache Rewrite Module
-RUN a2enmod rewrite
+# entrypoint.sh dependencies
+RUN apk add --no-cache \
+	bash
 # Install the PHP extensions
 RUN set -ex; \
 	\
-	savedAptMark="$(apt-mark showmanual)"; \
-	\
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libbz2-dev \
-		libgmp-dev \
-		libicu-dev \
-		libjpeg-dev \
-		libldap2-dev \
+	apk add --no-cache --virtual .build-deps \
+		$PHPIZE_DEPS \
+		autoconf \
+		bzip2-dev \
+		gmp-dev \
+		libjpeg-turbo-dev \
 		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
-		libpq-dev \
 		libzip-dev \
+		openldap-dev \
+		pcre-dev \
+		postgresql-dev \
 	; \
 	\
 	docker-php-ext-configure gd --with-jpeg; \
-	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
-	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
+	docker-php-ext-configure ldap; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		gd \
 		gmp \
-		intl \
 		ldap \
 		mysqli \
 		pdo_mysql \
@@ -49,35 +47,32 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.21; \
+	pecl install mcrypt-1.0.4; \
 	pecl install memcached-3.1.5; \
 	pecl install redis-5.3.4; \
 	\
 	docker-php-ext-enable \
 		apcu \
+		mcrypt \
 		memcached \
 		redis \
 	; \
 	rm -r /tmp/pear; \
 	\
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-	apt-mark auto '.*' > /dev/null; \
-	apt-mark manual $savedAptMark; \
-	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
-		| awk '/=>/ { print $3 }' \
+	runDeps="$( \
+		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+		| tr ',' '\n' \
 		| sort -u \
-		| xargs -r dpkg-query -S \
-		| cut -d: -f1 \
-		| sort -u \
-		| xargs -rt apt-mark manual; \
-	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+		)"; \
+	apk add --virtual .joomla-phpext-rundeps $runDeps; \
+	apk del .build-deps
 
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 4.0.6
-ENV JOOMLA_SHA512 a35f3181c594ef0c30e4f8ec122f32e2ebe1795ccd31f55656be0f214b1f6eed54ef7961aed0be772b2c4a6cc5d0e6454b9213f1ba8833dd52317c6d216d9fd8
+ENV JOOMLA_VERSION 4.1.0
+ENV JOOMLA_SHA512 44173170fb1598c465415cba919339c26624322621efed17c95fdffca7b62a1089863615e415f0ec36a6a4c4f5c746b7ec06dddd08929757f737e1a2a15ff714
 
 # Download package and extract to web volume
 RUN set -ex; \
@@ -93,6 +88,7 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+
+CMD ["php-fpm"]
 
 # vim:set ft=dockerfile:
