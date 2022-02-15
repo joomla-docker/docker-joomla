@@ -23,7 +23,6 @@ RUN set -ex; \
 		gmp-dev \
 		icu-dev \
 		libjpeg-turbo-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libzip-dev \

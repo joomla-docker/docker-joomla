@@ -30,7 +30,9 @@ RUN set -ex; \
 		icu-dev \
 {{ ) else "" end -}}
 		libjpeg-turbo-dev \
+{{ if env.version == "3.10" then ( -}}
 		libmcrypt-dev \
+{{ ) else "" end -}}
 		libmemcached-dev \
 		libpng-dev \
 		libzip-dev \
@@ -99,7 +101,9 @@ RUN set -ex; \
 {{ ) else "" end -}}
 		libjpeg-dev \
 		libldap2-dev \
+{{ if env.version == "3.10" then ( -}}
 		libmcrypt-dev \
+{{ ) else "" end -}}
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \

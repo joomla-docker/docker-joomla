@@ -24,7 +24,6 @@ RUN set -ex; \
 		libicu-dev \
 		libjpeg-dev \
 		libldap2-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libpq-dev \
