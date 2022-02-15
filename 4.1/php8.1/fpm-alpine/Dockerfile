@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:7.4-fpm-alpine
+FROM php:8.1-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -23,7 +23,6 @@ RUN set -ex; \
 		gmp-dev \
 		icu-dev \
 		libjpeg-turbo-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libzip-dev \
@@ -49,13 +48,11 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.21; \
-	pecl install mcrypt-1.0.4; \
 	pecl install memcached-3.1.5; \
-	pecl install redis-5.3.4; \
+	pecl install redis-5.3.6; \
 	\
 	docker-php-ext-enable \
 		apcu \
-		mcrypt \
 		memcached \
 		redis \
 	; \
@@ -73,8 +70,8 @@ RUN set -ex; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 4.0.6
-ENV JOOMLA_SHA512 a35f3181c594ef0c30e4f8ec122f32e2ebe1795ccd31f55656be0f214b1f6eed54ef7961aed0be772b2c4a6cc5d0e6454b9213f1ba8833dd52317c6d216d9fd8
+ENV JOOMLA_VERSION 4.1.0
+ENV JOOMLA_SHA512 44173170fb1598c465415cba919339c26624322621efed17c95fdffca7b62a1089863615e415f0ec36a6a4c4f5c746b7ec06dddd08929757f737e1a2a15ff714
 
 # Download package and extract to web volume
 RUN set -ex; \

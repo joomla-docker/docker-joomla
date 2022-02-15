@@ -1,23 +1,28 @@
 {
-  "4.0": {
-    "version": "4.0.6",
+  "4.1": {
+    "version": "4.1.0",
     "php": "8.0",
     "aliases": [4, "latest"],
     "phpVersions": {
+      "8.1": {
+        "pecl": {
+          "APCu": "5.1.21",
+          "memcached": "3.1.5",
+          "redis": "5.3.6"
+        }
+      },
       "8.0": {
         "pecl": {
           "APCu": "5.1.21",
           "memcached": "3.1.5",
-          "redis": "5.3.4",
-          "mcrypt": "1.0.4"
+          "redis": "5.3.6"
         }
       },
       "7.4": {
         "pecl": {
           "APCu": "5.1.21",
           "memcached": "3.1.5",
-          "redis": "5.3.4",
-          "mcrypt": "1.0.4"
+          "redis": "5.3.6"
         }
       }
     },
@@ -29,7 +34,7 @@
     ]
   },
   "3.10": {
-    "version": "3.10.5",
+    "version": "3.10.6",
     "php": "7.4",
     "aliases": [3],
     "phpVersions": {

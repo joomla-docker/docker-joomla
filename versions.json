@@ -8,16 +8,16 @@
       "7.3",
       "7.4"
     ],
-    "sha512": "c635370d2dc9f1b8aab98751b15e7a3085b41deb47d578172c702f7d63967b9968fb35929a7131aa0ecf63529a7b166bc9976a3ced01fac5ee4941337c65eb37",
+    "sha512": "cd871290f83d6fd1a2e3fe077735e86554a1b3825e5d7e831df7aad56831ee6a958d77e92fa50c0cbbd240ed1158d4c1eadc8c1e968c990db5c89c4f5ee40a0a",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "3.10.5"
+    "version": "3.10.6"
   },
-  "4.0": {
+  "4.1": {
     "aliases": [
       4,
       "latest"
@@ -25,15 +25,16 @@
     "php": "8.0",
     "phpVersions": [
       "7.4",
-      "8.0"
+      "8.0",
+      "8.1"
     ],
-    "sha512": "a35f3181c594ef0c30e4f8ec122f32e2ebe1795ccd31f55656be0f214b1f6eed54ef7961aed0be772b2c4a6cc5d0e6454b9213f1ba8833dd52317c6d216d9fd8",
+    "sha512": "44173170fb1598c465415cba919339c26624322621efed17c95fdffca7b62a1089863615e415f0ec36a6a4c4f5c746b7ec06dddd08929757f737e1a2a15ff714",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.0.6"
+    "version": "4.1.0"
   }
 }
