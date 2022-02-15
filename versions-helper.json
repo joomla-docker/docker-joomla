@@ -4,20 +4,25 @@
     "php": "8.0",
     "aliases": [4, "latest"],
     "phpVersions": {
+      "8.1": {
+        "pecl": {
+          "APCu": "5.1.21",
+          "memcached": "3.1.5",
+          "redis": "5.3.6"
+        }
+      },
       "8.0": {
         "pecl": {
           "APCu": "5.1.21",
           "memcached": "3.1.5",
-          "redis": "5.3.4",
-          "mcrypt": "1.0.4"
+          "redis": "5.3.6"
         }
       },
       "7.4": {
         "pecl": {
           "APCu": "5.1.21",
           "memcached": "3.1.5",
-          "redis": "5.3.4",
-          "mcrypt": "1.0.4"
+          "redis": "5.3.6"
         }
       }
     },
