@@ -54,7 +54,6 @@ RUN set -ex; \
 	\
 	docker-php-ext-enable \
 		apcu \
-		mcrypt \
 		memcached \
 		redis \
 	; \
