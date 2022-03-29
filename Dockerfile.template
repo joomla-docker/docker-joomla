@@ -41,11 +41,7 @@ RUN set -ex; \
 		postgresql-dev \
 	; \
 	\
-{{ if env.phpVersion == "7.3" then ( -}}
-	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
-{{ ) else ( -}}
 	docker-php-ext-configure gd --with-jpeg; \
-{{ ) end -}}
 	docker-php-ext-configure ldap; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
@@ -110,11 +106,7 @@ RUN set -ex; \
 		libzip-dev \
 	; \
 	\
-{{ if env.phpVersion == "7.3" then ( -}}
-	docker-php-ext-configure gd --with-jpeg-dir=/usr --with-png-dir=/usr; \
-{{ ) else ( -}}
 	docker-php-ext-configure gd --with-jpeg; \
-{{ ) end -}}
 	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
 	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install -j "$(nproc)" \
