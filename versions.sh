@@ -39,16 +39,33 @@ for version in "${versions[@]}"; do
   # lets get the full version
   fullVersion=$(echo $versionsHelper | jq -r '.[env.version].version')
   export fullVersion
-  # get the url version
-  urlVersion=$(echo $fullVersion | sed -e 's/\./-/g')
 
-  # get the hash
-  sha512="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion" | jq -r --arg file "Joomla_${fullVersion}-Stable-Full_Package.tar.bz2" '.[] | .[] | select(.filename == $file).sha512')"
+  # lets see if we have a tar URL
+  package=$(echo $versionsHelper | jq -r '.[env.version].package')
+
+  # when not found we load sha512 from API
+  if [ "${package}" = 'null' ]; then
+    # get the url version
+    urlVersion=$(echo $fullVersion | sed -e 's/\./-/g')
+    # get the hash
+    sha512="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion" | jq -r --arg file "Joomla_${fullVersion}-Stable-Full_Package.tar.bz2" '.[] | .[] | select(.filename == $file).sha512')"
+    # set the full URL for the IMAGES
+    package="https://github.com/joomla/joomla-cms/releases/download/${fullVersion}/Joomla_${fullVersion}-Stable-Full_Package.tar.bz2"
+  else
+    # we get the sha from the package
+    curl -o joomla.tar.bz2 -SL "${package}" &>/dev/null
+    # get the hash
+    sha512=$(sha512sum joomla.tar.bz2 | cut -d " " -f 1)
+    # remove the file
+    rm joomla.tar.bz2
+  fi
 
   # set the hash to the JSON
-  if [ -n "$sha512" ]; then
+  if [ -n "$sha512" ] && [ -n "$package" ]; then
     export sha512
+    export package
     doc="$(jq <<<"$doc" -c '.sha512 = env.sha512')"
+    doc="$(jq <<<"$doc" -c '.package = env.package')"
   fi
 
   # get the default php version
@@ -92,3 +109,4 @@ done
 
 # store the JSON to the file system
 jq <<<"$json" -S . >versions.json
+

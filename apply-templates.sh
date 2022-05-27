@@ -49,6 +49,9 @@ for version; do
   # get this version Joomla Sha512
   joomlaSha512="$(echo "${joomlaVersionDetails}" | jq -r '.sha512')"
   export joomlaSha512
+  # get this version Joomla Package URL
+  joomlaPackage="$(echo "${joomlaVersionDetails}" | jq -r '.package')"
+  export joomlaPackage
 
   for phpVersion in "${phpVersions[@]}"; do
     export phpVersion
@@ -89,3 +92,4 @@ for version; do
     done
   done
 done
+
