@@ -3,6 +3,7 @@
     "aliases": [
       3
     ],
+    "package": "https://github.com/joomla/joomla-cms/releases/download/3.10.9/Joomla_3.10.9-Stable-Full_Package.tar.bz2",
     "php": "7.4",
     "phpVersions": [
       "7.4"
@@ -21,6 +22,7 @@
       4,
       "latest"
     ],
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.1.4/Joomla_4.1.4-Stable-Full_Package.tar.bz2",
     "php": "8.0",
     "phpVersions": [
       "7.4",
