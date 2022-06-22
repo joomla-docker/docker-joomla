@@ -3,19 +3,19 @@
     "aliases": [
       3
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/3.10.9/Joomla_3.10.9-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/3.10.10/Joomla_3.10.10-Stable-Full_Package.tar.bz2",
     "php": "7.4",
     "phpVersions": [
       "7.4"
     ],
-    "sha512": "f3ca0ae9da4c2d97f2f89a3c215111bfa56b9e7e3c8ec83f627d58bfa2c621e57fba489e59a49376e6880f43744761fd874ab14ff4d0123807943c237edb5a75",
+    "sha512": "6b35db5cdfeaefa7c02c14cca2d5cd795492988504bb86d627705f6efcd2c74ced4fcbb9e96ae3f5bbc003f9e6f9d6659482560e528dfef3de9eb5743b246fc4",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "3.10.9"
+    "version": "3.10.10"
   },
   "4.1": {
     "aliases": [
