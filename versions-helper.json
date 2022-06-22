@@ -34,7 +34,7 @@
     ]
   },
   "3.10": {
-    "version": "3.10.9",
+    "version": "3.10.10",
     "php": "7.4",
     "aliases": [3],
     "phpVersions": {
