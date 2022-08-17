@@ -1,6 +1,6 @@
 {
-  "4.1": {
-    "version": "4.1.5",
+  "4.2": {
+    "version": "4.2.0",
     "php": "8.0",
     "aliases": [4, "latest"],
     "phpVersions": {

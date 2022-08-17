@@ -37,7 +37,7 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
-{{ if env.version == "4.1" then ( -}}
+{{ if env.version == "4.2" then ( -}}
 		icu-dev \
 {{ ) else "" end -}}
 		freetype-dev \
@@ -61,7 +61,7 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
-{{ if env.version == "4.1" then ( -}}
+{{ if env.version == "4.2" then ( -}}
 		libicu-dev \
 {{ ) else "" end -}}
 		libfreetype6-dev \
@@ -96,7 +96,7 @@ RUN set -ex; \
 		exif \
 		gd \
 		gmp \
-{{ if env.version == "4.1" then ( -}}
+{{ if env.version == "4.2" then ( -}}
 		intl \
 {{ ) else "" end -}}
 		ldap \
