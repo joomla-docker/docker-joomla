@@ -22,20 +22,20 @@
       4,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.2.0/Joomla_4.2.0-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.2.2/Joomla_4.2.2-Stable-Full_Package.tar.bz2",
     "php": "8.0",
     "phpVersions": [
       "7.4",
       "8.0",
       "8.1"
     ],
-    "sha512": "de8a9955d8c8061b4c7e1b433ebfcaab3269b99891b27f0857e58267fc85f08f2bfe4fe88112defcfe2ecc1bc43bcc172b71d4aa5ae2e148c00571d1a69ab6d0",
+    "sha512": "388e91bacee7ff1e07d7fc02df9fb8b5728f960fb4eb8f75679891b029d27ecb7f692b420259bae107e212ca88cecc4804ae0f61a1e771c7b6dd0208cdb04d7b",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.2.0"
+    "version": "4.2.2"
   }
 }
