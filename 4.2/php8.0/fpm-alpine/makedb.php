@@ -15,6 +15,7 @@ else
 
 $maxTries = 10;
 
+mysqli_report(MYSQLI_REPORT_OFF);
 do
 {
 	$mysql = new mysqli($host, $argv[2], $argv[3], '', (int) $port);
