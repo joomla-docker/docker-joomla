@@ -15,6 +15,8 @@ else
 
 $maxTries = 10;
 
+// set original default behaviour for PHP 8.1 and higher
+// see https://www.php.net/manual/en/mysqli-driver.report-mode.php
 mysqli_report(MYSQLI_REPORT_OFF);
 do
 {
