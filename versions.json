@@ -6,7 +6,8 @@
     "package": "https://github.com/joomla/joomla-cms/releases/download/3.10.11/Joomla_3.10.11-Stable-Full_Package.tar.bz2",
     "php": "7.4",
     "phpVersions": [
-      "7.4"
+      "7.4",
+      "8.0"
     ],
     "sha512": "2c7db516ea07fa869cfff0ee01c9d141a8ac513c8040db6502e111a3d34cc681f6fee033006eeff0aa7f507a30280276c68af61c4d7595166bf9fd57728a9b44",
     "variant": "apache",

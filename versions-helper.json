@@ -38,6 +38,14 @@
     "php": "7.4",
     "aliases": [3],
     "phpVersions": {
+      "8.0": {
+        "pecl": {
+          "APCu": "5.1.21",
+          "memcached": "3.2.0",
+          "redis": "5.3.7",
+          "mcrypt": "1.0.4"
+        }
+      },
       "7.4": {
         "pecl": {
           "APCu": "5.1.21",
