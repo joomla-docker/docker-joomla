@@ -5,38 +5,40 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.1-fpm
+FROM php:8.0-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 RUN set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
+	apk add --no-cache \
+# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
+		bash \
 # Ghostscript is required for rendering PDF previews
 		ghostscript \
-	; \
-	rm -rf /var/lib/apt/lists/*
+# Alpine package for "imagemagick" contains ~120 .so files
+		imagemagick \
+	;
 
 # install the PHP extensions we need.
 RUN set -ex; \
 	\
-	savedAptMark="$(apt-mark showmanual)"; \
-	\
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libbz2-dev \
-		libgmp-dev \
-		libicu-dev \
-		libfreetype6-dev \
-		libjpeg-dev \
-		libldap2-dev \
+	apk add --no-cache --virtual .build-deps \
+		$PHPIZE_DEPS \
+		autoconf \
+		bzip2-dev \
+		gmp-dev \
+		icu-dev \
+		freetype-dev \
+		imagemagick-dev \
+		libjpeg-turbo-dev \
 		libmemcached-dev \
-		libmagickwand-dev \
-		libpq-dev \
 		libpng-dev \
 		libwebp-dev \
 		libzip-dev \
+		openldap-dev \
+		pcre-dev \
+		postgresql-dev \
 	; \
 	\
 	docker-php-ext-configure gd \
@@ -44,8 +46,7 @@ RUN set -ex; \
 		--with-jpeg \
 		--with-webp \
 	; \
-	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
-	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
+	docker-php-ext-configure ldap; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		bcmath \
@@ -60,6 +61,7 @@ RUN set -ex; \
 		pgsql \
 		zip \
 	; \
+# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
 # https://pecl.php.net/package/imagick
 	pecl install imagick-3.6.0; \
 	docker-php-ext-enable imagick; \
@@ -73,6 +75,7 @@ RUN set -ex; \
 	\
 	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
 	[ -d "$extDir" ]; \
+	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.21; \
 	pecl install memcached-3.2.0; \
@@ -85,19 +88,14 @@ RUN set -ex; \
 	; \
 	rm -r /tmp/pear; \
 	\
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-	apt-mark auto '.*' > /dev/null; \
-	apt-mark manual $savedAptMark; \
-	ldd "$extDir"/*.so \
-		| awk '/=>/ { print $3 }' \
-		| sort -u \
-		| xargs -r dpkg-query -S \
-		| cut -d: -f1 \
-		| sort -u \
-		| xargs -rt apt-mark manual; \
-	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*; \
+	runDeps="$( \
+		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
+	apk add --no-network --virtual .joomla-phpexts-rundeps $runDeps; \
+	apk del --no-network .build-deps; \
 	\
 	! { ldd "$extDir"/*.so | grep 'not found'; }; \
 # check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
@@ -132,12 +130,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 4.2.9
-ENV JOOMLA_SHA512 25805241234753c05f562cf3be599c63cfcfb2e7dcf6b5b76b1cb4b6a4d305497c720eaccdc0939e4fceffa83099db9b3c44963fce86bafc3efc2fc34fecaa20
+ENV JOOMLA_VERSION 4.3.1
+ENV JOOMLA_SHA512 0d761f1cbf6ca75072ecc9cba65a04be216d318bd1bd685fe258fc44d74442e5b6dfa3d1b2cd2d4150722da5935cb0206faf5b2dd9a25629e933938f2dc0d00f
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/4.2.9/Joomla_4.2.9-Stable-Full_Package.tar.bz2; \
+	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/4.3.1/Joomla_4.3.1-Stable-Full_Package.tar.bz2; \
 	echo "$JOOMLA_SHA512 *joomla.tar.bz2" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar -xf joomla.tar.bz2 -C /usr/src/joomla; \
