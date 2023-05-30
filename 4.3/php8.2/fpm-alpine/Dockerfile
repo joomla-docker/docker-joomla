@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.0-fpm-alpine
+FROM php:8.2-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -28,10 +28,10 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
+		icu-dev \
 		freetype-dev \
 		imagemagick-dev \
 		libjpeg-turbo-dev \
-		libmcrypt-dev \
 		libmemcached-dev \
 		libpng-dev \
 		libwebp-dev \
@@ -53,6 +53,7 @@ RUN set -ex; \
 		exif \
 		gd \
 		gmp \
+		intl \
 		ldap \
 		mysqli \
 		pdo_mysql \
@@ -77,13 +78,11 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-5.1.22; \
-	pecl install mcrypt-1.0.4; \
 	pecl install memcached-3.2.0; \
 	pecl install redis-5.3.7; \
 	\
 	docker-php-ext-enable \
 		apcu \
-		mcrypt \
 		memcached \
 		redis \
 	; \
@@ -131,12 +130,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 3.10.11
-ENV JOOMLA_SHA512 2c7db516ea07fa869cfff0ee01c9d141a8ac513c8040db6502e111a3d34cc681f6fee033006eeff0aa7f507a30280276c68af61c4d7595166bf9fd57728a9b44
+ENV JOOMLA_VERSION 4.3.2
+ENV JOOMLA_SHA512 b04eaaf4409a9647eaef6fa4ae98123b019e57b67ca717e941dd546d8ef453cdab87c6b95ea3028b8bde6c0e47b5732ba5efd99d278f6a8b8309980f5719bc90
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/3.10.11/Joomla_3.10.11-Stable-Full_Package.tar.bz2; \
+	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/4.3.2/Joomla_4.3.2-Stable-Full_Package.tar.bz2; \
 	echo "$JOOMLA_SHA512 *joomla.tar.bz2" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar -xf joomla.tar.bz2 -C /usr/src/joomla; \

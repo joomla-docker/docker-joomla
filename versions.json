@@ -26,7 +26,8 @@
     "php": "8.0",
     "phpVersions": [
       "8.0",
-      "8.1"
+      "8.1",
+      "8.2"
     ],
     "sha512": "b04eaaf4409a9647eaef6fa4ae98123b019e57b67ca717e941dd546d8ef453cdab87c6b95ea3028b8bde6c0e47b5732ba5efd99d278f6a8b8309980f5719bc90",
     "variant": "apache",
