@@ -1,4 +1,32 @@
 {
+  "5.0.alpha": {
+    "version": "5.0.0-alpha1",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-alpha1/Joomla_5.0.0-alpha1-Alpha-Full_Package.tar.bz2",
+    "php": "8.1",
+    "aliases": ["5.0.0-alpha"],
+    "phpVersions": {
+      "8.2": {
+        "pecl": {
+          "APCu": "5.1.22",
+          "memcached": "3.2.0",
+          "redis": "5.3.7"
+        }
+      },
+      "8.1": {
+        "pecl": {
+          "APCu": "5.1.21",
+          "memcached": "3.2.0",
+          "redis": "5.3.7"
+        }
+      }
+    },
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ]
+  },
   "4.4.alpha": {
     "version": "4.4.0-alpha1",
     "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.0-alpha1/Joomla_4.4.0-alpha1-Alpha-Full_Package.tar.bz2",

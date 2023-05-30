@@ -57,5 +57,24 @@
       "fpm"
     ],
     "version": "4.4.0-alpha1"
+  },
+  "5.0.alpha": {
+    "aliases": [
+      "5.0.0-alpha"
+    ],
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-alpha1/Joomla_5.0.0-alpha1-Alpha-Full_Package.tar.bz2",
+    "php": "8.1",
+    "phpVersions": [
+      "8.1",
+      "8.2"
+    ],
+    "sha512": "2ff7abcc529058e9e12328c2a6ae5f081c8e30fa21278839e0d3531a597072556e4ab2cac93dcf8d07cae9e0d4d170154d981f55992b01eac5140929057de871",
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ],
+    "version": "5.0.0-alpha1"
   }
 }
