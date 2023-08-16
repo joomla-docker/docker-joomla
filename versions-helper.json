@@ -1,7 +1,7 @@
 {
   "5.0.alpha": {
-    "version": "5.0.0-alpha2",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-alpha2/Joomla_5.0.0-alpha2-Alpha-Full_Package.tar.bz2",
+    "version": "5.0.0-alpha3",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-alpha3/Joomla_5.0.0-alpha3-Alpha-Full_Package.tar.bz2",
     "php": "8.1",
     "aliases": ["5.0.0-alpha"],
     "phpVersions": {
@@ -28,8 +28,8 @@
     ]
   },
   "4.4.alpha": {
-    "version": "4.4.0-alpha2",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.0-alpha2/Joomla_4.4.0-alpha2-Alpha-Full_Package.tar.bz2",
+    "version": "4.4.0-alpha3",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.0-alpha3/Joomla_4.4.0-alpha3-Alpha-Full_Package.tar.bz2",
     "php": "8.1",
     "aliases": ["4.4.0-alpha"],
     "phpVersions": {
