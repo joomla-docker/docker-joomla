@@ -38,43 +38,43 @@
     ],
     "version": "4.3.4"
   },
-  "4.4.alpha": {
+  "4.4.beta": {
     "aliases": [
-      "4.4.0-alpha"
+      "4.4.0-beta"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.0-alpha4/Joomla_4.4.0-alpha4-Alpha-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.0-beta1/Joomla_4.4.0-beta1-Beta-Full_Package.tar.bz2",
     "php": "8.1",
     "phpVersions": [
       "8.0",
       "8.1",
       "8.2"
     ],
-    "sha512": "5efab0f391bf3a319c98a824267eaa4d4d962300964d217c08854764ad0ac7df8b62c2a03f45bd8c7d545f8bbc8e5a0303520f9e4ae20a9b0eea37ad907901a0",
+    "sha512": "0b4b375aa220b0943488213a2f0560d517403e0bc287739b6478f4f3aab65851e50ebf24c12f89a2d1234a31cb238b0bb4031fd0bcf76b83c6ee8ec4024efaed",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.0-alpha4"
+    "version": "4.4.0-beta1"
   },
-  "5.0.alpha": {
+  "5.0.beta": {
     "aliases": [
-      "5.0.0-alpha"
+      "5.0.0-beta"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-alpha4/Joomla_5.0.0-alpha4-Alpha-Full_Package.tar.bz2",
-    "php": "8.1",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.0-beta1/Joomla_5.0.0-beta1-Beta-Full_Package.tar.bz2",
+    "php": "8.2",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "05483679762f38f20713de5a60bc994207d5e4746c5c08e5307aa81d3b0502ddb79e8bc86cfac3bfa5b8740a20aa591357f94648e27938b6b4f49d9d0f4879b6",
+    "sha512": "f98caec2c8ca1a69c816da3c1a72924cfe9ede8a1c74c17eaed39aec209ac5727c436c2b326fc9b458c339676387d1ce439d801b1608629d03ea545abff1e77e",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.0.0-alpha4"
+    "version": "5.0.0-beta1"
   }
 }
