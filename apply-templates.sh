@@ -35,6 +35,12 @@ export joomlaMaintainers
 # loop over the version set above
 for version; do
   export version
+  # see if we version specific entrypoint file
+  if [[ -e "docker-entrypoint-${version}.sh" ]]; then
+    docker_entrypoint="docker-entrypoint-${version}.sh"
+  else
+    docker_entrypoint="docker-entrypoint.sh"
+  fi
   # get this Joomla version details
   joomlaVersionDetails="$(jq -r '.[env.version]' versions.json)"
   # get this Joomla version
@@ -81,9 +87,9 @@ for version; do
       echo "processing $dir ..."
 
       # move the entrypoint file into place
-      cp -a "docker-entrypoint.sh" "$dir/docker-entrypoint.sh"
+      cp -a "$docker_entrypoint" "$dir/docker-entrypoint.sh"
       # move the make database file into place
-			cp -a "makedb.php" "$dir/makedb.php"
+      cp -a "makedb.php" "$dir/makedb.php"
 
       {
         generated_warning

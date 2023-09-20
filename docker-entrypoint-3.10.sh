@@ -122,114 +122,14 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
         # Ensure the MySQL Database is created
         php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME" "${JOOMLA_DB_TYPE:-mysqli}"
 
-        # Basic email regex for validation
-        email_regex="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-
-        # Function to validate environment variables
-        validate_vars() {
-                # Check if JOOMLA_SITE_NAME is longer than 2 characters
-                if [[ "${#JOOMLA_SITE_NAME}" -le 2 ]]; then
-                        echo >&2 "Error: JOOMLA_SITE_NAME must be longer than 2 characters!"
-                        return 1
-                fi
-
-                # Check if JOOMLA_ADMIN_USER is longer than 2 characters
-                if [[ "${#JOOMLA_ADMIN_USER}" -le 2 ]]; then
-                        echo >&2 "Error: JOOMLA_ADMIN_USER must be longer than 2 characters!"
-                        return 1
-                fi
-
-                # Check if JOOMLA_ADMIN_USERNAME has no spaces, and is only alphabetical
-                if [[ "${JOOMLA_ADMIN_USERNAME}" =~ [^a-zA-Z] ]]; then
-                        echo >&2 "Error: JOOMLA_ADMIN_USERNAME must contain no spaces and be only alphabetical!"
-                        return 1
-                fi
-
-                # Check if JOOMLA_ADMIN_PASSWORD is longer than 12 characters
-                if [[ "${#JOOMLA_ADMIN_PASSWORD}" -le 12 ]]; then
-                        echo >&2 "Error: JOOMLA_ADMIN_PASSWORD must be longer than 12 characters!"
-                        return 1
-                fi
-
-                # Check if JOOMLA_ADMIN_EMAIL is a valid email
-                if [[ ! "${JOOMLA_ADMIN_EMAIL}" =~ $email_regex ]]; then
-                        echo >&2 "Error: JOOMLA_ADMIN_EMAIL must be a valid email address!"
-                        return 1
-                fi
-
-                # If all checks passed, return 0
-                return 0
-        }
-
-        # Function to check that auto deploy can be done
-        can_auto_deploy() {
-                # Check if all NEEDED variables exist
-                if [[ -n "${JOOMLA_SITE_NAME}" && -n "${JOOMLA_ADMIN_USER}" &&
-                        -n "${JOOMLA_ADMIN_USERNAME}" && -n "${JOOMLA_ADMIN_PASSWORD}" &&
-                        -n "${JOOMLA_ADMIN_EMAIL}" ]]; then
-
-                        # All variables exist. Now validate them.
-                        if validate_vars; then
-                                # If all checks passed, return 0
-                                return 0
-                        fi
-                fi
-
-                # If any needed variables does not exist fail, return 1
-                return 1
-        }
-
-        # if the directory exists and we can auto deploy
-        if [ -d installation ] && [ -e installation/joomla.php ] && can_auto_deploy; then
-                # use full commands
-                # for clearer intent
-                installJoomlaArgs=(
-                        --site-name="${JOOMLA_SITE_NAME}"
-                        --admin-email="${JOOMLA_ADMIN_EMAIL}"
-                        --admin-username="${JOOMLA_ADMIN_USERNAME}"
-                        --admin-user="${JOOMLA_ADMIN_USER}"
-                        --admin-password="${JOOMLA_ADMIN_PASSWORD}"
-                        --db-type="${JOOMLA_DB_TYPE:-mysqli}"
-                        --db-host="${JOOMLA_DB_HOST}"
-                        --db-name="${JOOMLA_DB_NAME}"
-                        --db-pass="${JOOMLA_DB_PASSWORD}"
-                        --db-user="${JOOMLA_DB_USER}"
-                        --db-prefix="${JOOMLA_DB_PREFIX:-joom_}"
-                        --db-encryption=0
-                )
-
-                php installation/joomla.php install "${installJoomlaArgs[@]}"
-
-                # Check the exit status of the PHP command
-                if [ $? -eq 0 ]; then
-                        # The PHP command succeeded (so we remove the installation folder)
-                        rm -rf installation
-
-                        echo >&2 "========================================================================"
-                        echo >&2
-                        echo >&2 "This server is now configured to run Joomla!"
-                        echo >&2
-                        echo >&2 "========================================================================"
-                else
-                        echo >&2 "========================================================================"
-                        echo >&2
-                        echo >&2 "This server is now configured to run Joomla!"
-                        echo >&2
-                        echo >&2 "NOTE: You will need your database server address, database name,"
-                        echo >&2 "and database user credentials to install Joomla."
-                        echo >&2
-                        echo >&2 "========================================================================"
-                fi
-        else
-                echo >&2 "========================================================================"
-                echo >&2
-                echo >&2 "This server is now configured to run Joomla!"
-                echo >&2
-                echo >&2 "NOTE: You will need your database server address, database name,"
-                echo >&2 "and database user credentials to install Joomla."
-                echo >&2
-                echo >&2 "========================================================================"
-        fi
+        echo >&2 "========================================================================"
+        echo >&2
+        echo >&2 "This server is now configured to run Joomla!"
+        echo >&2
+        echo >&2 "NOTE: You will need your database server address, database name,"
+        echo >&2 "and database user credentials to install Joomla."
+        echo >&2
+        echo >&2 "========================================================================"
 fi
 
 exec "$@"
