@@ -40,32 +40,38 @@ for version in "${versions[@]}"; do
   fullVersion=$(echo $versionsHelper | jq -r '.[env.version].version')
   export fullVersion
 
-  # lets see if we have a tar URL
+  # lets see if we have a source URL
   package=$(echo $versionsHelper | jq -r '.[env.version].package')
+  packageType=$(echo $versionsHelper | jq -r '.[env.version].packageType')
+  if [ -z "$packageType" ] || [ "$packageType" = "null" ]; then
+    packageType="tar.bz2"
+  fi
 
   # when not found we load sha512 from API
-  if [ "${package}" = 'null' ]; then
+  if [ -z "${package}" ] || [ "${package}" = 'null' ]; then
     # get the url version
     urlVersion=$(echo $fullVersion | sed -e 's/\./-/g')
     # get the hash
-    sha512="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion" | jq -r --arg file "Joomla_${fullVersion}-Stable-Full_Package.tar.bz2" '.[] | .[] | select(.filename == $file).sha512')"
+    sha512="$(curl -fsSL "https://downloads.joomla.org/api/v1/signatures/cms/$urlVersion" | jq -r --arg file "Joomla_${fullVersion}-Stable-Full_Package.${packageType}" '.[] | .[] | select(.filename == $file).sha512')"
     # set the full URL for the IMAGES
-    package="https://github.com/joomla/joomla-cms/releases/download/${fullVersion}/Joomla_${fullVersion}-Stable-Full_Package.tar.bz2"
+    package="https://github.com/joomla/joomla-cms/releases/download/${fullVersion}/Joomla_${fullVersion}-Stable-Full_Package.${packageType}"
   else
     # we get the sha from the package
-    curl -o joomla.tar.bz2 -SL "${package}" &>/dev/null
+    curl -o "joomla.${packageType}" -SL "${package}" &>/dev/null
     # get the hash
-    sha512=$(sha512sum joomla.tar.bz2 | cut -d " " -f 1)
+    sha512=$(sha512sum "joomla.${packageType}" | cut -d " " -f 1)
     # remove the file
-    rm joomla.tar.bz2
+    rm "joomla.${packageType}"
   fi
 
   # set the hash to the JSON
-  if [ -n "$sha512" ] && [ -n "$package" ]; then
+  if [ -n "$sha512" ] && [ -n "$package" ] && [ -n "$packageType" ]; then
     export sha512
     export package
+    export packageType
     doc="$(jq <<<"$doc" -c '.sha512 = env.sha512')"
     doc="$(jq <<<"$doc" -c '.package = env.package')"
+    doc="$(jq <<<"$doc" -c '.packageType = env.packageType')"
   fi
 
   # get the default php version

@@ -1,83 +1,38 @@
-{{
-	def is_alpine:
-		env.variant | index("alpine")
--}}
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
 # from https://downloads.joomla.org/technical-requirements
-FROM php:{{ env.phpVersion }}-{{ env.variant }}
-LABEL maintainer="{{ env.joomlaMaintainers }}"
+FROM php:8.1-apache
+LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
-{{ if is_alpine then ( -}}
-RUN set -eux; \
-	apk add --no-cache \
-# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
-		bash \
-# Ghostscript is required for rendering PDF previews
-		ghostscript \
-# Alpine package for "imagemagick" contains ~120 .so files
-		imagemagick \
-{{ if env.joomlaPackageType == "tar.zst" then ( -}}
-# Needed for the zst joomla package
-		zstd \
-{{ ) else "" end -}}
-	;
-{{ ) else ( -}}
 RUN set -eux; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 # Ghostscript is required for rendering PDF previews
 		ghostscript \
-{{ if env.joomlaPackageType == "tar.zst" then ( -}}
 # Needed for the zst joomla package
 		zstd \
-{{ ) else "" end -}}
 	; \
 	rm -rf /var/lib/apt/lists/*
-{{ ) end -}}
 
 # install the PHP extensions we need.
 RUN set -ex; \
 	\
-{{ if is_alpine then ( -}}
-	apk add --no-cache --virtual .build-deps \
-		$PHPIZE_DEPS \
-		autoconf \
-		bzip2-dev \
-		gmp-dev \
-{{ if env.version != "3.10" then ( -}}
-		icu-dev \
-{{ ) else "" end -}}
-		freetype-dev \
-		imagemagick-dev \
-		libjpeg-turbo-dev \
-{{ if env.version == "3.10" then ( -}}
-		libmcrypt-dev \
-{{ ) else "" end -}}
-		libmemcached-dev \
-		libpng-dev \
-		libwebp-dev \
-		libzip-dev \
-		openldap-dev \
-		pcre-dev \
-		postgresql-dev \
-	; \
-{{ ) else ( -}}
 	savedAptMark="$(apt-mark showmanual)"; \
 	\
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
-{{ if env.version != "3.10" then ( -}}
 		libicu-dev \
-{{ ) else "" end -}}
 		libfreetype6-dev \
 		libjpeg-dev \
 		libldap2-dev \
-{{ if env.version == "3.10" then ( -}}
-		libmcrypt-dev \
-{{ ) else "" end -}}
 		libmemcached-dev \
 		libmagickwand-dev \
 		libpq-dev \
@@ -85,28 +40,21 @@ RUN set -ex; \
 		libwebp-dev \
 		libzip-dev \
 	; \
-{{ ) end -}}
 	\
 	docker-php-ext-configure gd \
 		--with-freetype \
 		--with-jpeg \
 		--with-webp \
 	; \
-{{ if is_alpine then ( -}}
-	docker-php-ext-configure ldap; \
-{{ ) else ( -}}
 	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
 	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
-{{ ) end -}}
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		bcmath \
 		exif \
 		gd \
 		gmp \
-{{ if env.version != "3.10" then ( -}}
 		intl \
-{{ ) else "" end -}}
 		ldap \
 		mysqli \
 		pdo_mysql \
@@ -114,9 +62,6 @@ RUN set -ex; \
 		pgsql \
 		zip \
 	; \
-{{ if is_alpine then ( -}}
-# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
-{{ ) else "" end -}}
 # https://pecl.php.net/package/imagick
 	pecl install imagick-3.6.0; \
 	docker-php-ext-enable imagick; \
@@ -130,39 +75,10 @@ RUN set -ex; \
 	\
 	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
 	[ -d "$extDir" ]; \
-{{ if is_alpine then ( -}}
-	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-{{ env.pecl_APCu }}; \
-{{ if env.version == "3.10" then ( -}}
-	pecl install mcrypt-{{ env.pecl_mcrypt }}; \
-{{ ) else "" end -}}
-	pecl install memcached-{{ env.pecl_memcached }}; \
-	pecl install redis-{{ env.pecl_redis }}; \
-	\
-	docker-php-ext-enable \
-		apcu \
-{{ if env.version == "3.10" then ( -}}
-		mcrypt \
-{{ ) else "" end -}}
-		memcached \
-		redis \
-	; \
-	rm -r /tmp/pear; \
-	\
-	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
-			| tr ',' '\n' \
-			| sort -u \
-			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-	)"; \
-	apk add --no-network --virtual .joomla-phpexts-rundeps $runDeps; \
-	apk del --no-network .build-deps; \
-{{ ) else ( -}}
-# pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-{{ env.pecl_APCu }}; \
-	pecl install memcached-{{ env.pecl_memcached }}; \
-	pecl install redis-{{ env.pecl_redis }}; \
+	pecl install APCu-5.1.21; \
+	pecl install memcached-3.2.0; \
+	pecl install redis-5.3.7; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -184,7 +100,6 @@ RUN set -ex; \
 	\
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	rm -rf /var/lib/apt/lists/*; \
-{{ ) end -}}
 	\
 	! { ldd "$extDir"/*.so | grep 'not found'; }; \
 # check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
@@ -215,7 +130,6 @@ RUN { \
 		echo 'ignore_repeated_source = Off'; \
 		echo 'html_errors = Off'; \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
-{{ if env.variant == "apache" then ( -}}
 
 RUN set -eux; \
 	a2enmod rewrite expires; \
@@ -234,25 +148,20 @@ RUN set -eux; \
 	a2enconf remoteip; \
 # (replace all instances of "%h" with "%a" in LogFormat)
 	find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
-{{ ) else "" end -}}
 
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION {{ env.joomlaVersion }}
-ENV JOOMLA_SHA512 {{ env.joomlaSha512 }}
+ENV JOOMLA_VERSION 5.0.0
+ENV JOOMLA_SHA512 329686ee26a650d504541e605463fa98af8f1403e5ba79c29e1091559ee9faff4194a2b346a300ddd990a3ac307bf12851f65de5c63f5785e8c01e737e0c7f79
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.{{ env.joomlaPackageType }} -SL {{ env.joomlaPackage }}; \
-	echo "$JOOMLA_SHA512 *joomla.{{ env.joomlaPackageType }}" | sha512sum -c -; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.0.0/Joomla_5.0.0-Stable-Full_Package.tar.zst; \
+	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
-{{ if env.joomlaPackageType == "tar.zst" then ( -}}
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
-{{ ) else ( -}}
-	tar -xf joomla.tar.bz2 -C /usr/src/joomla; \
-{{ ) end -}}
-	rm joomla.{{ env.joomlaPackageType }}; \
+	rm joomla.tar.zst; \
 	chown -R www-data:www-data /usr/src/joomla
 
 # Copy init scripts
@@ -260,10 +169,6 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-{{ if env.variant == "apache" then ( -}}
 CMD ["apache2-foreground"]
-{{ ) else ( }}
-CMD ["php-fpm"]
-{{ ) end -}}
 
 

@@ -58,6 +58,9 @@ for version; do
   # get this version Joomla Package URL
   joomlaPackage="$(echo "${joomlaVersionDetails}" | jq -r '.package')"
   export joomlaPackage
+  # get this version Joomla Package Type
+  joomlaPackageType="$(echo "${joomlaVersionDetails}" | jq -r '.packageType')"
+  export joomlaPackageType
 
   for phpVersion in "${phpVersions[@]}"; do
     export phpVersion
