@@ -7,16 +7,16 @@
     "phpVersions": {
       "8.2": {
         "pecl": {
-          "APCu": "5.1.22",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       },
       "8.1": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       }
     },
@@ -34,23 +34,23 @@
     "phpVersions": {
       "8.2": {
         "pecl": {
-          "APCu": "5.1.22",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       },
       "8.1": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       },
       "8.0": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       }
     },
@@ -68,23 +68,23 @@
     "phpVersions": {
       "8.2": {
         "pecl": {
-          "APCu": "5.1.22",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       },
       "8.1": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       },
       "8.0": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7"
+          "redis": "6.0.2"
         }
       }
     },
@@ -102,10 +102,10 @@
     "phpVersions": {
       "8.0": {
         "pecl": {
-          "APCu": "5.1.21",
+          "APCu": "5.1.23",
           "memcached": "3.2.0",
-          "redis": "5.3.7",
-          "mcrypt": "1.0.4"
+          "redis": "6.0.2",
+          "mcrypt": "1.0.6"
         }
       }
     },

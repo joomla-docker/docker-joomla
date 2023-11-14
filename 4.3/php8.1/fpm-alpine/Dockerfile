@@ -63,7 +63,7 @@ RUN set -ex; \
 	; \
 # WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
 # https://pecl.php.net/package/imagick
-	pecl install imagick-3.6.0; \
+	pecl install imagick-3.7.0; \
 	docker-php-ext-enable imagick; \
 	rm -r /tmp/pear; \
 	\
@@ -77,9 +77,9 @@ RUN set -ex; \
 	[ -d "$extDir" ]; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.21; \
+	pecl install APCu-5.1.23; \
 	pecl install memcached-3.2.0; \
-	pecl install redis-5.3.7; \
+	pecl install redis-6.0.2; \
 	\
 	docker-php-ext-enable \
 		apcu \
