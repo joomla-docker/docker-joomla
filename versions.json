@@ -59,6 +59,28 @@
     ],
     "version": "4.4.0"
   },
+  "4.4.rc": {
+    "aliases": [
+      "4-rc",
+      "4.4-rc"
+    ],
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.1-rc1/Joomla_4.4.1-rc1-Release_Candidate-Full_Package.tar.bz2",
+    "packageType": "tar.bz2",
+    "php": "8.1",
+    "phpVersions": [
+      "8.0",
+      "8.1",
+      "8.2"
+    ],
+    "sha512": "03822f4d6dd33698501a98c2c4e66c2b5e337d3087b7228ad4500eb0cbf9de2bbf8ac11679b5d2476c99d9e0aad9d60366757ae954097d6932cfecc61efa688e",
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ],
+    "version": "4.4.1-rc1"
+  },
   "5.0": {
     "aliases": [
       5
@@ -78,5 +100,26 @@
       "fpm"
     ],
     "version": "5.0.0"
+  },
+  "5.0.rc": {
+    "aliases": [
+      "5-rc",
+      "5.0-rc"
+    ],
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.1-rc1/Joomla_5.0.1-rc1-Release_Candidate-Full_Package.tar.zst",
+    "packageType": "tar.zst",
+    "php": "8.2",
+    "phpVersions": [
+      "8.1",
+      "8.2"
+    ],
+    "sha512": "ddab6f781532eec99b470c4aab7f7324de7ae5ee3f91196c7e69d5fd433b98683b8143256c4d07527ed396451f0f1c69881074e273b26da152f5703242d691bd",
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ],
+    "version": "5.0.1-rc1"
   }
 }
