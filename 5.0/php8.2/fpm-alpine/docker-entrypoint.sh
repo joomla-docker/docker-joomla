@@ -202,6 +202,10 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 
                 # Check the exit status of the PHP command
                 if [ $? -eq 0 ]; then
+                        # Set configuration to correct owner
+                        chown "$user:$group" configuration.php
+                        # Set configuration to correct permissions
+                        chmod 444 configuration.php
                         # The PHP command succeeded (so we remove the installation folder)
                         rm -rf installation
 
