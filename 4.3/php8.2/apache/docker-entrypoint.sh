@@ -198,20 +198,30 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                         --db-encryption=0
                 )
 
-                php installation/joomla.php install "${installJoomlaArgs[@]}"
+                # Run the auto deploy (install)
+                if php installation/joomla.php install "${installJoomlaArgs[@]}"; then
 
-                # Check the exit status of the PHP command
-                if [ $? -eq 0 ]; then
-                        # Set configuration to correct owner
-                        chown "$user:$group" configuration.php
-                        # Set configuration to correct permissions
-                        chmod 444 configuration.php
                         # The PHP command succeeded (so we remove the installation folder)
                         rm -rf installation
 
                         echo >&2 "========================================================================"
                         echo >&2
                         echo >&2 "This server is now configured to run Joomla!"
+
+                        # fix the configuration.php ownership
+                        if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' configuration.php)" != "$user:$group" ]; then
+                                # Set configuration to correct owner
+                                if ! chown "$user:$group" configuration.php; then
+                                        echo >&2
+                                        echo >&2 "Error: Ownership of configuration.php failed to be corrected."
+                                fi
+                                # Set configuration to correct permissions
+                                if ! chmod 444 configuration.php; then
+                                        echo >&2
+                                        echo >&2 "Error: Permissions of configuration.php failed to be corrected."
+                                fi
+                        fi
+
                         echo >&2
                         echo >&2 "========================================================================"
                 else
