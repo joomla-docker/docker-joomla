@@ -45,15 +45,10 @@ RUN set -ex; \
 		autoconf \
 		bzip2-dev \
 		gmp-dev \
-{{ if env.version != "3.10" then ( -}}
 		icu-dev \
-{{ ) else "" end -}}
 		freetype-dev \
 		imagemagick-dev \
 		libjpeg-turbo-dev \
-{{ if env.version == "3.10" then ( -}}
-		libmcrypt-dev \
-{{ ) else "" end -}}
 		libmemcached-dev \
 		libpng-dev \
 		libwebp-dev \
@@ -69,15 +64,10 @@ RUN set -ex; \
 	apt-get install -y --no-install-recommends \
 		libbz2-dev \
 		libgmp-dev \
-{{ if env.version != "3.10" then ( -}}
 		libicu-dev \
-{{ ) else "" end -}}
 		libfreetype6-dev \
 		libjpeg-dev \
 		libldap2-dev \
-{{ if env.version == "3.10" then ( -}}
-		libmcrypt-dev \
-{{ ) else "" end -}}
 		libmemcached-dev \
 		libmagickwand-dev \
 		libpq-dev \
@@ -104,9 +94,7 @@ RUN set -ex; \
 		exif \
 		gd \
 		gmp \
-{{ if env.version != "3.10" then ( -}}
 		intl \
-{{ ) else "" end -}}
 		ldap \
 		mysqli \
 		pdo_mysql \
@@ -134,17 +122,11 @@ RUN set -ex; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
 	pecl install APCu-{{ env.pecl_APCu }}; \
-{{ if env.version == "3.10" then ( -}}
-	pecl install mcrypt-{{ env.pecl_mcrypt }}; \
-{{ ) else "" end -}}
 	pecl install memcached-{{ env.pecl_memcached }}; \
 	pecl install redis-{{ env.pecl_redis }}; \
 	\
 	docker-php-ext-enable \
 		apcu \
-{{ if env.version == "3.10" then ( -}}
-		mcrypt \
-{{ ) else "" end -}}
 		memcached \
 		redis \
 	; \
