@@ -1,22 +1,4 @@
 {
-  "4.3": {
-    "aliases": [],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.3.4/Joomla_4.3.4-Stable-Full_Package.tar.bz2",
-    "packageType": "tar.bz2",
-    "php": "8.1",
-    "phpVersions": [
-      "8.1",
-      "8.2"
-    ],
-    "sha512": "2efede3c3230d2fd849c46f84eea9aa1ef2bef6836e0ceec6451499bb6abf7e747d63f3996d0a5f7fc2d439c5ae0380e0e71f7c2823adfdda80e87a0bc377be1",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "4.3.4"
-  },
   "4.4": {
     "aliases": [
       4,
