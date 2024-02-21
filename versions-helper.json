@@ -1,7 +1,7 @@
 {
   "5.1.alpha": {
-    "version": "5.1.0-alpha3",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-alpha3/Joomla_5.1.0-alpha3-Alpha-Full_Package.tar.zst",
+    "version": "5.1.0-alpha4",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-alpha4/Joomla_5.1.0-alpha4-Alpha-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "aliases": ["5.1.0-alpha"],
@@ -36,7 +36,7 @@
     ]
   },
   "5.0": {
-    "version": "5.0.2",
+    "version": "5.0.3",
     "packageType": "tar.zst",
     "php": "8.2",
     "aliases": [5],
@@ -64,7 +64,7 @@
     ]
   },
   "4.4": {
-    "version": "4.4.2",
+    "version": "4.4.3",
     "php": "8.1",
     "aliases": [4, "latest"],
     "phpVersions": {

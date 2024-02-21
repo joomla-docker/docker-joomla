@@ -4,47 +4,47 @@
       4,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.2/Joomla_4.4.2-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.3/Joomla_4.4.3-Stable-Full_Package.tar.bz2",
     "packageType": "tar.bz2",
     "php": "8.1",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "56a200c95e517a53255c1183b5de63fd136a662296d05ea45e663f58786c21595e6672e9ffe8c7f1f6ab194c3f080bc5d6236d560675e36d3d3cf1064d72c931",
+    "sha512": "40be1f6d16430b4d0f7fde1ac2c96245388f28031790757e667b5ab52802105aec1ce51efdaa13576082218e0842c893d884a78f1ef358bec6fa1fb0a2cdabcd",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.2"
+    "version": "4.4.3"
   },
   "5.0": {
     "aliases": [
       5
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.2/Joomla_5.0.2-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.3/Joomla_5.0.3-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "e7bc9ecab410217fdf91a87f9461ff18dab311af56c61156fb7cf076b2fdf270b003ffddf131386ef35c94cb9f4ada39f8a69712c07664147108268ab5cc85a3",
+    "sha512": "5fa4a0fdae08f8ea71216337b02f4f8dcf75b8d001fc82c0987041844cc263e78ca8244a0fbbc4a3e53055c8e09a1533464d90ea118ebd79b2b1b972807c532e",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.0.2"
+    "version": "5.0.3"
   },
   "5.1.alpha": {
     "aliases": [
       "5.1.0-alpha"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-alpha3/Joomla_5.1.0-alpha3-Alpha-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-alpha4/Joomla_5.1.0-alpha4-Alpha-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "phpVersions": [
@@ -52,13 +52,13 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "5d89702ba41741e635e5ac6065d8018b025a7910065b84ecc81a937530580c59430461c853b596c32f1fe45fe5ce4f9ca81669d6eb8d20df3e355f39bc486af4",
+    "sha512": "b6db21b54ede2c5ed18a4dbc37536bb9edcf0b5defbb8a16a408931dff9fe71ecbd3ca26ec634bd7a41a0db8af53e2d5767614fe8e83b182d0aea1e5cbf5efb2",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.1.0-alpha3"
+    "version": "5.1.0-alpha4"
   }
 }
