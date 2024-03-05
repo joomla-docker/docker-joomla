@@ -1,10 +1,10 @@
 {
-  "5.1.alpha": {
-    "version": "5.1.0-alpha4",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-alpha4/Joomla_5.1.0-alpha4-Alpha-Full_Package.tar.zst",
+  "5.1.beta": {
+    "version": "5.1.0-beta1",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-beta1/Joomla_5.1.0-beta1-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
-    "aliases": ["5.1.0-alpha"],
+    "aliases": ["5.1.0-beta"],
     "phpVersions": {
       "8.3": {
         "pecl": {
