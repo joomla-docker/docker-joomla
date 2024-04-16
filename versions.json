@@ -1,63 +1,43 @@
 {
   "4.4": {
     "aliases": [
-      4,
-      "latest"
+      4
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.3/Joomla_4.4.3-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.4/Joomla_4.4.4-Stable-Full_Package.tar.bz2",
     "packageType": "tar.bz2",
     "php": "8.1",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "40be1f6d16430b4d0f7fde1ac2c96245388f28031790757e667b5ab52802105aec1ce51efdaa13576082218e0842c893d884a78f1ef358bec6fa1fb0a2cdabcd",
+    "sha512": "782469e12a7e6ceb719e4fca5e839d1bd5e475b2b3a932a4262ecc51b2585e94dede017021b5075b2e36c2687b27a82350064b5cc74fb27761987cff55e8637f",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.3"
+    "version": "4.4.4"
   },
-  "5.0": {
+  "5.1": {
     "aliases": [
-      5
+      5,
+      "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.0.3/Joomla_5.0.3-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0/Joomla_5.1.0-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "5fa4a0fdae08f8ea71216337b02f4f8dcf75b8d001fc82c0987041844cc263e78ca8244a0fbbc4a3e53055c8e09a1533464d90ea118ebd79b2b1b972807c532e",
+    "sha512": "3d5e547520ddbbbd256dccaf9c88911d3571bb0698f6857a0472f174fa1d62b71ee24442c16c20528c70dc5d4b97bf946182146497d32faecf6f8897ff72485c",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.0.3"
-  },
-  "5.1.beta": {
-    "aliases": [
-      "5.1.0-beta"
-    ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-beta2/Joomla_5.1.0-beta2-Beta-Full_Package.tar.zst",
-    "packageType": "tar.zst",
-    "php": "8.2",
-    "phpVersions": [
-      "8.1",
-      "8.2"
-    ],
-    "sha512": "8f4f81c9147270c6f7a2373c96716c90272f12e7c8679166517eb84990e3c7724b1d3657c3f8eee1a46094a4d950830048afdd17dae516be8dac5fd7be1cba65",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "5.1.0-beta2"
+    "version": "5.1.0"
   }
 }

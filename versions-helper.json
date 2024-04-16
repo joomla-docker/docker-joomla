@@ -1,38 +1,9 @@
 {
-  "5.1.beta": {
-    "version": "5.1.0-beta2",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.1.0-beta2/Joomla_5.1.0-beta2-Beta-Full_Package.tar.zst",
+  "5.1": {
+    "version": "5.1.0",
     "packageType": "tar.zst",
     "php": "8.2",
-    "aliases": ["5.1.0-beta"],
-    "phpVersions": {
-      "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.2.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.1": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.2.0",
-          "redis": "6.0.2"
-        }
-      }
-    },
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ]
-  },
-  "5.0": {
-    "version": "5.0.3",
-    "packageType": "tar.zst",
-    "php": "8.2",
-    "aliases": [5],
+    "aliases": [5, "latest"],
     "phpVersions": {
       "8.2": {
         "pecl": {
@@ -57,9 +28,9 @@
     ]
   },
   "4.4": {
-    "version": "4.4.3",
+    "version": "4.4.4",
     "php": "8.1",
-    "aliases": [4, "latest"],
+    "aliases": [4],
     "phpVersions": {
       "8.2": {
         "pecl": {
