@@ -179,6 +179,63 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 return 1
         }
 
+        # Function to validate URLs
+        joomla_validate_url() {
+                if [[ $1 =~ ^http(s)?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$ ]]; then
+                        return 0
+                else
+                        return 1
+                fi
+        }
+
+        # Function to validate file path
+        joomla_validate_path() {
+                if [[ -f $1 ]]; then
+                        return 0
+                else
+                        return 1
+                fi
+        }
+
+        # Function to split values by semicolon
+        joomla_get_array_by_semicolon() {
+                local input=$1   # The input string to be split
+                local -n arr=$2  # The array to store the split values (passed by reference)
+                local old_IFS=$IFS  # Save the original IFS value
+                # shellcheck disable=SC2034
+                # passed by reference
+                IFS=';' read -ra arr <<< "$input"  # Split the input by semicolon and store in array
+                IFS=$old_IFS  # Restore the original IFS value
+        }
+
+        # Function to install extension from URL
+        joomla_install_extension_via_url() {
+                local url=$1
+                if joomla_validate_url "$url"; then
+                        if php cli/joomla.php extension:install --url "$url" --no-interaction; then
+                                echo >&2 "Info: Successfully installed $url"
+                        else
+                                echo >&2 "Error: Failed to install $url"
+                        fi
+                else
+                        echo >&2 "Error: Invalid URL: $url"
+                fi
+        }
+
+        # Function to install extension from path
+        joomla_install_extension_via_path() {
+                local path=$1
+                if joomla_validate_path "$path"; then
+                        if php cli/joomla.php extension:install --path "$path" --no-interaction; then
+                                echo >&2 "Info: Successfully installed $path"
+                        else
+                                echo >&2 "Error: Failed to install $path"
+                        fi
+                else
+                        echo >&2 "Error: Invalid Path: $path"
+                fi
+        }
+
         # if the directory exists and we can auto deploy
         if [ -d installation ] && [ -e installation/joomla.php ] && can_auto_deploy; then
                 # use full commands
@@ -207,6 +264,22 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                         echo >&2 "========================================================================"
                         echo >&2
                         echo >&2 "This server is now configured to run Joomla!"
+
+                        # Install any extensions found in the extensions urls env
+                        if [[ -n "${JOOMLA_EXTENSIONS_URLS}" && "${#JOOMLA_EXTENSIONS_URLS}" -gt 2 ]]; then
+                                joomla_get_array_by_semicolon "$JOOMLA_EXTENSIONS_URLS" J_E_URLS
+                                for extension_url in "${J_E_URLS[@]}"; do
+                                        joomla_install_extension_via_url "$extension_url"
+                                done
+                        fi
+
+                        # Install any extensions found in the extensions paths env
+                        if [[ -n "${JOOMLA_EXTENSIONS_PATHS}" && "${#JOOMLA_EXTENSIONS_PATHS}" -gt 2 ]]; then
+                                joomla_get_array_by_semicolon "$JOOMLA_EXTENSIONS_PATHS" J_E_PATHS
+                                for extension_path in "${J_E_PATHS[@]}"; do
+                                        joomla_install_extension_via_path "$extension_path"
+                                done
+                        fi
 
                         # fix the configuration.php ownership
                         if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' configuration.php)" != "$user:$group" ]; then
