@@ -208,6 +208,18 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                 IFS=$old_IFS  # Restore the original IFS value
         }
 
+        # Function to split values by colon to get host and port
+        joomla_get_host_port_by_colon() {
+                local input=$1 # The input string to be split
+                local -n hostname=$2  # The variable to store the hostname (passed by reference)
+                local -n port=$3  # The variable to store the port (passed by reference)
+                local old_IFS=$IFS  # Save the original IFS value
+                # shellcheck disable=SC2034
+                # passed by reference
+                IFS=':' read -r hostname port <<< "$input"  # Split the input by colon and store in hostname and port
+                IFS=$old_IFS  # Restore the original IFS value
+        }
+
         # Function to install extension from URL
         joomla_install_extension_via_url() {
                 local url=$1
@@ -279,6 +291,20 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
                                 for extension_path in "${J_E_PATHS[@]}"; do
                                         joomla_install_extension_via_path "$extension_path"
                                 done
+                        fi
+
+                        if [[ -n "${JOOMLA_SMTP_HOST}" && "${JOOMLA_SMTP_HOST}" == *:* ]]; then
+                                joomla_get_host_port_by_colon "$JOOMLA_SMTP_HOST" JOOMLA_SMTP_HOST JOOMLA_SMTP_HOST_PORT
+                        fi
+
+                        if [[ -n "${JOOMLA_SMTP_HOST}" && "${#JOOMLA_SMTP_HOST}" -gt 2 ]]; then
+                                chmod +w configuration.php
+                                sed -i "s/public \$mailer = 'mail';/public \$mailer = 'smtp';/g" configuration.php
+                                sed -i "s/public \$smtphost = 'localhost';/public \$smtphost = '${JOOMLA_SMTP_HOST}';/g" configuration.php
+                        fi
+
+                        if [[ -n "${JOOMLA_SMTP_HOST_PORT}" ]]; then
+                                sed -i "s/public \$smtpport = 25;/public \$smtpport = ${JOOMLA_SMTP_HOST_PORT};/g" configuration.php
                         fi
 
                         # fix the configuration.php ownership
