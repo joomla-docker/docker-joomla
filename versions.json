@@ -50,7 +50,8 @@
     "php": "8.2",
     "phpVersions": [
       "8.1",
-      "8.2"
+      "8.2",
+      "8.3"
     ],
     "sha512": "96f9f472f58308544d7c9a8e1a95cafdec9d3f12da331b5d3b58a9d8215b1d664728a3b030af0feac36dda99f66b9d4b822aff8341e29fdd598a78bea196ee24",
     "variant": "apache",
