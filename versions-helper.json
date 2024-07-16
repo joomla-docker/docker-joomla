@@ -1,6 +1,6 @@
 {
   "5.1": {
-    "version": "5.1.1",
+    "version": "5.1.2",
     "packageType": "tar.zst",
     "php": "8.2",
     "aliases": [5, "latest"],
@@ -35,7 +35,7 @@
     ]
   },
   "4.4": {
-    "version": "4.4.5",
+    "version": "4.4.6",
     "php": "8.1",
     "aliases": [4],
     "phpVersions": {
