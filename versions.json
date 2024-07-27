@@ -45,7 +45,7 @@
     "aliases": [
       "5.2.0-alpha"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.0-alpha2/Joomla_5.2.0-alpha2-Alpha-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.0-alpha3/Joomla_5.2.0-alpha3-Alpha-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "phpVersions": [
@@ -53,13 +53,13 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "96f9f472f58308544d7c9a8e1a95cafdec9d3f12da331b5d3b58a9d8215b1d664728a3b030af0feac36dda99f66b9d4b822aff8341e29fdd598a78bea196ee24",
+    "sha512": "4d73b21c1ce7ed5261319c4d77531b67d223571b9c8cfa7cd208ac60cb521011abea96ed0ca90ffd8b70ef45497bffface336a7e11e0f932cb60072ab23e280b",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.2.0-alpha2"
+    "version": "5.2.0-alpha3"
   }
 }
