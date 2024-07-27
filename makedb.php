@@ -60,7 +60,7 @@ elseif ($dbType === 'pgsql')
 	$maxTries = 10;
 
 	do {
-		$connection = "host={$host} port={$port} user={$user} password={$password} dbname={$db}";
+		$connection = "host={$host} port={$port} user={$user} password={$password} dbname=postgres";
 		$dbconn = @pg_connect($connection);
 
 		if (!$dbconn)
