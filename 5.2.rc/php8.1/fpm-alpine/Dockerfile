@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.2-fpm-alpine
+FROM php:8.1-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -142,12 +142,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.2.0-beta3
-ENV JOOMLA_SHA512 cb50f5d30ca9bed2c0ac44aa5fcd84f49caf21fd40a6208ff83693b03ec329bf6f8f7e8a9bd9c6bc1b81bc8e19af6b79ca27bf3365658df741a8167e09a0e3ea
+ENV JOOMLA_VERSION 5.2.0-rc1
+ENV JOOMLA_SHA512 51dd71e8f58eeba4b86bbedcd8235780bdf5db73852261154d1a0f1b057bda4395be03a60b1173f8b82d791739c0ef224e5c203c8989c54d0c2e31b45fd41b00
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.2.0-beta3/Joomla_5.2.0-beta3-Beta-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.2.0-rc1/Joomla_5.2.0-rc1-Release_Candidate-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
