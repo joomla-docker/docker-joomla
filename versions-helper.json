@@ -60,41 +60,5 @@
       "fpm-alpine",
       "fpm"
     ]
-  },
-  "5.2.rc": {
-    "version": "5.2.0-rc1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.0-rc1/Joomla_5.2.0-rc1-Release_Candidate-Full_Package.tar.zst",
-    "packageType": "tar.zst",
-    "php": "8.2",
-    "aliases": ["5.2.0-rc"],
-    "phpVersions": {
-      "8.3": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.2.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.2.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.1": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.2.0",
-          "redis": "6.0.2"
-        }
-      }
-    },
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ]
   }
 }
