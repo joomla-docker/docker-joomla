@@ -1,0 +1,165 @@
+#
+# NOTE: THIS DOCKERFILE IS GENERATED VIA "apply-templates.sh"
+#
+# PLEASE DO NOT EDIT IT DIRECTLY.
+#
+
+# from https://downloads.joomla.org/technical-requirements
+FROM php:8.3-fpm-alpine
+LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
+
+# Disable remote database security requirements.
+ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
+RUN set -eux; \
+	apk add --no-cache \
+# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
+		bash \
+# Ghostscript is required for rendering PDF previews
+		ghostscript \
+# Alpine package for "imagemagick" contains ~120 .so files
+		imagemagick \
+# Needed for the zst joomla package
+		zstd \
+	;
+
+# install the PHP extensions we need.
+RUN set -ex; \
+	\
+	apk add --no-cache --virtual .build-deps \
+		$PHPIZE_DEPS \
+		autoconf \
+		bzip2-dev \
+		gmp-dev \
+		icu-dev \
+		freetype-dev \
+		imagemagick-dev \
+		libjpeg-turbo-dev \
+		libmemcached-dev \
+		libpng-dev \
+		libwebp-dev \
+		libzip-dev \
+		openldap-dev \
+		pcre-dev \
+		postgresql-dev \
+	; \
+	\
+	docker-php-ext-configure gd \
+		--with-freetype \
+		--with-jpeg \
+		--with-webp \
+	; \
+	docker-php-ext-configure ldap; \
+	docker-php-ext-install -j "$(nproc)" \
+		bz2 \
+		bcmath \
+		exif \
+		gd \
+		gmp \
+		intl \
+		ldap \
+		mysqli \
+		pdo_mysql \
+		pdo_pgsql \
+		pgsql \
+		zip \
+	; \
+# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
+# https://pecl.php.net/package/imagick
+# https://github.com/Imagick/imagick/commit/5ae2ecf20a1157073bad0170106ad0cf74e01cb6 (causes a lot of build failures, but strangely only intermittent ones)
+# see also https://github.com/Imagick/imagick/pull/641
+# this is "pecl install imagick-3.7.0", but by hand so we can apply a small hack / part of the above commit
+# Thanks to @tianon https://github.com/docker-library/wordpress/commit/509adb58cbc7463a03e317931df65868ec8a3e92
+	curl -fL -o imagick.tgz 'https://pecl.php.net/get/imagick-3.7.0.tgz'; \
+	echo '5a364354109029d224bcbb2e82e15b248be9b641227f45e63425c06531792d3e *imagick.tgz' | sha256sum -c -; \
+	tar --extract --directory /tmp --file imagick.tgz imagick-3.7.0; \
+	grep '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php; \
+	test "$(grep -c '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php)" = '1'; \
+	sed -i -e 's!^//#endif$!#endif!' /tmp/imagick-3.7.0/Imagick.stub.php; \
+	grep '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php && exit 1 || :; \
+	docker-php-ext-install /tmp/imagick-3.7.0; \
+	rm -rf imagick.tgz /tmp/imagick-3.7.0; \
+# TODO when imagick has another release, we should ditch this whole block and just update instead
+	\
+# some misbehaving extensions end up outputting to stdout
+	out="$(php -r 'exit(0);')"; \
+	[ -z "$out" ]; \
+	err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]; \
+	\
+	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
+	[ -d "$extDir" ]; \
+	\
+# pecl will claim success even if one install fails, so we need to perform each install separately
+	pecl install APCu-5.1.23; \
+	pecl install memcached-3.2.0; \
+	pecl install redis-6.0.2; \
+	\
+	docker-php-ext-enable \
+		apcu \
+		memcached \
+		redis \
+	; \
+	rm -r /tmp/pear; \
+	\
+	runDeps="$( \
+		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
+	apk add --no-network --virtual .joomla-phpexts-rundeps $runDeps; \
+	apk del --no-network .build-deps; \
+	\
+	! { ldd "$extDir"/*.so | grep 'not found'; }; \
+# check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
+	err="$(php --version 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]
+
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN set -eux; \
+	docker-php-ext-enable opcache; \
+	{ \
+		echo 'opcache.memory_consumption=128'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4000'; \
+		echo 'opcache.revalidate_freq=2'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+# set recommended error logging
+RUN { \
+# https://www.php.net/manual/en/errorfunc.constants.php
+		echo 'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR'; \
+		echo 'display_errors = Off'; \
+		echo 'display_startup_errors = Off'; \
+		echo 'log_errors = On'; \
+		echo 'error_log = /dev/stderr'; \
+		echo 'log_errors_max_len = 1024'; \
+		echo 'ignore_repeated_errors = On'; \
+		echo 'ignore_repeated_source = Off'; \
+		echo 'html_errors = Off'; \
+	} > /usr/local/etc/php/conf.d/error-logging.ini
+
+VOLUME /var/www/html
+
+# Define Joomla version and expected SHA512 signature
+ENV JOOMLA_VERSION 5.2.0
+ENV JOOMLA_SHA512 5f6a19978c72205e04b8d9a7fde137b5933fab8940d3e0f48321a3ed2d861284cdcb59dbe78cc33b524bb31547405c5a7571076d77bd2925bf2b97664ba33501
+
+# Download package and extract to web volume
+RUN set -ex; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.2.0/Joomla_5.2.0-Stable-Full_Package.tar.zst; \
+	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
+	mkdir /usr/src/joomla; \
+	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
+	rm joomla.tar.zst; \
+	chown -R www-data:www-data /usr/src/joomla
+
+# Copy init scripts
+COPY docker-entrypoint.sh /entrypoint.sh
+COPY makedb.php /makedb.php
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["php-fpm"]
+
+
