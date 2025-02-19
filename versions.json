@@ -3,28 +3,28 @@
     "aliases": [
       4
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.10/Joomla_4.4.10-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.11/Joomla_4.4.11-Stable-Full_Package.tar.bz2",
     "packageType": "tar.bz2",
     "php": "8.1",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "c67158b9cdb26223da584de7d0b56d5499df01cf60394b219615eefa50447be8de27fa9613c9bb691f49c12f58d85f95d02f3b786f4f38be792a7621eb2f5a5c",
+    "sha512": "f72d4ed13388ad20c3a65542262414867a05e67360cd771d0526e09b907bb44f3ae08b9eeb2a0b98316b787352dce6a47452f8c4fbac970666908e5357d0e43d",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.10"
+    "version": "4.4.11"
   },
   "5.2": {
     "aliases": [
       5,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.3/Joomla_5.2.3-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.4/Joomla_5.2.4-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.2",
     "phpVersions": [
@@ -32,13 +32,13 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "23c74065759fcf812c9c27b14bdefc1d255e074227585e154b39ef5fb9279668a63a51c12b1fec3d4e611dd7147c8ab2eec972bc5e31bacb12cb08989b37c3e9",
+    "sha512": "2e856b8c544e3b5a4f8d77c7d6ae7f8832712d441cc071fbe5ff808bd0b69cf4c1c3e9716af156f3b5fa314b4c55c867e0c33c261dd42a4847858933edf43cf5",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.2.3"
+    "version": "5.2.4"
   }
 }
