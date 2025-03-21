@@ -3,28 +3,28 @@
     "aliases": [
       4
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.11/Joomla_4.4.11-Stable-Full_Package.tar.bz2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.12/Joomla_4.4.12-Stable-Full_Package.tar.bz2",
     "packageType": "tar.bz2",
     "php": "8.2",
     "phpVersions": [
       "8.1",
       "8.2"
     ],
-    "sha512": "f72d4ed13388ad20c3a65542262414867a05e67360cd771d0526e09b907bb44f3ae08b9eeb2a0b98316b787352dce6a47452f8c4fbac970666908e5357d0e43d",
+    "sha512": "a212eba3c8f4af14175147e9e918e5f8d53be23fc696a7eefe8b54a0e09afebafb892f0758396d8a3ba081f0a8dfe3f75e4488838e82e7072519eae54823ede4",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.11"
+    "version": "4.4.12"
   },
   "5.2": {
     "aliases": [
       5,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.4/Joomla_5.2.4-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.2.5/Joomla_5.2.5-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
@@ -32,20 +32,20 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "2e856b8c544e3b5a4f8d77c7d6ae7f8832712d441cc071fbe5ff808bd0b69cf4c1c3e9716af156f3b5fa314b4c55c867e0c33c261dd42a4847858933edf43cf5",
+    "sha512": "195a4c982cb42134c3a24034c25348fc4a813b7c6a0a959fa67676355787e81b9660aa1b2b6dcc4482b7502ee19d6d9bd2f3ffd02f6a2e1b09f98077737cf7ee",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.2.4"
+    "version": "5.2.5"
   },
   "5.3.beta": {
     "aliases": [
       "5.3.0-beta"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.3.0-beta2/Joomla_5.3.0-beta2-Beta-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.3.0-beta3/Joomla_5.3.0-beta3-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
@@ -53,13 +53,13 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "1219caf8ac33f72a29641652cc31a92c07cde5f98b601664f66978e899a717338b64025dc53f846f5e76bb8b2fb77367e970929be6b0de66edbbce2356e2f03c",
+    "sha512": "229d3b2a5ff1c409d6a6cf664813ad0cbbab8c18b71975cd6afc28561b2e21399dd2898906dfa34653fe43e5b6df78e528935f96906facdd23caba9df4523196",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.3.0-beta2"
+    "version": "5.3.0-beta3"
   }
 }
