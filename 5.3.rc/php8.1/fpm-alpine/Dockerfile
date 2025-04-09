@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.3-fpm-alpine
+FROM php:8.1-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -90,9 +90,9 @@ RUN set -ex; \
 	[ -d "$extDir" ]; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.24; \
+	pecl install APCu-5.1.23; \
 	pecl install memcached-3.3.0; \
-	pecl install redis-6.1.0; \
+	pecl install redis-6.0.2; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -142,12 +142,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.3.0-beta3
-ENV JOOMLA_SHA512 229d3b2a5ff1c409d6a6cf664813ad0cbbab8c18b71975cd6afc28561b2e21399dd2898906dfa34653fe43e5b6df78e528935f96906facdd23caba9df4523196
+ENV JOOMLA_VERSION 5.3.0-rc2
+ENV JOOMLA_SHA512 27df4d37c500b532cb68a0676c0ff341acc6fec00cec3c1fd28a49be9a3f6a25dc54ff43b716c84b03c7d0f577f00dd369a8131f24184b02b97f892fc7279f0b
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.3.0-beta3/Joomla_5.3.0-beta3-Beta-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.3.0-rc2/Joomla_5.3.0-rc2-Release_Candidate-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \

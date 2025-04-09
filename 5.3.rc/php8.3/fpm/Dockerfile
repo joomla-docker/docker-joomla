@@ -5,42 +5,40 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.1-fpm-alpine
+FROM php:8.3-fpm
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK=1
 RUN set -eux; \
-	apk add --no-cache \
-# in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
-		bash \
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
 # Ghostscript is required for rendering PDF previews
 		ghostscript \
-# Alpine package for "imagemagick" contains ~120 .so files
-		imagemagick \
 # Needed for the zst joomla package
 		zstd \
-	;
+	; \
+	rm -rf /var/lib/apt/lists/*
 
 # install the PHP extensions we need.
 RUN set -ex; \
 	\
-	apk add --no-cache --virtual .build-deps \
-		$PHPIZE_DEPS \
-		autoconf \
-		bzip2-dev \
-		gmp-dev \
-		icu-dev \
-		freetype-dev \
-		imagemagick-dev \
-		libjpeg-turbo-dev \
+	savedAptMark="$(apt-mark showmanual)"; \
+	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends \
+		libbz2-dev \
+		libgmp-dev \
+		libicu-dev \
+		libfreetype6-dev \
+		libjpeg-dev \
+		libldap2-dev \
 		libmemcached-dev \
+		libmagickwand-dev \
+		libpq-dev \
 		libpng-dev \
 		libwebp-dev \
 		libzip-dev \
-		openldap-dev \
-		pcre-dev \
-		postgresql-dev \
 	; \
 	\
 	docker-php-ext-configure gd \
@@ -48,7 +46,8 @@ RUN set -ex; \
 		--with-jpeg \
 		--with-webp \
 	; \
-	docker-php-ext-configure ldap; \
+	debMultiarch="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+	docker-php-ext-configure ldap --with-libdir="lib/$debMultiarch"; \
 	docker-php-ext-install -j "$(nproc)" \
 		bz2 \
 		bcmath \
@@ -63,7 +62,6 @@ RUN set -ex; \
 		pgsql \
 		zip \
 	; \
-# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
 # https://pecl.php.net/package/imagick
 # https://github.com/Imagick/imagick/commit/5ae2ecf20a1157073bad0170106ad0cf74e01cb6 (causes a lot of build failures, but strangely only intermittent ones)
 # see also https://github.com/Imagick/imagick/pull/641
@@ -88,11 +86,10 @@ RUN set -ex; \
 	\
 	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
 	[ -d "$extDir" ]; \
-	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.23; \
+	pecl install APCu-5.1.24; \
 	pecl install memcached-3.3.0; \
-	pecl install redis-6.0.2; \
+	pecl install redis-6.1.0; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -101,14 +98,19 @@ RUN set -ex; \
 	; \
 	rm -r /tmp/pear; \
 	\
-	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
-			| tr ',' '\n' \
-			| sort -u \
-			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-	)"; \
-	apk add --no-network --virtual .joomla-phpexts-rundeps $runDeps; \
-	apk del --no-network .build-deps; \
+# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark; \
+	ldd "$extDir"/*.so \
+		| awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); print so }' \
+		| sort -u \
+		| xargs -r dpkg-query --search \
+		| cut -d: -f1 \
+		| sort -u \
+		| xargs -rt apt-mark manual; \
+	\
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	rm -rf /var/lib/apt/lists/*; \
 	\
 	! { ldd "$extDir"/*.so | grep 'not found'; }; \
 # check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
@@ -142,12 +144,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.3.0-beta3
-ENV JOOMLA_SHA512 229d3b2a5ff1c409d6a6cf664813ad0cbbab8c18b71975cd6afc28561b2e21399dd2898906dfa34653fe43e5b6df78e528935f96906facdd23caba9df4523196
+ENV JOOMLA_VERSION 5.3.0-rc2
+ENV JOOMLA_SHA512 27df4d37c500b532cb68a0676c0ff341acc6fec00cec3c1fd28a49be9a3f6a25dc54ff43b716c84b03c7d0f577f00dd369a8131f24184b02b97f892fc7279f0b
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.3.0-beta3/Joomla_5.3.0-beta3-Beta-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.3.0-rc2/Joomla_5.3.0-rc2-Release_Candidate-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
