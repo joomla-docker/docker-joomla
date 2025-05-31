@@ -1,6 +1,6 @@
 {
   "5.3": {
-    "version": "5.3.0",
+    "version": "5.3.1",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5, "latest"],
