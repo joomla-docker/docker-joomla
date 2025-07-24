@@ -162,12 +162,12 @@ RUN set -eux; \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.4.0-alpha2
-ENV JOOMLA_SHA512 b64fd7aded6fee4f2ceab315caac80623de66b10c551438c42f98b52459f3014647ed47f65732acfcfb82443d63c533fac53d9e93e68c0abfbe2f5b0f6719b25
+ENV JOOMLA_VERSION 5.4.0-alpha3
+ENV JOOMLA_SHA512 22a10111a2fcac6c66f59131b1fecd6f3ec8f8d1a35e4d9bb6a9d5eff144b0900e9418f5bc2f67310199866891277ccbae391e4db573db65130c570c8834c812
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.4.0-alpha2/Joomla_5.4.0-alpha2-Alpha-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.4.0-alpha3/Joomla_5.4.0-alpha3-Alpha-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
