@@ -51,7 +51,7 @@
     ]
   },
   "5.3": {
-    "version": "5.3.2",
+    "version": "5.3.3",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5, "latest"],
