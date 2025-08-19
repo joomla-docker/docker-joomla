@@ -1,24 +1,4 @@
 {
-  "4.4": {
-    "aliases": [
-      4
-    ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.13/Joomla_4.4.13-Stable-Full_Package.tar.bz2",
-    "packageType": "tar.bz2",
-    "php": "8.2",
-    "phpVersions": [
-      "8.1",
-      "8.2"
-    ],
-    "sha512": "c88f1779592fc74ff1fb3a26c81d113868d675f15afd45d0547c34216d49071a0d43b1f603e9f1daa5093499231dc95a77d165caff472d3d72ecb56af87a331e",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "4.4.13"
-  },
   "5.3": {
     "aliases": [
       5,
@@ -41,43 +21,43 @@
     ],
     "version": "5.3.2"
   },
-  "5.4.alpha": {
+  "5.4.beta": {
     "aliases": [
-      "5.4.0-alpha"
+      "5.4.0-beta"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-alpha3/Joomla_5.4.0-alpha3-Alpha-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-beta1/Joomla_5.4.0-beta1-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
       "8.2",
       "8.3"
     ],
-    "sha512": "22a10111a2fcac6c66f59131b1fecd6f3ec8f8d1a35e4d9bb6a9d5eff144b0900e9418f5bc2f67310199866891277ccbae391e4db573db65130c570c8834c812",
+    "sha512": "d381bfa727d319eb4d528d5a77774b93698e7acbd0b763fe5f65195825f2ac3f75a2e188aa3d9bc67fccb4e42d561207afa34d8b5aa73a19b3f69e674d745e0d",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.4.0-alpha3"
+    "version": "5.4.0-beta1"
   },
-  "6.0.alpha": {
+  "6.0.beta": {
     "aliases": [
-      "6.0.0-alpha"
+      "6.0.0-beta"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-alpha3/Joomla_6.0.0-alpha3-Alpha-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-beta1/Joomla_6.0.0-beta1-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
       "8.3"
     ],
-    "sha512": "cbcde6581fd789218211d3378f279264bfc0e630da70f9eda64b1c7e1862350447e0e7d618387f2dc7d08960ced278d170243c545d4361d7403ea05b445aae0f",
+    "sha512": "8b042d25a2f3074b0190403b42032457eee30fb3fb6b67b345f6dd355c1636b5eb862abefe281c7335ae2fd657a718df329586ea9ca11a07c57962786dccf1eb",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "6.0.0-alpha3"
+    "version": "6.0.0-beta1"
   }
 }

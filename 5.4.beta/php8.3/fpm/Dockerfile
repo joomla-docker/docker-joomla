@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.2-apache
+FROM php:8.3-fpm
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -87,9 +87,9 @@ RUN set -ex; \
 	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
 	[ -d "$extDir" ]; \
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.23; \
+	pecl install APCu-5.1.24; \
 	pecl install memcached-3.3.0; \
-	pecl install redis-6.0.2; \
+	pecl install redis-6.1.0; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -141,33 +141,15 @@ RUN { \
 		echo 'html_errors = Off'; \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
 
-RUN set -eux; \
-	a2enmod rewrite expires; \
-	\
-# https://httpd.apache.org/docs/2.4/mod/mod_remoteip.html
-	a2enmod remoteip; \
-	{ \
-		echo 'RemoteIPHeader X-Forwarded-For'; \
-# these IP ranges are reserved for "private" use and should thus *usually* be safe inside Docker
-		echo 'RemoteIPInternalProxy 10.0.0.0/8'; \
-		echo 'RemoteIPInternalProxy 172.16.0.0/12'; \
-		echo 'RemoteIPInternalProxy 192.168.0.0/16'; \
-		echo 'RemoteIPInternalProxy 169.254.0.0/16'; \
-		echo 'RemoteIPInternalProxy 127.0.0.0/8'; \
-	} > /etc/apache2/conf-available/remoteip.conf; \
-	a2enconf remoteip; \
-# (replace all instances of "%h" with "%a" in LogFormat)
-	find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
-
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.4.0-alpha3
-ENV JOOMLA_SHA512 22a10111a2fcac6c66f59131b1fecd6f3ec8f8d1a35e4d9bb6a9d5eff144b0900e9418f5bc2f67310199866891277ccbae391e4db573db65130c570c8834c812
+ENV JOOMLA_VERSION 5.4.0-beta1
+ENV JOOMLA_SHA512 d381bfa727d319eb4d528d5a77774b93698e7acbd0b763fe5f65195825f2ac3f75a2e188aa3d9bc67fccb4e42d561207afa34d8b5aa73a19b3f69e674d745e0d
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.4.0-alpha3/Joomla_5.4.0-alpha3-Alpha-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.4.0-beta1/Joomla_5.4.0-beta1-Beta-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
@@ -179,6 +161,7 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+
+CMD ["php-fpm"]
 
 
