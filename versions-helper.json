@@ -84,32 +84,5 @@
       "fpm-alpine",
       "fpm"
     ]
-  },
-  "4.4": {
-    "version": "4.4.13",
-    "php": "8.2",
-    "aliases": [4],
-    "phpVersions": {
-      "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.1": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      }
-    },
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ]
   }
 }
