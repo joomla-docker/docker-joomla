@@ -1,7 +1,7 @@
 {
   "6.0.beta": {
-    "version": "6.0.0-beta1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-beta1/Joomla_6.0.0-beta1-Beta-Full_Package.tar.zst",
+    "version": "6.0.0-beta2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-beta2/Joomla_6.0.0-beta2-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": ["6.0.0-beta"],
@@ -22,8 +22,8 @@
     ]
   },
   "5.4.beta": {
-    "version": "5.4.0-beta1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-beta1/Joomla_5.4.0-beta1-Beta-Full_Package.tar.zst",
+    "version": "5.4.0-beta2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-beta2/Joomla_5.4.0-beta2-Beta-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": ["5.4.0-beta"],
