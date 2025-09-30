@@ -24,7 +24,7 @@
       5,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.3.3/Joomla_5.3.3-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.3.4/Joomla_5.3.4-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
@@ -32,14 +32,14 @@
       "8.2",
       "8.3"
     ],
-    "sha512": "efc0c5249758f1f7d9915992e01aa44203e86126c59c4c3adec8a7342aec132da2f5e10910fd7e2485ab8f58faa981de6be99cfe3c3b3f3c1e79e7d2d0321388",
+    "sha512": "1857ea6b9681f48615d6831951def4c7ec10d81332a3882aa3f149a9603094a459ddb5e7fc8f8629c09687b23fff2d8527b8b5cf593bc7b152b34e1ac3e06636",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.3.3"
+    "version": "5.3.4"
   },
   "5.4.beta": {
     "aliases": [
