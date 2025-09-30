@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.1-fpm-alpine
+FROM php:8.2-fpm-alpine
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -18,8 +18,6 @@ RUN set -eux; \
 		ghostscript \
 # Alpine package for "imagemagick" contains ~120 .so files
 		imagemagick \
-# Needed for the zst joomla package
-		zstd \
 	;
 
 # install the PHP extensions we need.
@@ -131,16 +129,16 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 5.3.3
-ENV JOOMLA_SHA512 efc0c5249758f1f7d9915992e01aa44203e86126c59c4c3adec8a7342aec132da2f5e10910fd7e2485ab8f58faa981de6be99cfe3c3b3f3c1e79e7d2d0321388
+ENV JOOMLA_VERSION 4.4.14
+ENV JOOMLA_SHA512 d2c86436d2f26dfb6f0fc346d3865ef728646546946e5250f9ea04fa96b6c14e4d60cf569683140d79f56aea910d69a0148b6178d039c1c9a35f9a04222d9d5b
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/5.3.3/Joomla_5.3.3-Stable-Full_Package.tar.zst; \
-	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
+	curl -o joomla.tar.bz2 -SL https://github.com/joomla/joomla-cms/releases/download/4.4.14/Joomla_4.4.14-Stable-Full_Package.tar.bz2; \
+	echo "$JOOMLA_SHA512 *joomla.tar.bz2" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
-	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
-	rm joomla.tar.zst; \
+	tar -xf joomla.tar.bz2 -C /usr/src/joomla; \
+	rm joomla.tar.bz2; \
 	chown -R www-data:www-data /usr/src/joomla
 
 # Copy init scripts

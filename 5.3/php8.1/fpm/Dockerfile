@@ -152,5 +152,3 @@ COPY makedb.php /makedb.php
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["php-fpm"]
-
-

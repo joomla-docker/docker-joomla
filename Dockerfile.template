@@ -2,8 +2,16 @@
 	def is_alpine:
 		env.variant | index("alpine")
 -}}
+{{
+	def is_4_non_alpine:
+		(env.version == "4.4") and (is_alpine | not)
+-}}
 # from https://downloads.joomla.org/technical-requirements
+{{ if is_4_non_alpine then ( -}}
+FROM php:{{ env.phpVersion }}-{{ env.variant }}-bookworm
+{{ ) else ( -}}
 FROM php:{{ env.phpVersion }}-{{ env.variant }}
+{{ ) end -}}
 LABEL maintainer="{{ env.joomlaMaintainers }}"
 
 # Disable remote database security requirements.
@@ -246,5 +254,3 @@ CMD ["apache2-foreground"]
 {{ ) else ( }}
 CMD ["php-fpm"]
 {{ ) end -}}
-
-
