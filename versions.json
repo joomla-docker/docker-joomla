@@ -41,43 +41,43 @@
     ],
     "version": "5.3.4"
   },
-  "5.4.beta": {
+  "5.4.rc": {
     "aliases": [
-      "5.4.0-beta"
+      "5.4.0-rc"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-beta3/Joomla_5.4.0-beta3-Beta-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-rc1/Joomla_5.4.0-rc1-Release_Candidate-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
       "8.2",
       "8.3"
     ],
-    "sha512": "d2293cd8f58ca934e53e53c220c630b3d3ad29e1cda388ed6020d92f604934b0b10293ceafda8192554e14889a6946fe29467d7a86bcb3549b0cb188c1b37e66",
+    "sha512": "359ed7838dffab800cd40ee79fefd38f37f6ee102acd8bb48e299d74650eabe0d940014db0511fc7b818f2513cc479e20a077ca7f562cde3fdc64960d19a83b3",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.4.0-beta3"
+    "version": "5.4.0-rc1"
   },
-  "6.0.beta": {
+  "6.0.rc": {
     "aliases": [
-      "6.0.0-beta"
+      "6.0.0-rc"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-beta3/Joomla_6.0.0-beta3-Beta-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-rc1/Joomla_6.0.0-rc1-Release_Candidate-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
       "8.3"
     ],
-    "sha512": "115affa94563098e91eba6e4db9749f7978416e4e4a2bc976ae21d9761e65f196aedf0371ada6be17be3f29ff240782c5a331cbc182b60275a2dfb62d36870e8",
+    "sha512": "5ad63942a0d41609cc6307561612191961fc24c5c6a5324f3bf76d22f3b6830f9fc3be98281a8f603305a1e33fd32a6475e50ee0d61f2dba43ec4d682a14ea01",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "6.0.0-beta3"
+    "version": "6.0.0-rc1"
   }
 }
