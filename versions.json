@@ -1,83 +1,42 @@
 {
-  "4.4": {
+  "5.4": {
     "aliases": [
-      4
+      5
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/4.4.14/Joomla_4.4.14-Stable-Full_Package.tar.bz2",
-    "packageType": "tar.bz2",
-    "php": "8.2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0/Joomla_5.4.0-Stable-Full_Package.tar.zst",
+    "packageType": "tar.zst",
+    "php": "8.3",
     "phpVersions": [
-      "8.1",
-      "8.2"
+      "8.2",
+      "8.3"
     ],
-    "sha512": "d2c86436d2f26dfb6f0fc346d3865ef728646546946e5250f9ea04fa96b6c14e4d60cf569683140d79f56aea910d69a0148b6178d039c1c9a35f9a04222d9d5b",
+    "sha512": "5cda0c4dd0cb84bbb6152a4e47b7c81d3141bae4fcd8a89e9b844e59696f23b37af0db05e2647ee0c1fb6a41c8ff3241c71bd7fb6a64ffc48ca0dcf57c673842",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "4.4.14"
+    "version": "5.4.0"
   },
-  "5.3": {
+  "6.0": {
     "aliases": [
-      5,
+      6,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.3.4/Joomla_5.3.4-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0/Joomla_6.0.0-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
-      "8.1",
-      "8.2",
       "8.3"
     ],
-    "sha512": "1857ea6b9681f48615d6831951def4c7ec10d81332a3882aa3f149a9603094a459ddb5e7fc8f8629c09687b23fff2d8527b8b5cf593bc7b152b34e1ac3e06636",
+    "sha512": "ca19ea39f8cc1ef10b07abb84080d07f52e34d158522bf0b625948c4a077504cacdbe70e8eea80a3df381f21889a8f62367a9d8def861fa43d671f72b8daa73e",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.3.4"
-  },
-  "5.4.rc": {
-    "aliases": [
-      "5.4.0-rc"
-    ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-rc1/Joomla_5.4.0-rc1-Release_Candidate-Full_Package.tar.zst",
-    "packageType": "tar.zst",
-    "php": "8.3",
-    "phpVersions": [
-      "8.2",
-      "8.3"
-    ],
-    "sha512": "359ed7838dffab800cd40ee79fefd38f37f6ee102acd8bb48e299d74650eabe0d940014db0511fc7b818f2513cc479e20a077ca7f562cde3fdc64960d19a83b3",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "5.4.0-rc1"
-  },
-  "6.0.rc": {
-    "aliases": [
-      "6.0.0-rc"
-    ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-rc1/Joomla_6.0.0-rc1-Release_Candidate-Full_Package.tar.zst",
-    "packageType": "tar.zst",
-    "php": "8.3",
-    "phpVersions": [
-      "8.3"
-    ],
-    "sha512": "5ad63942a0d41609cc6307561612191961fc24c5c6a5324f3bf76d22f3b6830f9fc3be98281a8f603305a1e33fd32a6475e50ee0d61f2dba43ec4d682a14ea01",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "6.0.0-rc1"
+    "version": "6.0.0"
   }
 }

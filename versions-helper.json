@@ -1,10 +1,10 @@
 {
-  "6.0.rc": {
-    "version": "6.0.0-rc1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0-rc1/Joomla_6.0.0-rc1-Release_Candidate-Full_Package.tar.zst",
+  "6.0": {
+    "version": "6.0.0",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.0/Joomla_6.0.0-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
-    "aliases": ["6.0.0-rc"],
+    "aliases": [6, "latest"],
     "phpVersions": {
       "8.3": {
         "pecl": {
@@ -21,12 +21,11 @@
       "fpm"
     ]
   },
-  "5.4.rc": {
-    "version": "5.4.0-rc1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.0-rc1/Joomla_5.4.0-rc1-Release_Candidate-Full_Package.tar.zst",
+  "5.4": {
+    "version": "5.4.0",
     "packageType": "tar.zst",
     "php": "8.3",
-    "aliases": ["5.4.0-rc"],
+    "aliases": [5],
     "phpVersions": {
       "8.3": {
         "pecl": {
@@ -36,68 +35,6 @@
         }
       },
       "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      }
-    },
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ]
-  },
-  "5.3": {
-    "version": "5.3.4",
-    "packageType": "tar.zst",
-    "php": "8.3",
-    "aliases": [5, "latest"],
-    "phpVersions": {
-      "8.3": {
-        "pecl": {
-          "APCu": "5.1.24",
-          "memcached": "3.3.0",
-          "redis": "6.1.0"
-        }
-      },
-      "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.1": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      }
-    },
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ]
-  },
-  "4.4": {
-    "version": "4.4.14",
-    "php": "8.2",
-    "aliases": [4],
-    "phpVersions": {
-      "8.2": {
-        "pecl": {
-          "APCu": "5.1.23",
-          "memcached": "3.3.0",
-          "redis": "6.0.2"
-        }
-      },
-      "8.1": {
         "pecl": {
           "APCu": "5.1.23",
           "memcached": "3.3.0",
