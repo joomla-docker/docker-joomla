@@ -1,7 +1,7 @@
 {
   "6.0": {
-    "version": "6.0.1",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.1/Joomla_6.0.1-Stable-Full_Package.tar.zst",
+    "version": "6.0.2",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.2/Joomla_6.0.2-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [6, "latest"],
@@ -22,7 +22,7 @@
     ]
   },
   "5.4": {
-    "version": "5.4.1",
+    "version": "5.4.2",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5],
