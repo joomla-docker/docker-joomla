@@ -1,16 +1,23 @@
 {
   "6.0": {
-    "version": "6.0.2",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.2/Joomla_6.0.2-Stable-Full_Package.tar.zst",
+    "version": "6.0.3",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.3/Joomla_6.0.3-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
-    "php": "8.3",
+    "php": "8.4",
     "aliases": [6, "latest"],
     "phpVersions": {
+      "8.4": {
+        "pecl": {
+          "APCu": "5.1.28",
+          "memcached": "3.4.0",
+          "redis": "6.3.0"
+        }
+      },
       "8.3": {
         "pecl": {
-          "APCu": "5.1.24",
-          "memcached": "3.3.0",
-          "redis": "6.1.0"
+          "APCu": "5.1.27",
+          "memcached": "3.4.0",
+          "redis": "6.3.0"
         }
       }
     },
@@ -22,23 +29,23 @@
     ]
   },
   "5.4": {
-    "version": "5.4.2",
+    "version": "5.4.3",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5],
     "phpVersions": {
       "8.3": {
         "pecl": {
-          "APCu": "5.1.24",
-          "memcached": "3.3.0",
-          "redis": "6.1.0"
+          "APCu": "5.1.27",
+          "memcached": "3.4.0",
+          "redis": "6.3.0"
         }
       },
       "8.2": {
         "pecl": {
-          "APCu": "5.1.23",
+          "APCu": "5.1.26",
           "memcached": "3.3.0",
-          "redis": "6.0.2"
+          "redis": "6.2.0"
         }
       }
     },

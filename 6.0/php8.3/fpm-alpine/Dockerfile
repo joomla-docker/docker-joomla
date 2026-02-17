@@ -79,9 +79,9 @@ RUN set -ex; \
 	[ -d "$extDir" ]; \
 	\
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.24; \
-	pecl install memcached-3.3.0; \
-	pecl install redis-6.1.0; \
+	pecl install APCu-5.1.27; \
+	pecl install memcached-3.4.0; \
+	pecl install redis-6.3.0; \
 	\
 	docker-php-ext-enable \
 		apcu \
@@ -131,12 +131,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 6.0.2
-ENV JOOMLA_SHA512 a79d95d23b3d75b4e72e47e076f7b96f381f9fae7d3b1f402d2f7120fac76dfd17aa6fba386db00d84913f40791f04b89435ca04636437af2ef7a9d78af472db
+ENV JOOMLA_VERSION 6.0.3
+ENV JOOMLA_SHA512 2390bd8b741e948d8b5b93b14b16a7aa7d6e60b8d0a18eb678be5ae11b664cfd375def9a8398b979a7fdcbe8eb30b75ae0ef25d95fcbd11a5f435450c8a75608
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.0.2/Joomla_6.0.2-Stable-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.0.3/Joomla_6.0.3-Stable-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
