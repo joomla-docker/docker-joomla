@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.4-fpm
+FROM php:8.3-fpm
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -76,7 +76,7 @@ RUN set -ex; \
 	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
 	[ -d "$extDir" ]; \
 # pecl will claim success even if one install fails, so we need to perform each install separately
-	pecl install APCu-5.1.28; \
+	pecl install APCu-5.1.27; \
 	pecl install memcached-3.4.0; \
 	pecl install redis-6.3.0; \
 	\
@@ -133,12 +133,12 @@ RUN { \
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 6.0.4
-ENV JOOMLA_SHA512 c1d98a550c43dbbd68b9be369352f015a05e858d6e163e5fdb909fa40563d34dee268f2fcb64b122deb8bb025b4c6af27d391e26563a58a3350c4875a2e1b3e8
+ENV JOOMLA_VERSION 6.1.0-rc1
+ENV JOOMLA_SHA512 8fcd8532ae124555ea9a25e16d256270b2ea8e0849a6a221f0160331c2afd09cad6588b238d4c7d42fc5c06a926775053f9f7a5d68424b6b54d4e07382436e92
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.0.4/Joomla_6.0.4-Stable-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.1.0-rc1/Joomla_6.1.0-rc1-Release_Candidate-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \

@@ -1,7 +1,36 @@
 {
+  "6.1-rc": {
+    "version": "6.1.0-rc1",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.1.0-rc1/Joomla_6.1.0-rc1-Release_Candidate-Full_Package.tar.zst",
+    "packageType": "tar.zst",
+    "php": "8.4",
+    "aliases": ["6.1.0-rc"],
+    "phpVersions": {
+      "8.4": {
+        "pecl": {
+          "APCu": "5.1.28",
+          "memcached": "3.4.0",
+          "redis": "6.3.0"
+        }
+      },
+      "8.3": {
+        "pecl": {
+          "APCu": "5.1.27",
+          "memcached": "3.4.0",
+          "redis": "6.3.0"
+        }
+      }
+    },
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ]
+  },
   "6.0": {
-    "version": "6.0.3",
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.3/Joomla_6.0.3-Stable-Full_Package.tar.zst",
+    "version": "6.0.4",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.4/Joomla_6.0.4-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.4",
     "aliases": [6, "latest"],
@@ -29,7 +58,7 @@
     ]
   },
   "5.4": {
-    "version": "5.4.3",
+    "version": "5.4.4",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5],
