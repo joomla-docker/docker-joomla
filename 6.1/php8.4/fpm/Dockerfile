@@ -5,7 +5,7 @@
 #
 
 # from https://downloads.joomla.org/technical-requirements
-FROM php:8.4-apache
+FROM php:8.4-fpm
 LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 # Disable remote database security requirements.
@@ -130,33 +130,15 @@ RUN { \
 		echo 'html_errors = Off'; \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
 
-RUN set -eux; \
-	a2enmod rewrite expires; \
-	\
-# https://httpd.apache.org/docs/2.4/mod/mod_remoteip.html
-	a2enmod remoteip; \
-	{ \
-		echo 'RemoteIPHeader X-Forwarded-For'; \
-# these IP ranges are reserved for "private" use and should thus *usually* be safe inside Docker
-		echo 'RemoteIPInternalProxy 10.0.0.0/8'; \
-		echo 'RemoteIPInternalProxy 172.16.0.0/12'; \
-		echo 'RemoteIPInternalProxy 192.168.0.0/16'; \
-		echo 'RemoteIPInternalProxy 169.254.0.0/16'; \
-		echo 'RemoteIPInternalProxy 127.0.0.0/8'; \
-	} > /etc/apache2/conf-available/remoteip.conf; \
-	a2enconf remoteip; \
-# (replace all instances of "%h" with "%a" in LogFormat)
-	find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
-
 VOLUME /var/www/html
 
 # Define Joomla version and expected SHA512 signature
-ENV JOOMLA_VERSION 6.0.4
-ENV JOOMLA_SHA512 c1d98a550c43dbbd68b9be369352f015a05e858d6e163e5fdb909fa40563d34dee268f2fcb64b122deb8bb025b4c6af27d391e26563a58a3350c4875a2e1b3e8
+ENV JOOMLA_VERSION 6.1.0
+ENV JOOMLA_SHA512 dec284382f1a23ab9412292400d94d3037f67923d5e51a1b51a25c63fb0045dfb1f5f5f96538e652f54ea6d28ea7ed9b590ba9016fa051e45393b1ce54da3e1b
 
 # Download package and extract to web volume
 RUN set -ex; \
-	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.0.4/Joomla_6.0.4-Stable-Full_Package.tar.zst; \
+	curl -o joomla.tar.zst -SL https://github.com/joomla/joomla-cms/releases/download/6.1.0/Joomla_6.1.0-Stable-Full_Package.tar.zst; \
 	echo "$JOOMLA_SHA512 *joomla.tar.zst" | sha512sum -c -; \
 	mkdir /usr/src/joomla; \
 	tar --zstd -xf joomla.tar.zst -C /usr/src/joomla; \
@@ -168,4 +150,5 @@ COPY docker-entrypoint.sh /entrypoint.sh
 COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+
+CMD ["php-fpm"]

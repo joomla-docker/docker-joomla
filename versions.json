@@ -3,61 +3,41 @@
     "aliases": [
       5
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.4/Joomla_5.4.4-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.5/Joomla_5.4.5-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.3",
     "phpVersions": [
       "8.2",
       "8.3"
     ],
-    "sha512": "ec838f01572dcd67030cf2e848c89f80b381631882a5ec68497b372329e33837ebae84d95c1a4ca73d72564d260033b061fa21082678c7025641f58661885242",
+    "sha512": "b13e34397de1c386d6f083ed10b785b507dce5d685cd7388a6d4f6ac9d1497bf8d927c58d4b8847c223eb5886dd1da7357d9ce73a591e04ac66e64c7bfd543f9",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "5.4.4"
+    "version": "5.4.5"
   },
-  "6.0": {
+  "6.1": {
     "aliases": [
       6,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.0.4/Joomla_6.0.4-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.1.0/Joomla_6.1.0-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.4",
     "phpVersions": [
       "8.3",
       "8.4"
     ],
-    "sha512": "c1d98a550c43dbbd68b9be369352f015a05e858d6e163e5fdb909fa40563d34dee268f2fcb64b122deb8bb025b4c6af27d391e26563a58a3350c4875a2e1b3e8",
+    "sha512": "dec284382f1a23ab9412292400d94d3037f67923d5e51a1b51a25c63fb0045dfb1f5f5f96538e652f54ea6d28ea7ed9b590ba9016fa051e45393b1ce54da3e1b",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "6.0.4"
-  },
-  "6.1-rc": {
-    "aliases": [
-      "6.1.0-rc"
-    ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.1.0-rc1/Joomla_6.1.0-rc1-Release_Candidate-Full_Package.tar.zst",
-    "packageType": "tar.zst",
-    "php": "8.4",
-    "phpVersions": [
-      "8.3",
-      "8.4"
-    ],
-    "sha512": "8fcd8532ae124555ea9a25e16d256270b2ea8e0849a6a221f0160331c2afd09cad6588b238d4c7d42fc5c06a926775053f9f7a5d68424b6b54d4e07382436e92",
-    "variant": "apache",
-    "variants": [
-      "apache",
-      "fpm-alpine",
-      "fpm"
-    ],
-    "version": "6.1.0-rc1"
+    "version": "6.1.0"
   }
 }
