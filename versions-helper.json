@@ -7,6 +7,7 @@
     "phpVersions": {
       "8.4": {
         "pecl": {
+          "imagick": "3.8.1",
           "APCu": "5.1.28",
           "memcached": "3.4.0",
           "redis": "6.3.0"
@@ -14,6 +15,7 @@
       },
       "8.3": {
         "pecl": {
+          "imagick": "3.8.0",
           "APCu": "5.1.27",
           "memcached": "3.4.0",
           "redis": "6.3.0"
@@ -35,6 +37,7 @@
     "phpVersions": {
       "8.3": {
         "pecl": {
+          "imagick": "3.8.0",
           "APCu": "5.1.27",
           "memcached": "3.4.0",
           "redis": "6.3.0"
@@ -42,6 +45,7 @@
       },
       "8.2": {
         "pecl": {
+          "imagick": "3.8.0",
           "APCu": "5.1.26",
           "memcached": "3.3.0",
           "redis": "6.2.0"

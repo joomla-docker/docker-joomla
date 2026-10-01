@@ -67,16 +67,19 @@ for version; do
 
     # get the pecl values (we may want to move this to versions.json)
     peclValues="$(jq -r '.[env.version].phpVersions[env.phpVersion].pecl' versions-helper.json)"
-    # get the APCu values
+    # get the imagick value
+    pecl_imagick="$(echo "${peclValues}" | jq -r '.imagick')"
+    export pecl_imagick
+    # get the APCu value
     pecl_APCu="$(echo "${peclValues}" | jq -r '.APCu')"
     export pecl_APCu
-    # get the memcached values
+    # get the memcached value
     pecl_memcached="$(echo "${peclValues}" | jq -r '.memcached')"
     export pecl_memcached
-    # get the redis values
+    # get the redis value
     pecl_redis="$(echo "${peclValues}" | jq -r '.redis')"
     export pecl_redis
-    # get the mcrypt values
+    # get the mcrypt value
     pecl_mcrypt="$(echo "${peclValues}" | jq -r '.mcrypt')"
     export pecl_mcrypt
 
