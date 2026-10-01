@@ -191,6 +191,19 @@ RUN set -eux; \
 		echo 'opcache.max_accelerated_files=4000'; \
 		echo 'opcache.revalidate_freq=2'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+# set directives to improve security
+RUN { \
+		echo 'expose_php = Off'; \
+		echo 'session.cookie_httponly = On'; \
+		echo 'session.cookie_secure = On'; \
+		echo 'session.use_strict_mode = On'; \
+		echo 'session.use_cookies = On'; \
+		echo 'session.use_only_cookies = On'; \
+		echo 'session.cookie_samesite = Strict'; \
+		echo 'disable_functions = exec,passthru,shell_exec,system,proc_open,popen,parse_ini_file,show_source'; \
+		echo 'allow_url_fopen = Off'; \
+		echo 'allow_url_include = Off'; \
+	} > /usr/local/etc/php/conf.d/security.ini
 # set recommended error logging
 RUN { \
 # https://www.php.net/manual/en/errorfunc.constants.php
