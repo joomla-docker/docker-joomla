@@ -101,6 +101,36 @@ joomla_get_host_port_by_colon() {
     IFS=$old_IFS  # Restore the original IFS value
 }
 
+# Function to run a Joomla CLI command
+joomla_run_cli() {
+    local status
+
+    # Do not log arguments: commands can contain passwords or other secrets.
+    if php cli/joomla.php --no-interaction "$@"; then
+        joomla_log_info "Joomla CLI command completed successfully."
+    else
+        status=$?
+        joomla_log_error "Joomla CLI command failed (exit $status)."
+        return "$status"
+    fi
+}
+
+# Split a command into arguments without evaluating shell syntax.
+# Arguments are whitespace-separated; shell quotes are not interpreted.
+joomla_run_cli_string() {
+    local command="$1"
+    local -a arguments=()
+
+    IFS=$' \t' read -r -a arguments <<< "$command"
+
+    # Ignore empty entries, including entries containing only whitespace.
+    if [[ ${#arguments[@]} -eq 0 ]]; then
+        return 0
+    fi
+
+    joomla_run_cli "${arguments[@]}"
+}
+
 # Function to install extension from URL
 joomla_install_extension_via_url() {
     local url=$1
@@ -359,6 +389,20 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
             # add the smtp port to configuration file
             if [[ -n "${JOOMLA_SMTP_HOST_PORT}" ]]; then
                 sed -i "s/public \$smtpport = 25;/public \$smtpport = ${JOOMLA_SMTP_HOST_PORT};/g" configuration.php
+            fi
+
+            # Run CLI commands after installation, extensions and SMTP setup.
+            if [[ -n "${JOOMLA_CLI_COMMANDS:-}" ]]; then
+                # The existing semicolon splitter reads one line at a time.
+                if [[ "$JOOMLA_CLI_COMMANDS" == *$'\n'* || "$JOOMLA_CLI_COMMANDS" == *$'\r'* ]]; then
+                    joomla_log_error "JOOMLA_CLI_COMMANDS must be a single-line semicolon-separated list."
+                    exit 1
+                fi
+
+                joomla_get_array_by_semicolon "$JOOMLA_CLI_COMMANDS" J_C_COMMANDS
+                for joomla_command in "${J_C_COMMANDS[@]}"; do
+                    joomla_run_cli_string "$joomla_command"
+                done
             fi
 
             # fix the configuration.php ownership
