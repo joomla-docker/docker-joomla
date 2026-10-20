@@ -19,25 +19,26 @@
     ],
     "version": "5.4.9"
   },
-  "6.1": {
+  "6.2": {
     "aliases": [
       6,
       "latest"
     ],
-    "package": "https://github.com/joomla/joomla-cms/releases/download/6.1.4/Joomla_6.1.4-Stable-Full_Package.tar.zst",
+    "package": "https://github.com/joomla/joomla-cms/releases/download/6.2.0/Joomla_6.2.0-Stable-Full_Package.tar.zst",
     "packageType": "tar.zst",
     "php": "8.4",
     "phpVersions": [
       "8.3",
-      "8.4"
+      "8.4",
+      "8.5"
     ],
-    "sha512": "c969341376e41c957223559adea36d3090f1bba982cb08eb162cd40f9994e43a4400abd2cc0b9b5c5db61d9401101fcfc5db815a626691d44533dc38800b9146",
+    "sha512": "5d61beed1b2ced52ee96b312d327e8f3616cdd93e5d4a759bef9bc0cee384232a21e3b85e15f659edcdb83fb5ea9969cd009722eeb6151303cc5e6c9d6dc26bc",
     "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
       "fpm"
     ],
-    "version": "6.1.4"
+    "version": "6.2.0"
   }
 }
