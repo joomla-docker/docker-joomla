@@ -38,7 +38,7 @@
     ]
   },
   "5.4": {
-    "version": "5.4.9",
+    "version": "5.4.10",
     "packageType": "tar.zst",
     "php": "8.3",
     "aliases": [5],
