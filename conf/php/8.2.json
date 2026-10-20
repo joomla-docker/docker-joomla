@@ -1,0 +1,205 @@
+{
+  "download": {
+    "pie": {
+      "version": "1.5.2",
+      "package": "https://github.com/php/pie/releases/download/{version}/pie.phar",
+      "type": "binary",
+      "destination": "/tmp/pie",
+      "temporary": true
+    }
+  },
+  "pie": {
+    "imagick/imagick": "3.8.0",
+    "apcu/apcu": "5.1.26",
+    "php-memcached/php-memcached": "3.3.0",
+    "phpredis/phpredis": "6.2.0"
+  },
+  "apt": [
+    "ghostscript"
+  ],
+  "apk": [
+    "bash",
+    "ghostscript",
+    "imagemagick"
+  ],
+  "build": {
+    "apt": [
+      "libbz2-dev",
+      "libgmp-dev",
+      "libicu-dev",
+      "libfreetype6-dev",
+      "libjpeg-dev",
+      "libldap2-dev",
+      "libmemcached-dev",
+      "libmagickwand-dev",
+      "libpq-dev",
+      "libpng-dev",
+      "libwebp-dev",
+      "libzip-dev",
+      "automake",
+      "libtool",
+      "zlib1g-dev",
+      "unzip"
+    ],
+    "apk": [
+      "autoconf",
+      "bzip2-dev",
+      "gmp-dev",
+      "icu-dev",
+      "freetype-dev",
+      "imagemagick-dev",
+      "libjpeg-turbo-dev",
+      "libmemcached-dev",
+      "libpng-dev",
+      "libwebp-dev",
+      "libzip-dev",
+      "openldap-dev",
+      "pcre-dev",
+      "postgresql-dev",
+      "automake",
+      "libtool",
+      "linux-headers",
+      "zlib-dev",
+      "unzip"
+    ]
+  },
+  "extensions": {
+    "install": [
+      "bz2",
+      "bcmath",
+      "exif",
+      "gd",
+      "gmp",
+      "intl",
+      "ldap",
+      "mysqli",
+      "pdo_mysql",
+      "pdo_pgsql",
+      "pgsql",
+      "zip"
+    ],
+    "configure": {
+      "gd": [
+        "--with-freetype",
+        "--with-jpeg",
+        "--with-webp"
+      ]
+    },
+    "enable": [
+      "opcache"
+    ],
+    "check": [
+      "apcu",
+      "imagick",
+      "memcached",
+      "redis",
+      "Zend OPcache"
+    ]
+  },
+  "environment": {
+    "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+  },
+  "config": {
+    "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+      "opcache.memory_consumption=128",
+      "opcache.interned_strings_buffer=8",
+      "opcache.max_accelerated_files=4000",
+      "opcache.revalidate_freq=2"
+    ],
+    "/usr/local/etc/php/conf.d/error-logging.ini": [
+      "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+      "display_errors = Off",
+      "display_startup_errors = Off",
+      "log_errors = On",
+      "error_log = /dev/stderr",
+      "ignore_repeated_errors = On",
+      "ignore_repeated_source = Off",
+      "html_errors = Off"
+    ]
+  },
+  "variants": {
+    "apache": {
+      "base": "php:8.2-apache",
+      "command": [
+        "apache2-foreground"
+      ],
+      "extensions": {
+        "configure": {
+          "ldap": [
+            "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+          ]
+        }
+      },
+      "apache": {
+        "modules": [
+          "rewrite",
+          "expires",
+          "remoteip"
+        ],
+        "enable": [
+          "remoteip"
+        ],
+        "remoteAddress": true
+      },
+      "config": {
+        "/etc/apache2/conf-available/remoteip.conf": [
+          "RemoteIPHeader X-Forwarded-For",
+          "RemoteIPInternalProxy 10.0.0.0/8",
+          "RemoteIPInternalProxy 172.16.0.0/12",
+          "RemoteIPInternalProxy 192.168.0.0/16",
+          "RemoteIPInternalProxy 169.254.0.0/16",
+          "RemoteIPInternalProxy 127.0.0.0/8"
+        ]
+      },
+      "checks": [
+        [
+          "apache2ctl",
+          "-t"
+        ]
+      ]
+    },
+    "fpm-alpine": {
+      "base": "php:8.2-fpm-alpine",
+      "command": [
+        "php-fpm"
+      ],
+      "extensions": {
+        "configure": {
+          "ldap": []
+        }
+      },
+      "checks": [
+        [
+          "php-fpm",
+          "-t"
+        ]
+      ]
+    },
+    "fpm": {
+      "base": "php:8.2-fpm",
+      "command": [
+        "php-fpm"
+      ],
+      "extensions": {
+        "configure": {
+          "ldap": [
+            "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+          ]
+        }
+      },
+      "checks": [
+        [
+          "php-fpm",
+          "-t"
+        ]
+      ]
+    }
+  },
+  "volume": [
+    "/var/www/html"
+  ],
+  "workdir": "/var/www/html",
+  "entrypoint": [
+    "/entrypoint.sh"
+  ]
+}

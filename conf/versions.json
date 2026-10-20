@@ -1,0 +1,1450 @@
+{
+  "5.4": {
+    "archives": {
+      "tar.bz2": {
+        "apk": [
+          "bzip2"
+        ],
+        "apt": [
+          "bzip2"
+        ]
+      },
+      "tar.gz": {
+        "apk": [
+          "gzip"
+        ],
+        "apt": [
+          "gzip"
+        ]
+      },
+      "tar.zst": {
+        "apk": [
+          "zstd"
+        ],
+        "apt": [
+          "zstd"
+        ]
+      }
+    },
+    "phpVersions": {
+      "8.2": {
+        "apk": [
+          "bash",
+          "ghostscript",
+          "imagemagick"
+        ],
+        "apt": [
+          "ghostscript"
+        ],
+        "build": {
+          "apk": [
+            "autoconf",
+            "bzip2-dev",
+            "gmp-dev",
+            "icu-dev",
+            "freetype-dev",
+            "imagemagick-dev",
+            "libjpeg-turbo-dev",
+            "libmemcached-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "openldap-dev",
+            "pcre-dev",
+            "postgresql-dev",
+            "automake",
+            "libtool",
+            "linux-headers",
+            "zlib-dev",
+            "unzip"
+          ],
+          "apt": [
+            "libbz2-dev",
+            "libgmp-dev",
+            "libicu-dev",
+            "libfreetype6-dev",
+            "libjpeg-dev",
+            "libldap2-dev",
+            "libmemcached-dev",
+            "libmagickwand-dev",
+            "libpq-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "automake",
+            "libtool",
+            "zlib1g-dev",
+            "unzip"
+          ]
+        },
+        "config": {
+          "/usr/local/etc/php/conf.d/error-logging.ini": [
+            "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+            "display_errors = Off",
+            "display_startup_errors = Off",
+            "log_errors = On",
+            "error_log = /dev/stderr",
+            "ignore_repeated_errors = On",
+            "ignore_repeated_source = Off",
+            "html_errors = Off"
+          ],
+          "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+            "opcache.memory_consumption=128",
+            "opcache.interned_strings_buffer=8",
+            "opcache.max_accelerated_files=4000",
+            "opcache.revalidate_freq=2"
+          ]
+        },
+        "download": {
+          "pie": {
+            "destination": "/tmp/pie",
+            "package": "https://github.com/php/pie/releases/download/1.5.2/pie.phar",
+            "sha256": "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7",
+            "temporary": true,
+            "type": "binary",
+            "version": "1.5.2"
+          }
+        },
+        "entrypoint": [
+          "/entrypoint.sh"
+        ],
+        "environment": {
+          "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+        },
+        "extensions": {
+          "check": [
+            "apcu",
+            "imagick",
+            "memcached",
+            "redis",
+            "Zend OPcache"
+          ],
+          "configure": {
+            "gd": [
+              "--with-freetype",
+              "--with-jpeg",
+              "--with-webp"
+            ]
+          },
+          "enable": [
+            "opcache"
+          ],
+          "install": [
+            "bz2",
+            "bcmath",
+            "exif",
+            "gd",
+            "gmp",
+            "intl",
+            "ldap",
+            "mysqli",
+            "pdo_mysql",
+            "pdo_pgsql",
+            "pgsql",
+            "zip"
+          ]
+        },
+        "pie": {
+          "apcu/apcu": "5.1.26",
+          "imagick/imagick": "3.8.0",
+          "php-memcached/php-memcached": "3.3.0",
+          "phpredis/phpredis": "6.2.0"
+        },
+        "variants": {
+          "apache": {
+            "apache": {
+              "enable": [
+                "remoteip"
+              ],
+              "modules": [
+                "rewrite",
+                "expires",
+                "remoteip"
+              ],
+              "remoteAddress": true
+            },
+            "base": "php:8.2-apache",
+            "checks": [
+              [
+                "apache2ctl",
+                "-t"
+              ]
+            ],
+            "command": [
+              "apache2-foreground"
+            ],
+            "config": {
+              "/etc/apache2/conf-available/remoteip.conf": [
+                "RemoteIPHeader X-Forwarded-For",
+                "RemoteIPInternalProxy 10.0.0.0/8",
+                "RemoteIPInternalProxy 172.16.0.0/12",
+                "RemoteIPInternalProxy 192.168.0.0/16",
+                "RemoteIPInternalProxy 169.254.0.0/16",
+                "RemoteIPInternalProxy 127.0.0.0/8"
+              ]
+            },
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm": {
+            "base": "php:8.2-fpm",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm-alpine": {
+            "base": "php:8.2-fpm-alpine",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": []
+              }
+            }
+          }
+        },
+        "volume": [
+          "/var/www/html"
+        ],
+        "workdir": "/var/www/html"
+      },
+      "8.3": {
+        "apk": [
+          "bash",
+          "ghostscript",
+          "imagemagick"
+        ],
+        "apt": [
+          "ghostscript"
+        ],
+        "build": {
+          "apk": [
+            "autoconf",
+            "bzip2-dev",
+            "gmp-dev",
+            "icu-dev",
+            "freetype-dev",
+            "imagemagick-dev",
+            "libjpeg-turbo-dev",
+            "libmemcached-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "openldap-dev",
+            "pcre-dev",
+            "postgresql-dev",
+            "automake",
+            "libtool",
+            "linux-headers",
+            "zlib-dev",
+            "unzip"
+          ],
+          "apt": [
+            "libbz2-dev",
+            "libgmp-dev",
+            "libicu-dev",
+            "libfreetype6-dev",
+            "libjpeg-dev",
+            "libldap2-dev",
+            "libmemcached-dev",
+            "libmagickwand-dev",
+            "libpq-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "automake",
+            "libtool",
+            "zlib1g-dev",
+            "unzip"
+          ]
+        },
+        "config": {
+          "/usr/local/etc/php/conf.d/error-logging.ini": [
+            "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+            "display_errors = Off",
+            "display_startup_errors = Off",
+            "log_errors = On",
+            "error_log = /dev/stderr",
+            "ignore_repeated_errors = On",
+            "ignore_repeated_source = Off",
+            "html_errors = Off"
+          ],
+          "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+            "opcache.memory_consumption=128",
+            "opcache.interned_strings_buffer=8",
+            "opcache.max_accelerated_files=4000",
+            "opcache.revalidate_freq=2"
+          ]
+        },
+        "download": {
+          "pie": {
+            "destination": "/tmp/pie",
+            "package": "https://github.com/php/pie/releases/download/1.5.2/pie.phar",
+            "sha256": "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7",
+            "temporary": true,
+            "type": "binary",
+            "version": "1.5.2"
+          }
+        },
+        "entrypoint": [
+          "/entrypoint.sh"
+        ],
+        "environment": {
+          "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+        },
+        "extensions": {
+          "check": [
+            "apcu",
+            "imagick",
+            "memcached",
+            "redis",
+            "Zend OPcache"
+          ],
+          "configure": {
+            "gd": [
+              "--with-freetype",
+              "--with-jpeg",
+              "--with-webp"
+            ]
+          },
+          "enable": [
+            "opcache"
+          ],
+          "install": [
+            "bz2",
+            "bcmath",
+            "exif",
+            "gd",
+            "gmp",
+            "intl",
+            "ldap",
+            "mysqli",
+            "pdo_mysql",
+            "pdo_pgsql",
+            "pgsql",
+            "zip"
+          ]
+        },
+        "pie": {
+          "apcu/apcu": "5.1.27",
+          "imagick/imagick": "3.8.0",
+          "php-memcached/php-memcached": "3.4.0",
+          "phpredis/phpredis": "6.3.0"
+        },
+        "variants": {
+          "apache": {
+            "apache": {
+              "enable": [
+                "remoteip"
+              ],
+              "modules": [
+                "rewrite",
+                "expires",
+                "remoteip"
+              ],
+              "remoteAddress": true
+            },
+            "base": "php:8.3-apache",
+            "checks": [
+              [
+                "apache2ctl",
+                "-t"
+              ]
+            ],
+            "command": [
+              "apache2-foreground"
+            ],
+            "config": {
+              "/etc/apache2/conf-available/remoteip.conf": [
+                "RemoteIPHeader X-Forwarded-For",
+                "RemoteIPInternalProxy 10.0.0.0/8",
+                "RemoteIPInternalProxy 172.16.0.0/12",
+                "RemoteIPInternalProxy 192.168.0.0/16",
+                "RemoteIPInternalProxy 169.254.0.0/16",
+                "RemoteIPInternalProxy 127.0.0.0/8"
+              ]
+            },
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm": {
+            "base": "php:8.3-fpm",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm-alpine": {
+            "base": "php:8.3-fpm-alpine",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": []
+              }
+            }
+          }
+        },
+        "volume": [
+          "/var/www/html"
+        ],
+        "workdir": "/var/www/html"
+      }
+    },
+    "states": {
+      "stable": {
+        "aliases": [
+          "5.4",
+          "5"
+        ],
+        "package": "https://github.com/joomla/joomla-cms/releases/download/5.4.10/Joomla_5.4.10-Stable-Full_Package.tar.zst",
+        "packageType": "tar.zst",
+        "php": "8.3",
+        "sha512": "31a29996d6234aa8d73384abd9ad91a1b7865cef79a17e747c389164ecf5f7c47deefcb38cd18ebf57eb409d10f531152c390caf7da50e6ad403acc32c791832",
+        "version": "5.4.10"
+      }
+    },
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ]
+  },
+  "6.2": {
+    "archives": {
+      "tar.bz2": {
+        "apk": [
+          "bzip2"
+        ],
+        "apt": [
+          "bzip2"
+        ]
+      },
+      "tar.gz": {
+        "apk": [
+          "gzip"
+        ],
+        "apt": [
+          "gzip"
+        ]
+      },
+      "tar.zst": {
+        "apk": [
+          "zstd"
+        ],
+        "apt": [
+          "zstd"
+        ]
+      }
+    },
+    "phpVersions": {
+      "8.3": {
+        "apk": [
+          "bash",
+          "ghostscript",
+          "imagemagick"
+        ],
+        "apt": [
+          "ghostscript"
+        ],
+        "build": {
+          "apk": [
+            "autoconf",
+            "bzip2-dev",
+            "gmp-dev",
+            "icu-dev",
+            "freetype-dev",
+            "imagemagick-dev",
+            "libjpeg-turbo-dev",
+            "libmemcached-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "openldap-dev",
+            "pcre-dev",
+            "postgresql-dev",
+            "automake",
+            "libtool",
+            "linux-headers",
+            "zlib-dev",
+            "unzip"
+          ],
+          "apt": [
+            "libbz2-dev",
+            "libgmp-dev",
+            "libicu-dev",
+            "libfreetype6-dev",
+            "libjpeg-dev",
+            "libldap2-dev",
+            "libmemcached-dev",
+            "libmagickwand-dev",
+            "libpq-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "automake",
+            "libtool",
+            "zlib1g-dev",
+            "unzip"
+          ]
+        },
+        "config": {
+          "/usr/local/etc/php/conf.d/error-logging.ini": [
+            "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+            "display_errors = Off",
+            "display_startup_errors = Off",
+            "log_errors = On",
+            "error_log = /dev/stderr",
+            "ignore_repeated_errors = On",
+            "ignore_repeated_source = Off",
+            "html_errors = Off"
+          ],
+          "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+            "opcache.memory_consumption=128",
+            "opcache.interned_strings_buffer=8",
+            "opcache.max_accelerated_files=4000",
+            "opcache.revalidate_freq=2"
+          ]
+        },
+        "dev": {
+          "apk": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "zlib",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "apt": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "build": {
+            "apk": [
+              "npm"
+            ],
+            "apt": [
+              "npm"
+            ]
+          },
+          "checks": [
+            [
+              "composer",
+              "--version"
+            ],
+            [
+              "npm",
+              "--version"
+            ],
+            [
+              "npx",
+              "--version"
+            ]
+          ],
+          "config": {
+            "/usr/local/etc/php/conf.d/zz-joomla-development.ini": [
+              "error_reporting = E_ALL",
+              "display_errors = On",
+              "display_startup_errors = On",
+              "log_errors = On",
+              "ignore_repeated_errors = Off",
+              "opcache.validate_timestamps = 1",
+              "opcache.revalidate_freq = 0",
+              "opcache.jit = off",
+              "opcache.jit_buffer_size = 0"
+            ],
+            "/usr/local/etc/php/conf.d/zz-xdebug-settings.ini": [
+              "xdebug.mode = develop,debug",
+              "xdebug.start_with_request = trigger",
+              "xdebug.start_upon_error = no",
+              "xdebug.discover_client_host = 0",
+              "xdebug.client_host = ${JOOMLA_XDEBUG_CLIENT_HOST}",
+              "xdebug.client_port = ${JOOMLA_XDEBUG_CLIENT_PORT}",
+              "xdebug.output_dir = /tmp"
+            ]
+          },
+          "download": {
+            "composer": {
+              "checksum": "https://getcomposer.org/download/2.10.3/composer.phar.sha256sum",
+              "destination": "/usr/local/bin/composer",
+              "package": "https://getcomposer.org/download/2.10.3/composer.phar",
+              "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6",
+              "type": "binary",
+              "version": "2.10.3"
+            }
+          },
+          "environment": {
+            "JOOMLA_XDEBUG_CLIENT_HOST": "host.docker.internal",
+            "JOOMLA_XDEBUG_CLIENT_PORT": "9003",
+            "XDEBUG_MODE": "develop,debug"
+          },
+          "extensions": {
+            "check": [
+              "xdebug"
+            ],
+            "install": [
+              "pcntl",
+              "sockets"
+            ]
+          },
+          "npm": {
+            "npm": "11.21.1"
+          },
+          "pie": {
+            "xdebug/xdebug": "3.5.3"
+          }
+        },
+        "download": {
+          "pie": {
+            "destination": "/tmp/pie",
+            "package": "https://github.com/php/pie/releases/download/1.5.2/pie.phar",
+            "sha256": "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7",
+            "temporary": true,
+            "type": "binary",
+            "version": "1.5.2"
+          }
+        },
+        "entrypoint": [
+          "/entrypoint.sh"
+        ],
+        "environment": {
+          "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+        },
+        "extensions": {
+          "check": [
+            "apcu",
+            "imagick",
+            "memcached",
+            "redis",
+            "Zend OPcache"
+          ],
+          "configure": {
+            "gd": [
+              "--with-freetype",
+              "--with-jpeg",
+              "--with-webp"
+            ]
+          },
+          "enable": [
+            "opcache"
+          ],
+          "install": [
+            "bz2",
+            "bcmath",
+            "exif",
+            "gd",
+            "gmp",
+            "intl",
+            "ldap",
+            "mysqli",
+            "pdo_mysql",
+            "pdo_pgsql",
+            "pgsql",
+            "zip"
+          ]
+        },
+        "pie": {
+          "apcu/apcu": "5.1.27",
+          "imagick/imagick": "3.8.0",
+          "php-memcached/php-memcached": "3.4.0",
+          "phpredis/phpredis": "6.3.0"
+        },
+        "variants": {
+          "apache": {
+            "apache": {
+              "enable": [
+                "remoteip"
+              ],
+              "modules": [
+                "rewrite",
+                "expires",
+                "remoteip"
+              ],
+              "remoteAddress": true
+            },
+            "base": "php:8.3-apache",
+            "checks": [
+              [
+                "apache2ctl",
+                "-t"
+              ]
+            ],
+            "command": [
+              "apache2-foreground"
+            ],
+            "config": {
+              "/etc/apache2/conf-available/remoteip.conf": [
+                "RemoteIPHeader X-Forwarded-For",
+                "RemoteIPInternalProxy 10.0.0.0/8",
+                "RemoteIPInternalProxy 172.16.0.0/12",
+                "RemoteIPInternalProxy 192.168.0.0/16",
+                "RemoteIPInternalProxy 169.254.0.0/16",
+                "RemoteIPInternalProxy 127.0.0.0/8"
+              ]
+            },
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm": {
+            "base": "php:8.3-fpm",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm-alpine": {
+            "base": "php:8.3-fpm-alpine",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": []
+              }
+            }
+          }
+        },
+        "volume": [
+          "/var/www/html"
+        ],
+        "workdir": "/var/www/html"
+      },
+      "8.4": {
+        "apk": [
+          "bash",
+          "ghostscript",
+          "imagemagick"
+        ],
+        "apt": [
+          "ghostscript"
+        ],
+        "build": {
+          "apk": [
+            "autoconf",
+            "bzip2-dev",
+            "gmp-dev",
+            "icu-dev",
+            "freetype-dev",
+            "imagemagick-dev",
+            "libjpeg-turbo-dev",
+            "libmemcached-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "openldap-dev",
+            "pcre-dev",
+            "postgresql-dev",
+            "automake",
+            "libtool",
+            "linux-headers",
+            "zlib-dev",
+            "unzip"
+          ],
+          "apt": [
+            "libbz2-dev",
+            "libgmp-dev",
+            "libicu-dev",
+            "libfreetype6-dev",
+            "libjpeg-dev",
+            "libldap2-dev",
+            "libmemcached-dev",
+            "libmagickwand-dev",
+            "libpq-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "automake",
+            "libtool",
+            "zlib1g-dev",
+            "unzip"
+          ]
+        },
+        "config": {
+          "/usr/local/etc/php/conf.d/error-logging.ini": [
+            "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+            "display_errors = Off",
+            "display_startup_errors = Off",
+            "log_errors = On",
+            "error_log = /dev/stderr",
+            "ignore_repeated_errors = On",
+            "ignore_repeated_source = Off",
+            "html_errors = Off"
+          ],
+          "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+            "opcache.memory_consumption=128",
+            "opcache.interned_strings_buffer=8",
+            "opcache.max_accelerated_files=4000",
+            "opcache.revalidate_freq=2"
+          ]
+        },
+        "dev": {
+          "apk": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "zlib",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "apt": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "build": {
+            "apk": [
+              "npm"
+            ],
+            "apt": [
+              "npm"
+            ]
+          },
+          "checks": [
+            [
+              "composer",
+              "--version"
+            ],
+            [
+              "npm",
+              "--version"
+            ],
+            [
+              "npx",
+              "--version"
+            ]
+          ],
+          "config": {
+            "/usr/local/etc/php/conf.d/zz-joomla-development.ini": [
+              "error_reporting = E_ALL",
+              "display_errors = On",
+              "display_startup_errors = On",
+              "log_errors = On",
+              "ignore_repeated_errors = Off",
+              "opcache.validate_timestamps = 1",
+              "opcache.revalidate_freq = 0",
+              "opcache.jit = off",
+              "opcache.jit_buffer_size = 0"
+            ],
+            "/usr/local/etc/php/conf.d/zz-xdebug-settings.ini": [
+              "xdebug.mode = develop,debug",
+              "xdebug.start_with_request = trigger",
+              "xdebug.start_upon_error = no",
+              "xdebug.discover_client_host = 0",
+              "xdebug.client_host = ${JOOMLA_XDEBUG_CLIENT_HOST}",
+              "xdebug.client_port = ${JOOMLA_XDEBUG_CLIENT_PORT}",
+              "xdebug.output_dir = /tmp"
+            ]
+          },
+          "download": {
+            "composer": {
+              "checksum": "https://getcomposer.org/download/2.10.3/composer.phar.sha256sum",
+              "destination": "/usr/local/bin/composer",
+              "package": "https://getcomposer.org/download/2.10.3/composer.phar",
+              "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6",
+              "type": "binary",
+              "version": "2.10.3"
+            }
+          },
+          "environment": {
+            "JOOMLA_XDEBUG_CLIENT_HOST": "host.docker.internal",
+            "JOOMLA_XDEBUG_CLIENT_PORT": "9003",
+            "XDEBUG_MODE": "develop,debug"
+          },
+          "extensions": {
+            "check": [
+              "xdebug"
+            ],
+            "install": [
+              "pcntl",
+              "sockets"
+            ]
+          },
+          "npm": {
+            "npm": "11.21.1"
+          },
+          "pie": {
+            "xdebug/xdebug": "3.5.3"
+          }
+        },
+        "download": {
+          "pie": {
+            "destination": "/tmp/pie",
+            "package": "https://github.com/php/pie/releases/download/1.5.2/pie.phar",
+            "sha256": "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7",
+            "temporary": true,
+            "type": "binary",
+            "version": "1.5.2"
+          }
+        },
+        "entrypoint": [
+          "/entrypoint.sh"
+        ],
+        "environment": {
+          "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+        },
+        "extensions": {
+          "check": [
+            "apcu",
+            "imagick",
+            "memcached",
+            "redis",
+            "Zend OPcache"
+          ],
+          "configure": {
+            "gd": [
+              "--with-freetype",
+              "--with-jpeg",
+              "--with-webp"
+            ]
+          },
+          "enable": [
+            "opcache"
+          ],
+          "install": [
+            "bz2",
+            "bcmath",
+            "exif",
+            "gd",
+            "gmp",
+            "intl",
+            "ldap",
+            "mysqli",
+            "pdo_mysql",
+            "pdo_pgsql",
+            "pgsql",
+            "zip"
+          ]
+        },
+        "pie": {
+          "apcu/apcu": "5.1.28",
+          "imagick/imagick": "3.8.1",
+          "php-memcached/php-memcached": "3.4.0",
+          "phpredis/phpredis": "6.3.0"
+        },
+        "variants": {
+          "apache": {
+            "apache": {
+              "enable": [
+                "remoteip"
+              ],
+              "modules": [
+                "rewrite",
+                "expires",
+                "remoteip"
+              ],
+              "remoteAddress": true
+            },
+            "base": "php:8.4-apache",
+            "checks": [
+              [
+                "apache2ctl",
+                "-t"
+              ]
+            ],
+            "command": [
+              "apache2-foreground"
+            ],
+            "config": {
+              "/etc/apache2/conf-available/remoteip.conf": [
+                "RemoteIPHeader X-Forwarded-For",
+                "RemoteIPInternalProxy 10.0.0.0/8",
+                "RemoteIPInternalProxy 172.16.0.0/12",
+                "RemoteIPInternalProxy 192.168.0.0/16",
+                "RemoteIPInternalProxy 169.254.0.0/16",
+                "RemoteIPInternalProxy 127.0.0.0/8"
+              ]
+            },
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm": {
+            "base": "php:8.4-fpm",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm-alpine": {
+            "base": "php:8.4-fpm-alpine",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": []
+              }
+            }
+          }
+        },
+        "volume": [
+          "/var/www/html"
+        ],
+        "workdir": "/var/www/html"
+      },
+      "8.5": {
+        "apk": [
+          "bash",
+          "ghostscript",
+          "imagemagick"
+        ],
+        "apt": [
+          "ghostscript"
+        ],
+        "build": {
+          "apk": [
+            "autoconf",
+            "bzip2-dev",
+            "gmp-dev",
+            "icu-dev",
+            "freetype-dev",
+            "imagemagick-dev",
+            "libjpeg-turbo-dev",
+            "libmemcached-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "openldap-dev",
+            "pcre-dev",
+            "postgresql-dev",
+            "automake",
+            "libtool",
+            "linux-headers",
+            "zlib-dev",
+            "unzip"
+          ],
+          "apt": [
+            "libbz2-dev",
+            "libgmp-dev",
+            "libicu-dev",
+            "libfreetype6-dev",
+            "libjpeg-dev",
+            "libldap2-dev",
+            "libmemcached-dev",
+            "libmagickwand-dev",
+            "libpq-dev",
+            "libpng-dev",
+            "libwebp-dev",
+            "libzip-dev",
+            "automake",
+            "libtool",
+            "zlib1g-dev",
+            "unzip"
+          ]
+        },
+        "config": {
+          "/usr/local/etc/php/conf.d/error-logging.ini": [
+            "error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR",
+            "display_errors = Off",
+            "display_startup_errors = Off",
+            "log_errors = On",
+            "error_log = /dev/stderr",
+            "ignore_repeated_errors = On",
+            "ignore_repeated_source = Off",
+            "html_errors = Off"
+          ],
+          "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
+            "opcache.memory_consumption=128",
+            "opcache.interned_strings_buffer=8",
+            "opcache.max_accelerated_files=4000",
+            "opcache.revalidate_freq=2"
+          ]
+        },
+        "dev": {
+          "apk": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "zlib",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "apt": [
+            "git",
+            "openssh-client",
+            "patch",
+            "unzip",
+            "zip",
+            "nodejs",
+            "python3",
+            "make",
+            "g++",
+            "jq",
+            "rsync",
+            "less",
+            "nano"
+          ],
+          "build": {
+            "apk": [
+              "npm"
+            ],
+            "apt": [
+              "npm"
+            ]
+          },
+          "checks": [
+            [
+              "composer",
+              "--version"
+            ],
+            [
+              "npm",
+              "--version"
+            ],
+            [
+              "npx",
+              "--version"
+            ]
+          ],
+          "config": {
+            "/usr/local/etc/php/conf.d/zz-joomla-development.ini": [
+              "error_reporting = E_ALL",
+              "display_errors = On",
+              "display_startup_errors = On",
+              "log_errors = On",
+              "ignore_repeated_errors = Off",
+              "opcache.validate_timestamps = 1",
+              "opcache.revalidate_freq = 0",
+              "opcache.jit = off",
+              "opcache.jit_buffer_size = 0"
+            ],
+            "/usr/local/etc/php/conf.d/zz-xdebug-settings.ini": [
+              "xdebug.mode = develop,debug",
+              "xdebug.start_with_request = trigger",
+              "xdebug.start_upon_error = no",
+              "xdebug.discover_client_host = 0",
+              "xdebug.client_host = ${JOOMLA_XDEBUG_CLIENT_HOST}",
+              "xdebug.client_port = ${JOOMLA_XDEBUG_CLIENT_PORT}",
+              "xdebug.output_dir = /tmp"
+            ]
+          },
+          "download": {
+            "composer": {
+              "checksum": "https://getcomposer.org/download/2.10.3/composer.phar.sha256sum",
+              "destination": "/usr/local/bin/composer",
+              "package": "https://getcomposer.org/download/2.10.3/composer.phar",
+              "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6",
+              "type": "binary",
+              "version": "2.10.3"
+            }
+          },
+          "environment": {
+            "JOOMLA_XDEBUG_CLIENT_HOST": "host.docker.internal",
+            "JOOMLA_XDEBUG_CLIENT_PORT": "9003",
+            "XDEBUG_MODE": "develop,debug"
+          },
+          "extensions": {
+            "check": [
+              "xdebug"
+            ],
+            "install": [
+              "pcntl",
+              "sockets"
+            ]
+          },
+          "npm": {
+            "npm": "11.21.1"
+          },
+          "pie": {
+            "xdebug/xdebug": "3.5.3"
+          }
+        },
+        "download": {
+          "pie": {
+            "destination": "/tmp/pie",
+            "package": "https://github.com/php/pie/releases/download/1.5.2/pie.phar",
+            "sha256": "fe70c59738cf56ec00a818cf9cb9593da171aac86f5f1f859995b8839dfd2cc7",
+            "temporary": true,
+            "type": "binary",
+            "version": "1.5.2"
+          }
+        },
+        "entrypoint": [
+          "/entrypoint.sh"
+        ],
+        "environment": {
+          "JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK": "1"
+        },
+        "extensions": {
+          "check": [
+            "apcu",
+            "imagick",
+            "memcached",
+            "redis",
+            "Zend OPcache"
+          ],
+          "configure": {
+            "gd": [
+              "--with-freetype",
+              "--with-jpeg",
+              "--with-webp"
+            ]
+          },
+          "enable": [],
+          "install": [
+            "bz2",
+            "bcmath",
+            "exif",
+            "gd",
+            "gmp",
+            "intl",
+            "ldap",
+            "mysqli",
+            "pdo_mysql",
+            "pdo_pgsql",
+            "pgsql",
+            "zip"
+          ]
+        },
+        "pie": {
+          "apcu/apcu": "5.1.28",
+          "imagick/imagick": "3.8.1",
+          "php-memcached/php-memcached": "3.4.0",
+          "phpredis/phpredis": "6.3.0"
+        },
+        "variants": {
+          "apache": {
+            "apache": {
+              "enable": [
+                "remoteip"
+              ],
+              "modules": [
+                "rewrite",
+                "expires",
+                "remoteip"
+              ],
+              "remoteAddress": true
+            },
+            "base": "php:8.5-apache",
+            "checks": [
+              [
+                "apache2ctl",
+                "-t"
+              ]
+            ],
+            "command": [
+              "apache2-foreground"
+            ],
+            "config": {
+              "/etc/apache2/conf-available/remoteip.conf": [
+                "RemoteIPHeader X-Forwarded-For",
+                "RemoteIPInternalProxy 10.0.0.0/8",
+                "RemoteIPInternalProxy 172.16.0.0/12",
+                "RemoteIPInternalProxy 192.168.0.0/16",
+                "RemoteIPInternalProxy 169.254.0.0/16",
+                "RemoteIPInternalProxy 127.0.0.0/8"
+              ]
+            },
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm": {
+            "base": "php:8.5-fpm",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": [
+                  "--with-libdir=lib/${DEB_BUILD_MULTIARCH}"
+                ]
+              }
+            }
+          },
+          "fpm-alpine": {
+            "base": "php:8.5-fpm-alpine",
+            "checks": [
+              [
+                "php-fpm",
+                "-t"
+              ]
+            ],
+            "command": [
+              "php-fpm"
+            ],
+            "extensions": {
+              "configure": {
+                "ldap": []
+              }
+            }
+          }
+        },
+        "volume": [
+          "/var/www/html"
+        ],
+        "workdir": "/var/www/html"
+      }
+    },
+    "states": {
+      "stable": {
+        "aliases": [
+          "6.2",
+          "6",
+          "latest"
+        ],
+        "package": "https://github.com/joomla/joomla-cms/releases/download/6.2.0/Joomla_6.2.0-Stable-Full_Package.tar.zst",
+        "packageType": "tar.zst",
+        "php": "8.4",
+        "sha512": "5d61beed1b2ced52ee96b312d327e8f3616cdd93e5d4a759bef9bc0cee384232a21e3b85e15f659edcdb83fb5ea9969cd009722eeb6151303cc5e6c9d6dc26bc",
+        "version": "6.2.0"
+      }
+    },
+    "variant": "apache",
+    "variants": [
+      "apache",
+      "fpm-alpine",
+      "fpm"
+    ]
+  }
+}
