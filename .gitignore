@@ -1,3 +1,2 @@
-.jq-template.awk
 .idea
-.versions-helper.json
+/conf/.versions-helper.json
