@@ -1,113 +1,94 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Load database password from file if specified
-if [ -n "$JOOMLA_DB_PASSWORD_FILE" ] && [ -f "$JOOMLA_DB_PASSWORD_FILE" ]; then
-    JOOMLA_DB_PASSWORD=$(cat "$JOOMLA_DB_PASSWORD_FILE")
-fi
+# Fixed image source; runtime site files are kept in the webroot.
+joomla_source=/usr/src/joomla
 
-# Function to log messages
 joomla_log() {
-    local msg="$1"
-    echo >&2 " $msg"
+    printf ' %s\n' "$1" >&2
 }
 
-# Function to log info messages
 joomla_log_info() {
-    local msg="$1"
-    echo >&2 "[INFO] $msg"
+    printf '[INFO] %s\n' "$1" >&2
 }
 
-# Function to log warning messages
 joomla_log_warning() {
-    local msg="$1"
-    echo >&2 "[WARNING] $msg"
+    printf '[WARNING] %s\n' "$1" >&2
 }
 
-# Function to log error messages
 joomla_log_error() {
-    local msg="$1"
-    echo >&2 "[ERROR] $msg"
+    printf '[ERROR] %s\n' "$1" >&2
 }
 
-# Function to set a line
+joomla_die() {
+    joomla_log_error "$1"
+    exit 1
+}
+
 joomla_echo_line() {
-    echo >&2 "========================================================================"
+    printf '%s\n' '========================================================================' >&2
 }
 
-# Function to set a line at end
 joomla_echo_line_start() {
     joomla_echo_line
-    echo >&2
+    printf '\n' >&2
 }
 
-# Function to set a line at end
 joomla_echo_line_end() {
-    echo >&2
+    printf '\n' >&2
     joomla_echo_line
 }
 
-# Function to give final success message (1)
 joomla_log_configured_success_message() {
-    joomla_log "This server is now configured to run Joomla!"
+    joomla_log 'This server is now configured to run Joomla!'
 }
 
-# Function to give final success message (2)
 joomla_log_success_and_need_db_message() {
-    joomla_log_configured_success_message
-    echo >&2
-    joomla_log " NOTE: You will need your database server address, database name,"
-    joomla_log "       and database user credentials to install Joomla."
+    joomla_log 'Joomla files are ready. Complete installation in the browser.'
+    joomla_log 'You will need your database server address, database name and credentials.'
 }
 
-# Function to validate URLs
+# Docker-style secret files. Bash command substitution removes trailing newlines.
+joomla_file_env() {
+    local name="$1" file_name="${1}_FILE" value
+    if [[ ${!name+x} && ${!file_name+x} ]]; then
+        joomla_die "Set either $name or $file_name, not both."
+    fi
+    if [[ ${!file_name+x} ]]; then
+        [[ -n ${!file_name} && -f ${!file_name} && -r ${!file_name} ]] ||
+            joomla_die "$file_name must name a readable regular file."
+        value="$(< "${!file_name}")"
+        printf -v "$name" '%s' "$value"
+        export "${name?}"
+    fi
+    unset "$file_name"
+}
+
 joomla_validate_url() {
-    if [[ $1 =~ ^http(s)?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$ ]]; then
-        return 0
-    else
-        return 1
-    fi
+    # Allow local registries, IP addresses and ports. Joomla handles the URL.
+    [[ $1 == https://?* || $1 == http://?* ]] && [[ $1 != *[[:space:]]* ]]
 }
 
-# Function to validate file path
 joomla_validate_path() {
-    if [[ -f $1 ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ -f $1 && -r $1 ]]
 }
 
-# Function to split values by semicolon
 joomla_get_array_by_semicolon() {
-    local input=$1   # The input string to be split
-    local -n arr=$2  # The array to store the split values (passed by reference)
-    local old_IFS=$IFS  # Save the original IFS value
-    # shellcheck disable=SC2034
-    # passed by reference
-    IFS=';' read -ra arr <<< "$input"  # Split the input by semicolon and store in array
-    IFS=$old_IFS  # Restore the original IFS value
+    local input="$1"
+    local -n result_array="$2"
+    [[ $input != *$'\n'* && $input != *$'\r'* ]] ||
+        joomla_die 'Post-install lists must be single-line, semicolon-separated values.'
+    # The assignment applies to read only; the caller's IFS is unchanged.
+    # shellcheck disable=SC2034 # The nameref writes the caller's array.
+    IFS=';' read -r -a result_array <<< "$input"
 }
 
-# Function to split values by colon to get host and port
-joomla_get_host_port_by_colon() {
-    local input=$1    # The input string to be split
-    local -n hostname=$2  # The variable to store the hostname (passed by reference)
-    local -n port=$3  # The variable to store the port (passed by reference)
-    local old_IFS=$IFS  # Save the original IFS value
-    # shellcheck disable=SC2034
-    # passed by reference
-    IFS=':' read -r hostname port <<< "$input"  # Split the input by colon and store in hostname and port
-    IFS=$old_IFS  # Restore the original IFS value
-}
-
-# Function to run a Joomla CLI command
 joomla_run_cli() {
     local status
-
-    # Do not log arguments: commands can contain passwords or other secrets.
-    if php cli/joomla.php --no-interaction "$@"; then
-        joomla_log_info "Joomla CLI command completed successfully."
+    (($#)) || joomla_die 'No Joomla CLI command was provided.'
+    # Native command output remains visible; arguments may contain secrets.
+    if php "$JOOMLA_WEBROOT/cli/joomla.php" --no-interaction "$@"; then
+        joomla_log_info 'Joomla CLI command completed successfully.'
     else
         status=$?
         joomla_log_error "Joomla CLI command failed (exit $status)."
@@ -115,315 +96,346 @@ joomla_run_cli() {
     fi
 }
 
-# Split a command into arguments without evaluating shell syntax.
-# Arguments are whitespace-separated; shell quotes are not interpreted.
 joomla_run_cli_string() {
     local command="$1"
     local -a arguments=()
-
     IFS=$' \t' read -r -a arguments <<< "$command"
-
-    # Ignore empty entries, including entries containing only whitespace.
-    if [[ ${#arguments[@]} -eq 0 ]]; then
-        return 0
-    fi
-
+    ((${#arguments[@]})) || return 0
+    # Whitespace-separated arguments; no shell quoting, substitutions or eval.
     joomla_run_cli "${arguments[@]}"
 }
 
-# Function to install extension from URL
 joomla_install_extension_via_url() {
-    local url=$1
-    if joomla_validate_url "$url"; then
-        if php cli/joomla.php extension:install --url "$url" --no-interaction; then
-            joomla_log_info "Successfully installed $url"
-        else
-            joomla_log_error "Failed to install $url"
-        fi
-    else
-        joomla_log_error "Invalid URL: $url"
-    fi
+    joomla_validate_url "$1" || joomla_die 'An extension URL must use HTTP or HTTPS and contain no whitespace.'
+    joomla_run_cli extension:install --url "$1"
 }
 
-# Function to install extension from path
 joomla_install_extension_via_path() {
-    local path=$1
-    if joomla_validate_path "$path"; then
-        if php cli/joomla.php extension:install --path "$path" --no-interaction; then
-            joomla_log_info "Successfully installed $path"
-        else
-            joomla_log_error "Failed to install $path"
-        fi
-    else
-        joomla_log_error "Invalid Path: $path"
-    fi
+    joomla_validate_path "$1" || joomla_die 'An extension package must be a readable regular file.'
+    joomla_run_cli extension:install --path "$1"
 }
 
-# Function to validate necessary environment variables
+# Let Joomla validate account names, password policy and email addresses.
+# The entrypoint only checks whether automatic installation was fully requested.
 joomla_validate_vars() {
-    # Basic email regex for validation
-    local email_regex="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-
-    # Check if JOOMLA_SITE_NAME is longer than 2 characters
-    if [[ "${#JOOMLA_SITE_NAME}" -le 2 ]]; then
-        joomla_log_error "JOOMLA_SITE_NAME must be longer than 2 characters!"
-        return 1
-    fi
-
-    # Check if JOOMLA_ADMIN_USER is longer than 2 characters
-    if [[ "${#JOOMLA_ADMIN_USER}" -le 2 ]]; then
-        joomla_log_error "JOOMLA_ADMIN_USER must be longer than 2 characters!"
-        return 1
-    fi
-
-    # Check if JOOMLA_ADMIN_USERNAME has no spaces, and is only alphabetical
-    if [[ "${JOOMLA_ADMIN_USERNAME}" =~ [^a-zA-Z] ]]; then
-        joomla_log_error "JOOMLA_ADMIN_USERNAME must contain no spaces and be only alphabetical!"
-        return 1
-    fi
-
-    # Check if JOOMLA_ADMIN_PASSWORD is longer than 12 characters
-    if [[ "${#JOOMLA_ADMIN_PASSWORD}" -le 12 ]]; then
-        joomla_log_error "JOOMLA_ADMIN_PASSWORD must be longer than 12 characters!"
-        return 1
-    fi
-
-    # Check if JOOMLA_ADMIN_EMAIL is a valid email
-    if [[ ! "${JOOMLA_ADMIN_EMAIL}" =~ $email_regex ]]; then
-        joomla_log_error "JOOMLA_ADMIN_EMAIL must be a valid email address!"
-        return 1
-    fi
-
-    return 0
+    local name
+    for name in JOOMLA_SITE_NAME JOOMLA_ADMIN_USER JOOMLA_ADMIN_USERNAME JOOMLA_ADMIN_PASSWORD JOOMLA_ADMIN_EMAIL; do
+        [[ -n ${!name:-} ]] || joomla_die "Automatic installation requires a nonempty $name."
+    done
 }
 
-# Function to check if auto deploy can be done
 joomla_can_auto_deploy() {
-    if [[ -n "${JOOMLA_SITE_NAME}" && -n "${JOOMLA_ADMIN_USER}" &&
-          -n "${JOOMLA_ADMIN_USERNAME}" && -n "${JOOMLA_ADMIN_PASSWORD}" &&
-          -n "${JOOMLA_ADMIN_EMAIL}" ]]; then
+    local name supplied=false
+    for name in JOOMLA_SITE_NAME JOOMLA_ADMIN_USER JOOMLA_ADMIN_USERNAME JOOMLA_ADMIN_PASSWORD JOOMLA_ADMIN_EMAIL; do
+        if [[ ${!name+x} ]]; then
+            supplied=true
+        fi
+    done
+    [[ $supplied == true ]] || return 1
+    joomla_validate_vars
+}
 
-        if joomla_validate_vars; then
+# Resolve identities without changing accounts or assuming UID equals GID.
+joomla_resolve_uid() {
+    local identity="${1#\#}"
+    if [[ $identity =~ ^[0-9]+$ ]]; then
+        printf '%s\n' "$identity"
+    else
+        id -u "$identity" || return 1
+    fi
+}
+
+joomla_resolve_gid() {
+    local identity="${1#\#}" entry=''
+    if [[ $identity =~ ^[0-9]+$ ]]; then
+        printf '%s\n' "$identity"
+        return 0
+    fi
+    if command -v getent >/dev/null 2>&1; then
+        entry="$(getent group "$identity" || true)"
+        if [[ -n $entry ]]; then
+            IFS=: read -r _ _ identity _ <<< "$entry"
+            printf '%s\n' "$identity"
             return 0
         fi
     fi
-
-    return 1
+    entry="$(awk -F: -v name="$identity" '$1 == name { print $3; exit }' /etc/group)"
+    [[ -n $entry ]] || return 1
+    printf '%s\n' "$entry"
 }
 
-if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
+joomla_resolve_runtime_identity() {
+    local raw_user=www-data raw_group=www-data
     uid="$(id -u)"
     gid="$(id -g)"
-    if [ "$uid" = '0' ]; then
-        case "$1" in
-        apache2*)
-            user="${APACHE_RUN_USER:-www-data}"
-            group="${APACHE_RUN_GROUP:-www-data}"
-
-            # strip off any '#' symbol ('#1000' is valid syntax for Apache)
-            pound='#'
-            user="${user#"$pound"}"
-            group="${group#"$pound"}"
-
-            # set user if not exist
-            if ! id "$user" &>/dev/null; then
-                # get the user name
-                : "${USER_NAME:=www-data}"
-                # change the user name
-                [[ "$USER_NAME" != "www-data" ]] &&
-                    usermod -l "$USER_NAME" www-data &&
-                    groupmod -n "$USER_NAME" www-data
-                # update the user ID
-                groupmod -o -g "$user" "$USER_NAME"
-                # update the user-group ID
-                usermod -o -u "$group" "$USER_NAME"
-            fi
-            ;;
-        *) # php-fpm
-            user='www-data'
-            group='www-data'
-            ;;
-        esac
-    else
-        user="$uid"
-        group="$gid"
+    user="$uid"
+    group="$gid"
+    [[ $uid == 0 ]] || return 0
+    if [[ $1 == apache2* ]]; then
+        raw_user="${APACHE_RUN_USER:-www-data}"
+        raw_group="${APACHE_RUN_GROUP:-www-data}"
     fi
+    user="$(joomla_resolve_uid "$raw_user")" || joomla_die 'Cannot resolve the runtime user.'
+    group="$(joomla_resolve_gid "$raw_group")" || joomla_die 'Cannot resolve the runtime group.'
+    [[ $user =~ ^[0-9]+$ && $group =~ ^[0-9]+$ ]] || joomla_die 'Runtime UID and GID must be numeric.'
+    [[ ! $user =~ ^0+$ ]] || joomla_die 'The Joomla worker user must not be root.'
+    if [[ $1 == apache2* ]]; then
+        # Apache requires a leading hash for numeric User/Group directives.
+        export APACHE_RUN_USER="#$user" APACHE_RUN_GROUP="#$group"
+    fi
+}
 
-    # start Joomla message block
-    joomla_echo_line_start
-    if [ -n "$MYSQL_PORT_3306_TCP" ]; then
-        if [ -z "$JOOMLA_DB_HOST" ]; then
-            JOOMLA_DB_HOST='mysql'
+joomla_prepare_environment() {
+    joomla_file_env JOOMLA_DB_PASSWORD
+    joomla_file_env JOOMLA_ADMIN_PASSWORD
+    if [[ -n ${MYSQL_PORT_3306_TCP:-} ]]; then
+        if [[ -z ${JOOMLA_DB_HOST:-} ]]; then
+            JOOMLA_DB_HOST=mysql
         else
-            joomla_log_warning "both JOOMLA_DB_HOST and MYSQL_PORT_3306_TCP found"
-            joomla_log "Connecting to JOOMLA_DB_HOST ($JOOMLA_DB_HOST)"
-            joomla_log "instead of the linked mysql container"
+            joomla_log_warning 'Both database host and legacy MySQL link settings were found; using JOOMLA_DB_HOST.'
         fi
     fi
-
-    if [ -z "$JOOMLA_DB_HOST" ]; then
-        joomla_log_error "Missing JOOMLA_DB_HOST and MYSQL_PORT_3306_TCP environment variables."
-        joomla_log "Did you forget to --link some_mysql_container:mysql or set an external db"
-        joomla_log "with -e JOOMLA_DB_HOST=hostname:port?"
-        # end Joomla message block
-        joomla_echo_line_end
-        exit 1
-    fi
-
-    # If the DB user is 'root' then use the MySQL root password env var
     : "${JOOMLA_DB_USER:=root}"
-    if [ "$JOOMLA_DB_USER" = 'root' ]; then
-        : "${JOOMLA_DB_PASSWORD:=$MYSQL_ENV_MYSQL_ROOT_PASSWORD}"
-    fi
     : "${JOOMLA_DB_NAME:=joomla}"
-
-    if [ -z "$JOOMLA_DB_PASSWORD" ] && [ "$JOOMLA_DB_PASSWORD_ALLOW_EMPTY" != 'yes' ]; then
-        joomla_log_error "Missing required JOOMLA_DB_PASSWORD environment variable."
-        joomla_log "Did you forget to -e JOOMLA_DB_PASSWORD=... ?"
-        joomla_log "(Also of interest might be JOOMLA_DB_USER and JOOMLA_DB_NAME.)"
-        # end Joomla message block
-        joomla_echo_line_end
-        exit 1
+    : "${JOOMLA_DB_TYPE:=mysqli}"
+    if [[ $JOOMLA_DB_USER == root && ! ${JOOMLA_DB_PASSWORD+x} ]]; then
+        JOOMLA_DB_PASSWORD="${MYSQL_ENV_MYSQL_ROOT_PASSWORD:-}"
     fi
+    : "${JOOMLA_DB_PASSWORD:=}"
+    [[ -n ${JOOMLA_DB_HOST:-} ]] || joomla_die 'Initialization requires JOOMLA_DB_HOST or a legacy MySQL link.'
+    [[ -n $JOOMLA_DB_PASSWORD || ${JOOMLA_DB_PASSWORD_ALLOW_EMPTY:-} == yes ]] ||
+        joomla_die 'Set JOOMLA_DB_PASSWORD[_FILE], or explicitly set JOOMLA_DB_PASSWORD_ALLOW_EMPTY=yes.'
+    [[ $JOOMLA_DB_TYPE == mysqli || $JOOMLA_DB_TYPE == pgsql ]] ||
+        joomla_die 'JOOMLA_DB_TYPE must be mysqli or pgsql.'
+}
 
-    if [ ! -e index.php ] && [ ! -e libraries/src/Version.php ]; then
-        # if the directory exists and Joomla doesn't appear to be installed AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
-        if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' .)" = '0:0' ]; then
+joomla_copy_files() {
+    local -a source_args=(--create --file - --directory "$joomla_source" --one-file-system)
+    local -a target_args=(--extract --file - --no-overwrite-dir)
+    if [[ $uid == 0 ]]; then
+        source_args+=(--owner "$user" --group "$group")
+        if [[ $(stat -c '%u:%g' .) == 0:0 ]]; then
             chown "$user:$group" .
         fi
+    else
+        target_args+=(--no-same-owner)
+    fi
+    joomla_log_info "Copying Joomla into $JOOMLA_WEBROOT."
+    tar "${source_args[@]}" . | tar "${target_args[@]}"
+    if [[ ! -e .htaccess && ! -L .htaccess && -f htaccess.txt ]]; then
+        # The PHP Apache image disables Indexes, so preserve the existing adjustment.
+        sed -E 's/^(Options -Indexes.*)$/#\1/' htaccess.txt > .htaccess
+    fi
+}
 
-        joomla_log_info "Joomla not found in $PWD - copying now..."
-        if [ "$(ls -A)" ]; then
-            joomla_log_warning "$PWD is not empty - press Ctrl+C now if this is an error!"
-            (
-                set -x
-                ls -A
-                sleep 10
-            )
+# Build validated native config:set arguments before mutating the installation.
+joomla_prepare_smtp() {
+    local host="${JOOMLA_SMTP_HOST:-}" port="${JOOMLA_SMTP_HOST_PORT:-}" embedded_port=''
+    joomla_smtp_args=()
+    if [[ -n $host ]]; then
+        if [[ $host =~ ^(\[[0-9A-Fa-f:.%[:alnum:]_-]+\]):([0-9]+)$ ]]; then
+            host="${BASH_REMATCH[1]}"
+            embedded_port="${BASH_REMATCH[2]}"
+        elif [[ $host =~ ^([^:]+):([0-9]+)$ ]]; then
+            host="${BASH_REMATCH[1]}"
+            embedded_port="${BASH_REMATCH[2]}"
         fi
-        # use full commands
-        # for clearer intent
-        sourceTarArgs=(
-            --create
-            --file -
-            --directory /usr/src/joomla
-            --one-file-system
-            --owner "$user" --group "$group"
-        )
-        targetTarArgs=(
-            --extract
-            --file -
-        )
-        if [ "$uid" != '0' ]; then
-            # avoid "tar: .: Cannot utime: Operation not permitted" and "tar: .: Cannot change mode to rwxr-xr-x: Operation not permitted"
-            targetTarArgs+=(--no-overwrite-dir)
+        # '=' is excluded because Joomla splits configuration arguments at it.
+        [[ $host =~ ^[[:alnum:]_.-]+$ || $host =~ ^\[[0-9A-Fa-f:.%[:alnum:]_-]+\]$ ]] ||
+            joomla_die 'Invalid SMTP host; use a hostname, IPv4 or bracketed IPv6 address.'
+        joomla_smtp_args+=('mailer=smtp' "smtphost=$host")
+    fi
+    if [[ -n $port && -n $embedded_port && $port != "$embedded_port" ]]; then
+        joomla_die 'SMTP port settings conflict.'
+    fi
+    port="${port:-$embedded_port}"
+    if [[ -n $port ]]; then
+        if [[ ! $port =~ ^[0-9]{1,5}$ ]] || ((10#$port < 1 || 10#$port > 65535)); then
+            joomla_die 'SMTP port must be between 1 and 65535.'
         fi
+        joomla_smtp_args+=("smtpport=$((10#$port))")
+    fi
+}
 
-        tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
+joomla_post_install() {
+    local entry
+    local -a entries=()
+    joomla_get_array_by_semicolon "${JOOMLA_EXTENSIONS_URLS:-}" entries
+    for entry in "${entries[@]}"; do
+        [[ -n $entry ]] || continue
+        joomla_install_extension_via_url "$entry"
+    done
+    joomla_get_array_by_semicolon "${JOOMLA_EXTENSIONS_PATHS:-}" entries
+    for entry in "${entries[@]}"; do
+        [[ -n $entry ]] || continue
+        joomla_install_extension_via_path "$entry"
+    done
+    if ((${#joomla_smtp_args[@]})); then
+        joomla_run_cli config:set "${joomla_smtp_args[@]}"
+    fi
+    joomla_get_array_by_semicolon "${JOOMLA_CLI_COMMANDS:-}" entries
+    for entry in "${entries[@]}"; do
+        joomla_run_cli_string "$entry"
+    done
+}
 
-        if [ ! -e .htaccess ]; then
-            # NOTE: The "Indexes" option is disabled in the php:apache base image so remove it as we enable .htaccess
-            sed -r 's/^(Options -Indexes.*)$/#\1/' htaccess.txt > .htaccess
-            chown "$user:$group" .htaccess
+joomla_install() {
+    local status
+    local -a install_args=(
+        --no-interaction
+        "--site-name=$JOOMLA_SITE_NAME"
+        "--admin-email=$JOOMLA_ADMIN_EMAIL"
+        "--admin-username=$JOOMLA_ADMIN_USERNAME"
+        "--admin-user=$JOOMLA_ADMIN_USER"
+        "--admin-password=$JOOMLA_ADMIN_PASSWORD"
+        "--db-type=$JOOMLA_DB_TYPE"
+        "--db-host=$JOOMLA_DB_HOST"
+        "--db-name=$JOOMLA_DB_NAME"
+        "--db-pass=$JOOMLA_DB_PASSWORD"
+        "--db-user=$JOOMLA_DB_USER"
+        "--db-prefix=${JOOMLA_DB_PREFIX:-joom_}"
+        --db-encryption=0
+    )
+    if php "$JOOMLA_WEBROOT/installation/joomla.php" install "${install_args[@]}"; then
+        [[ -s configuration.php && ! -L configuration.php ]] ||
+            joomla_die 'The installer returned success without a nonempty configuration.php.'
+        rm -rf -- installation
+    else
+        status=$?
+        joomla_log_error "Automatic Joomla installation failed (exit $status)."
+        return "$status"
+    fi
+    joomla_post_install
+}
+
+# Bootstrap keeps the current image's PHP execution user. Repair its output
+# once, including on failure, without walking a persisted site on every restart.
+joomla_finalize_webroot() {
+    [[ ${joomla_needs_finalization:-false} == true ]] || return 0
+    joomla_needs_finalization=false
+    if [[ $uid == 0 ]] && ! chown -R -h "$user:$group" "$JOOMLA_WEBROOT"; then
+        joomla_log_error 'Failed to correct ownership after initialization.'
+        return 1
+    fi
+    if [[ -L configuration.php ]]; then
+        joomla_log_error 'Refusing to change permissions through a configuration.php symlink.'
+        return 1
+    fi
+    if [[ -f configuration.php ]] && ! chmod 0444 configuration.php; then
+        joomla_log_error 'Failed to restore configuration.php permissions.'
+        return 1
+    fi
+}
+
+joomla_initialization_exit() {
+    local status=$?
+    trap - EXIT
+    if ! joomla_finalize_webroot; then
+        [[ $status != 0 ]] || status=1
+    fi
+    [[ $status != 0 ]] || status=1
+    joomla_log_error "Initialization did not complete (exit $status); server startup is blocked."
+    joomla_log_error "Inspect the logs and repair or restore the site and database before removing $joomla_marker."
+    exit "$status"
+}
+
+joomla_initialize() {
+    local auto_install=false copy_source=false name value status
+    # shellcheck disable=SC2034 # Receives validated values through a nameref.
+    local -a checked_entries=()
+    joomla_prepare_environment
+    if joomla_can_auto_deploy; then
+        auto_install=true
+    fi
+    for name in JOOMLA_EXTENSIONS_URLS JOOMLA_EXTENSIONS_PATHS JOOMLA_CLI_COMMANDS; do
+        value="${!name:-}"
+        joomla_get_array_by_semicolon "$value" checked_entries
+        if [[ -n $value && $auto_install == false ]]; then
+            joomla_die 'Post-install commands require complete automatic-installation credentials.'
         fi
-
-        joomla_log "Complete! Joomla has been successfully copied to $PWD"
+    done
+    joomla_prepare_smtp
+    if ((${#joomla_smtp_args[@]})) && [[ $auto_install == false ]]; then
+        joomla_die 'SMTP setup requires complete automatic-installation credentials.'
+    fi
+    if [[ -f index.php && -f libraries/src/Version.php && -f installation/joomla.php ]]; then
+        : # An existing uninstalled package can be initialized without recopying it.
+    elif [[ -n $(find . -mindepth 1 -maxdepth 1 -print -quit) ]]; then
+        joomla_die 'The webroot is nonempty but is not a complete Joomla installation package; refusing to overwrite it.'
+    else
+        [[ -f $joomla_source/index.php && -f $joomla_source/libraries/src/Version.php && -f $joomla_source/installation/joomla.php ]] ||
+            joomla_die 'The image does not contain a complete Joomla source package.'
+        copy_source=true
     fi
 
-    # Ensure the MySQL Database is created
-    php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME" "${JOOMLA_DB_TYPE:-mysqli}"
+    # Database readiness is retryable and does not modify the Joomla tree.
+    # Do this before arming the marker so a temporary DB outage can recover.
+    if php /makedb.php "$JOOMLA_DB_HOST" "$JOOMLA_DB_USER" "$JOOMLA_DB_PASSWORD" "$JOOMLA_DB_NAME" "$JOOMLA_DB_TYPE"; then
+        :
+    else
+        status=$?
+        joomla_log_error "Database initialization failed (exit $status)."
+        return "$status"
+    fi
 
-    # if the (installation) directory exists and we can auto deploy
-    if [ -d installation ] && [ -e installation/joomla.php ] && joomla_can_auto_deploy; then
-        # use full commands
-        # for clearer intent
-        installJoomlaArgs=(
-            --site-name="${JOOMLA_SITE_NAME}"
-            --admin-email="${JOOMLA_ADMIN_EMAIL}"
-            --admin-username="${JOOMLA_ADMIN_USERNAME}"
-            --admin-user="${JOOMLA_ADMIN_USER}"
-            --admin-password="${JOOMLA_ADMIN_PASSWORD}"
-            --db-type="${JOOMLA_DB_TYPE:-mysqli}"
-            --db-host="${JOOMLA_DB_HOST}"
-            --db-name="${JOOMLA_DB_NAME}"
-            --db-pass="${JOOMLA_DB_PASSWORD}"
-            --db-user="${JOOMLA_DB_USER}"
-            --db-prefix="${JOOMLA_DB_PREFIX:-joom_}"
-            --db-encryption=0
-        )
-
-        # Run the auto deploy (install)
-        if php installation/joomla.php install "${installJoomlaArgs[@]}"; then
-            # The PHP command succeeded (so we remove the installation folder)
-            rm -rf installation
-
-            joomla_log_configured_success_message
-
-            # Install any extensions found in the extensions urls env
-            if [[ -n "${JOOMLA_EXTENSIONS_URLS}" && "${#JOOMLA_EXTENSIONS_URLS}" -gt 2 ]]; then
-                joomla_get_array_by_semicolon "$JOOMLA_EXTENSIONS_URLS" J_E_URLS
-                for extension_url in "${J_E_URLS[@]}"; do
-                    joomla_install_extension_via_url "$extension_url"
-                done
-            fi
-
-            # Install any extensions found in the extensions paths env
-            if [[ -n "${JOOMLA_EXTENSIONS_PATHS}" && "${#JOOMLA_EXTENSIONS_PATHS}" -gt 2 ]]; then
-                joomla_get_array_by_semicolon "$JOOMLA_EXTENSIONS_PATHS" J_E_PATHS
-                for extension_path in "${J_E_PATHS[@]}"; do
-                    joomla_install_extension_via_path "$extension_path"
-                done
-            fi
-
-            if [[ -n "${JOOMLA_SMTP_HOST}" && "${JOOMLA_SMTP_HOST}" == *:* ]]; then
-                joomla_get_host_port_by_colon "$JOOMLA_SMTP_HOST" JOOMLA_SMTP_HOST JOOMLA_SMTP_HOST_PORT
-            fi
-
-            # add the smtp host to configuration file
-            if [[ -n "${JOOMLA_SMTP_HOST}" && "${#JOOMLA_SMTP_HOST}" -gt 2 ]]; then
-                chmod +w configuration.php
-                sed -i "s/public \$mailer = 'mail';/public \$mailer = 'smtp';/g" configuration.php
-                sed -i "s/public \$smtphost = 'localhost';/public \$smtphost = '${JOOMLA_SMTP_HOST}';/g" configuration.php
-            fi
-
-            # add the smtp port to configuration file
-            if [[ -n "${JOOMLA_SMTP_HOST_PORT}" ]]; then
-                sed -i "s/public \$smtpport = 25;/public \$smtpport = ${JOOMLA_SMTP_HOST_PORT};/g" configuration.php
-            fi
-
-            # Run CLI commands after installation, extensions and SMTP setup.
-            if [[ -n "${JOOMLA_CLI_COMMANDS:-}" ]]; then
-                # The existing semicolon splitter reads one line at a time.
-                if [[ "$JOOMLA_CLI_COMMANDS" == *$'\n'* || "$JOOMLA_CLI_COMMANDS" == *$'\r'* ]]; then
-                    joomla_log_error "JOOMLA_CLI_COMMANDS must be a single-line semicolon-separated list."
-                    exit 1
-                fi
-
-                joomla_get_array_by_semicolon "$JOOMLA_CLI_COMMANDS" J_C_COMMANDS
-                for joomla_command in "${J_C_COMMANDS[@]}"; do
-                    joomla_run_cli_string "$joomla_command"
-                done
-            fi
-
-            # fix the configuration.php ownership
-            if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' configuration.php)" != "$user:$group" ]; then
-                # Set the correct ownership of all files touched during installation
-                if ! chown -R "$user:$group" .; then
-                    joomla_log_error "Ownership of all files touched during installation failed to be corrected."
-                fi
-                # Set configuration to correct permissions
-                if ! chmod 444 configuration.php; then
-                    joomla_log_error "Permissions of configuration.php failed to be corrected."
-                fi
-            fi
-        else
-            joomla_log_success_and_need_db_message
-        fi
+    # One persistent marker prevents a failed installer that created configuration
+    # from being mistaken for a completed site. It is not rollback or hook replay.
+    mkdir -- "$joomla_marker" || joomla_die 'Another initializer is active or initialization is incomplete.'
+    joomla_needs_finalization=true
+    trap joomla_initialization_exit EXIT
+    trap 'exit 143' TERM
+    trap 'exit 130' INT
+    if [[ $copy_source == true ]]; then
+        joomla_copy_files
+    fi
+    if [[ $auto_install == true ]]; then
+        joomla_install
+    fi
+    joomla_finalize_webroot
+    rmdir -- "$joomla_marker"
+    trap - EXIT TERM INT
+    if [[ $auto_install == true ]]; then
+        joomla_log_configured_success_message
     else
         joomla_log_success_and_need_db_message
     fi
-    # end Joomla message block
-    joomla_echo_line_end
-fi
+}
 
-exec "$@"
+joomla_main() {
+    local argument
+    (($#)) || joomla_die 'No startup command was provided.'
+    case "$1" in
+        apache2* | php-fpm) ;;
+        *) exec "$@" ;;
+    esac
+    for argument in "${@:2}"; do
+        case "$argument" in
+            -h | --help | -v | -V | --version | -t | -T) exec "$@" ;;
+        esac
+    done
+    # Preserve the official image WORKDIR and Docker --workdir behavior.
+    : "${JOOMLA_WEBROOT:=$PWD}"
+    cd -- "$JOOMLA_WEBROOT"
+    JOOMLA_WEBROOT="$(pwd -P)"
+    export JOOMLA_WEBROOT
+    joomla_marker="$JOOMLA_WEBROOT/.joomla-initializing"
+    [[ ! -e $joomla_marker && ! -L $joomla_marker ]] ||
+        joomla_die "Initialization is incomplete or another initializer is active. Inspect the logs and repair the site before removing $joomla_marker."
+    joomla_resolve_runtime_identity "$1"
+    joomla_echo_line_start
+    if [[ -s configuration.php ]]; then
+        [[ -f index.php && -f libraries/src/Version.php ]] || joomla_die 'The configured Joomla tree is incomplete.'
+        joomla_log_info 'Existing Joomla installation found; skipping initialization.'
+        # Future opt-in update handling belongs here, before server startup.
+    else
+        [[ ! -e configuration.php && ! -L configuration.php ]] ||
+            joomla_die 'An empty or invalid configuration.php exists; inspect it before installation.'
+        joomla_initialize
+    fi
+    joomla_echo_line_end
+    exec "$@"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+    joomla_main "$@"
+fi
