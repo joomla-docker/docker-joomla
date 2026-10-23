@@ -4,44 +4,98 @@ on:
   pull_request:
   push:
   schedule:
-    - cron: 0 0 * * 0
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 defaults:
   run:
-    shell: 'bash -Eeuo pipefail -x {0}'
+    shell: bash -Eeuo pipefail {0}
 
 jobs:
   generate-jobs:
-    name: Generate Jobs
+    name: Generate build contexts
     runs-on: ubuntu-latest
     outputs:
-      strategy: ${{ steps.generate-jobs.outputs.strategy }}
+      matrix: ${{ steps.generate.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
-      - id: generate-jobs
-        name: Generate Jobs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install generator dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq
+      - name: Resolve versions and generate contexts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: ./generate.sh
+      - name: Verify deterministic generation and prepare matrix
+        id: generate
         run: |
-          git clone --depth 1 https://github.com/docker-library/bashbrew.git -b master ~/bashbrew
-          strategy="$(~/bashbrew/scripts/github-actions/generate.sh)"
-          jq . <<<"$strategy" # sanity check / debugging aid
-          echo "::set-output name=strategy::$strategy"
+          jq -c -f src/build/lib/tags.jq conf/versions.json > "$RUNNER_TEMP/contexts.json"
+          mapfile -t contexts < <(jq -r '.[].directory' "$RUNNER_TEMP/contexts.json")
+          find "${contexts[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/before.sha256"
+          ./src/build/build.sh
+          find "${contexts[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/after.sha256"
+          cmp "$RUNNER_TEMP/before.sha256" "$RUNNER_TEMP/after.sha256"
+          matrix=$(jq -c '{include: map({directory, variant, development, latest: (.tags | index("latest") != null), image: ("joomla:" + .tags[0])})}' "$RUNNER_TEMP/contexts.json")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          jq -j '.[] | .directory + "\u0000"' "$RUNNER_TEMP/contexts.json" > "$RUNNER_TEMP/context-paths"
+          tar -czf "$RUNNER_TEMP/generated-contexts.tar.gz" --null -T "$RUNNER_TEMP/context-paths" conf/versions.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-contexts
+          path: ${{ runner.temp }}/generated-contexts.tar.gz
+          if-no-files-found: error
+          retention-days: 3
 
   test:
     needs: generate-jobs
-    strategy: ${{ fromJson(needs.generate-jobs.outputs.strategy) }}
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-jobs.outputs.matrix) }}
+    name: ${{ matrix.directory }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Prepare Environment
-        run: ${{ matrix.runs.prepare }}
-      - name: Pull Dependencies
-        run: ${{ matrix.runs.pull }}
-      - name: Build ${{ matrix.name }}
-        run: ${{ matrix.runs.build }}
-      - name: History ${{ matrix.name }}
-        run: ${{ matrix.runs.history }}
-      - name: Test ${{ matrix.name }}
-        run: ${{ matrix.runs.test }}
-      - name: '"docker images"'
-        run: ${{ matrix.runs.images }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: generated-contexts
+          path: ${{ runner.temp }}
+      - name: Restore generated contexts
+        run: tar -xzf "$RUNNER_TEMP/generated-contexts.tar.gz"
+      - name: Prepare runtime tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libfcgi-bin
+          git clone --depth 1 https://github.com/docker-library/official-images.git "$RUNNER_TEMP/official-images"
+      - name: Build image
+        env:
+          IMAGE: ${{ matrix.image }}
+          CONTEXT: ${{ matrix.directory }}
+        run: docker build --pull --tag "$IMAGE" "$CONTEXT"
+      - name: Official Images tests
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: '"$RUNNER_TEMP/official-images/test/run.sh" "$IMAGE"'
+      - name: Joomla runtime and development tests
+        env:
+          IMAGE: ${{ matrix.image }}
+          VARIANT: ${{ matrix.variant }}
+          DEVELOPMENT: ${{ matrix.development }}
+        run: ./tests/test-images.sh "$IMAGE" "$VARIANT" "$DEVELOPMENT"
+      - name: Install and serve latest Joomla
+        if: matrix.latest
+        timeout-minutes: 10
+        env:
+          IMAGE: ${{ matrix.image }}
+          VARIANT: ${{ matrix.variant }}
+        run: ./tests/test-joomla.sh "$IMAGE" "$VARIANT"
+      - name: Image history
+        if: always()
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: docker history "$IMAGE"

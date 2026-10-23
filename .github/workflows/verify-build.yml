@@ -1,0 +1,47 @@
+name: Verify Dockerfile Generation
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash -Eeuo pipefail {0}
+
+jobs:
+  generate-dockerfiles:
+    name: Validate generators and committed outputs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install generator test dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq shellcheck
+      - name: Test configuration, resolution, tags and Dockerfile generation
+        run: |
+          shellcheck generate.sh release.sh src/build/*.sh src/build/lib/*.sh tests/*.sh
+          ./tests/test-assemble.sh
+          ./tests/test-generate.sh
+          ./tests/test-config.sh
+          ./tests/test-versions.sh
+          ./tests/test-tags.sh
+          ./tests/test-manifest.sh
+          ./tests/test-build.sh
+          ./tests/test-cleanup.sh
+      - name: Verify committed generated outputs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          ./generate.sh
+          jq -c -f src/build/lib/tags.jq conf/versions.json > "$RUNNER_TEMP/contexts.json"
+          mapfile -t contexts < <(jq -r '.[].directory' "$RUNNER_TEMP/contexts.json")
+          status=$(git status --porcelain -- conf/versions.json "${contexts[@]}")
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo '::error::Run ./generate.sh and commit the active generated contexts and conf/versions.json.'
+            exit 1
+          fi

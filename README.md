@@ -7,6 +7,7 @@ The full readme is generated over in [docker-library/docs](https://github.com/do
 See a change merged here that doesn't show up on the Docker Hub yet? Check [the "library/joomla" manifest file in the docker-library/official-images repo](https://github.com/docker-library/official-images/blob/master/library/joomla), especially [PRs with the "library/joomla" label on that repo](https://github.com/docker-library/official-images/labels/library%2Fjoomla). For more information about the official images process, see the [docker-library/official-images readme](https://github.com/docker-library/official-images/blob/master/README.md).
 
 ---
+
 ### Build / Manifest Architecture Support
 
 | Overall Status | Supported Architectures |
@@ -15,103 +16,83 @@ See a change merged here that doesn't show up on the Docker Hub yet? Check [the 
 
 [See OS/ARCH](https://registry.hub.docker.com/_/joomla/?tab=tags) on official images.
 
---- 
-## How to update the official docker-library/official-images repo
+---
 
-### First update the git repository (basic steps)
-- Fork [this repository](https://github.com/joomla-docker/docker-joomla).
-- Clone your forked repository to your local PC and change to the staging branch.
-```shell
-$ git clone git@github.com:your-name/docker-joomla.git
-$ cd docker-joomla
-$ git checkout staging
-```
-- Open the [versions-helper.json](https://github.com/joomla-docker/docker-joomla/blob/staging/versions-helper.json) file **if this is a version update**.
-- Update the full version number on line [3](https://github.com/joomla-docker/docker-joomla/blob/0dd714aae69dd103e72ae519d4638b71da7c5e4f/versions-helper.json#L3) and [32](https://github.com/joomla-docker/docker-joomla/blob/0dd714aae69dd103e72ae519d4638b71da7c5e4f/versions-helper.json#L32) _(example)_.
-- Run the [update.sh](https://github.com/joomla-docker/docker-joomla/blob/staging/update.sh) script once.
-```shell
-$ sudo chmod +x update.sh
-$ ./update.sh
-```
-- **OR** make what ever changes you think will improve the images
-- Make a commit message with **every change**.
-```shell
-$ git commit -am"Update images of Joomla! x.x.x to x.x.x"
-```
-- Push the changes to your repository.
-```shell
-$ git push origin staging
-```
-- Make a pull request against the staging branch.
-- **Done!**
+### Repository checks
 
-### Maintainers must then do the following
-- Continue only if all checks are passed with [du-diligence](https://en.wikipedia.org/wiki/Due_diligence) 
-- Merge the pull request into staging
-- Merge the staging branch into the master branch
-- Again continue only if all checks are passed with [du-diligence](https://en.wikipedia.org/wiki/Due_diligence)
-- Clone the master branch of [this repository](https://github.com/joomla-docker/docker-joomla/tree/master) to your PC and change to the master branch.
-```shell
-$ git clone git@github.com:joomla-docker/docker-joomla.git
-$ cd docker-joomla
-$ git checkout master
-```
-- Run the [generate-stackbrew-library.sh](https://github.com/joomla-docker/docker-joomla/blob/staging/generate-stackbrew-library.sh).
-```shell
-$ sudo chmod +x generate-stackbrew-library.sh
-$ ./generate-stackbrew-library.sh
-```
-- This will give an output of all the new values needed in the official images (validate the output)
-- _The easy way to move this output of this file to the official images can be done in the following way._
-- Open the [forked official-images](https://github.com/joomla-docker/official-images) and click on the **Fetch Upstream** button.
-- Then click on **Fetch and Merge** while being in the master branch.
-- Clone the master branch of [this repository](https://github.com/joomla-docker/official-images/tree/master) to your PC.
-```shell
-$ git clone git@github.com:joomla-docker/official-images.git
-$ cd official-images
-$ git checkout master
-```
-- Create a new branch called **joomla**
-```shell
-$ git checkout -b joomla
-```
-- At this point you should have two directories **docker-joomla** and **official-images**
-- **Preferably** in the _same directory_ so you can do the following.
-- Change back to the **docker-joomla** repository.
-```shell
-$ cd ../docker-joomla
-```
-- Run the following command, targeting the Joomla library file in the **official-images** directory with the output:
-```shell
-$ ./generate-stackbrew-library.sh > ../official-images/library/joomla
-```
-- Change again to the **official-images** repository.
-```shell
-$ cd ../official-images
-```
-- Make a commit that will best reflect a summary of the changes.
-```shell
-$ git commit -am"Update Joomla!"
-```
-- Push the changes to up our _**forked official-images**_
-```shell
-$ git push -u origin joomla
+| Check | Status |
+| --- | --- |
+| This branch: image builds and runtime tests | [![Image tests](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/ci.yml/badge.svg?branch=feature%2Fprerelease-dev-images-clean)](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/ci.yml?query=branch%3Afeature%2Fprerelease-dev-images-clean) |
+| This branch: generation and shell tests | [![Generation tests](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/verify-build.yml/badge.svg?branch=feature%2Fprerelease-dev-images-clean)](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/verify-build.yml?query=branch%3Afeature%2Fprerelease-dev-images-clean) |
+
+These branch checks validate proposed image definitions. Published tag and
+architecture availability is recorded in the Official Images manifest linked
+above.
+
+## Use the images
+
+Pull the official Joomla image from [Docker Hub](https://hub.docker.com/_/joomla):
+
+```bash
+docker pull joomla:latest
 ```
 
-### Official Images About to Update
-- Open a pull request from our _**forked official-images**_ to [official-images](https://github.com/docker-library/official-images).
-- Use the following convention in the message, [check past](https://github.com/docker-library/official-images/pull/10902) to see convention.
-```txt
-Changes:
+Use `image: joomla:latest` in your Compose file, or choose a specific published
+tag from Docker Hub. The [usage guide](docs/usage.md) provides a complete Compose
+example with a database, persistent storage and update instructions. Docker
+downloads the image for you; using it requires no checkout of this repository.
 
-- joomla-docker/docker-joomla@54a82e4: Update images of Joomla! 4.0.2 to 4.0.3
-- joomla-docker/docker-joomla@f87bc00: Update version of Joomla! 4.0.2 to 4.0.3
-- joomla-docker/docker-joomla@f36a82a: Update images of Joomla! 3.10.1 to 3.10.2
-- joomla-docker/docker-joomla@4bc3c7b: Update version of Joomla! 3.10.1 to 3.10.2
+For Composer, frontend tooling and Xdebug, see [development images](docs/development.md).
+Choose development and prerelease tags from the published Hub listing; a tag
+configured on a development branch becomes available after the Official Images
+release process completes.
+
+## Maintain and test the images
+
+Contributors work in a repository checkout. Edit the matching Joomla file in
+`conf/joomla/` or PHP profile in `conf/php/`, then run from the repository root:
+
+```bash
+./generate.sh
 ```
-- Basically denoting each commit to [our master branch](https://github.com/joomla-docker/docker-joomla/tree/master) since the last update to the official images.
-- Once this is done, the maintainers of the [official Docker images](https://github.com/docker-library/official-images) takes over.
-- Should there be any issue which you can't resolve, reach out to the [other maintainers](https://github.com/joomla-docker/docker-joomla/graphs/contributors).
-- Done!
 
-> The [current maintainers](https://github.com/joomla-docker/docker-joomla/blob/master/maintainers.json) of the official images. Let us know if you have any questions.
+This resolves download URLs and hashes into `conf/versions.json` and regenerates
+the build contexts under `images/`. Follow the [maintenance guide](docs/maintenance.md)
+to prepare a change and [testing guide](docs/testing.md) to build and test candidate
+images locally before release. Commit source configuration, resolved configuration
+and generated files together for review.
+
+A new Joomla series or PHP profile is discovered from its JSON filename.
+Routine Joomla release bumps change the state's `version`; its configured URL
+pattern supplies the new package URL. See [release tracks](docs/releases.md)
+for alpha, beta, RC and stable release management.
+
+## Prepare an Official Images release
+
+After review, successful checks and merge into the publication branch, run from
+that checkout with an `official-images` checkout alongside:
+
+```bash
+./release.sh > ../official-images/library/joomla
+```
+
+Review and submit that manifest through the Official Images pull-request
+process. The Official Images infrastructure builds and publishes the accepted
+images to Docker Hub. This command prepares the manifest. See
+[publishing](docs/publishing.md) for the complete release procedure and how to
+confirm that the new tags are available.
+
+## Documentation
+
+| Guide | What it covers |
+| --- | --- |
+| [Usage](docs/usage.md) | Pull official images, run Joomla with Compose and update containers |
+| [Development](docs/development.md) | Use published development images, project tools and Xdebug |
+| [Maintenance](docs/maintenance.md) | Update software and take a change through to Docker Hub |
+| [Testing](docs/testing.md) | Build candidates locally, run checks and investigate failures |
+| [Publishing](docs/publishing.md) | Submit the Official Images manifest and confirm publication |
+| [Release tracks](docs/releases.md) | Add and promote alpha, beta, RC and stable releases |
+| [Configuration](docs/configuration.md) | JSON settings, PHP profiles and development tools |
+| [Generation walkthrough](docs/generation.md) | Diagrams and a guided explanation of the shell scripts |
+
+The [documentation index](docs/README.md) also explains the repository layout.

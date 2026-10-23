@@ -1,0 +1,26 @@
+{
+  "tar.zst": {
+    "apt": [
+      "zstd"
+    ],
+    "apk": [
+      "zstd"
+    ]
+  },
+  "tar.gz": {
+    "apt": [
+      "gzip"
+    ],
+    "apk": [
+      "gzip"
+    ]
+  },
+  "tar.bz2": {
+    "apt": [
+      "bzip2"
+    ],
+    "apk": [
+      "bzip2"
+    ]
+  }
+}

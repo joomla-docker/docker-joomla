@@ -1,0 +1,32 @@
+{
+  "phpVersions": {
+    "8.5": {
+      "development": true
+    },
+    "8.4": {
+      "development": true
+    },
+    "8.3": {
+      "development": true
+    }
+  },
+  "variants": [
+    "apache",
+    "fpm-alpine",
+    "fpm"
+  ],
+  "states": {
+    "stable": {
+      "version": "6.2.0",
+      "aliases": [
+        "6.2",
+        "6",
+        "latest"
+      ],
+      "package": "https://github.com/joomla/joomla-cms/releases/download/{version}/Joomla_{version}-Stable-Full_Package.{packageType}",
+      "php": "8.4",
+      "packageType": "tar.zst",
+      "variant": "apache"
+    }
+  }
+}
