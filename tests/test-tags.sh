@@ -12,8 +12,8 @@ for fixture in current synthetic; do
     -f "$repository/tests/fixtures.jq" "${TEST_VERSIONS_FILE:-$repository/conf/versions.json}" >"$temporary/config.json"
   if [[ "$fixture" == synthetic ]]; then
     # Tag-only fixtures use deliberately fictional PHP versions; no image is built.
-    jq 'map_values(.states |= map_values(.php = "100.0") | .phpVersions = {"100.0": {dev:{}}, "100.1": {}}
-      | .variant = "apache" | .variants = ["apache", "fpm"])' "$temporary/config.json" >"$temporary/synthetic.json"
+    jq 'map_values(.states |= map_values(.php = "100.0" | .variant = "apache") | .phpVersions = {"100.0": {dev:{}}, "100.1": {}}
+      | .variants = ["apache", "fpm"])' "$temporary/config.json" >"$temporary/synthetic.json"
     mv "$temporary/synthetic.json" "$temporary/config.json"
   fi
   jq -f "$repository/src/build/lib/tags.jq" "$temporary/config.json" >"$temporary/plan.json"
@@ -29,7 +29,7 @@ for fixture in current synthetic; do
           + (if .development then "-dev" else "" end)))
       and all(.[] | select(.tags | index("latest"));
         .state == "stable" and .development == false
-        and .php == $config[.series].states[.state].php and .variant == $config[.series].variant)
+        and .php == $config[.series].states[.state].php and .variant == $config[.series].states[.state].variant)
       and all(.[] | select(.development == false); . as $normal
         | ($plan | map(select(.directory == ($normal.directory + "-dev")))) as $siblings
         | if $config[.series].phpVersions[.php].dev == null then $siblings == []
@@ -67,19 +67,34 @@ jq -e --slurpfile expected "$temporary/expected.json" '
 ' "$temporary/plan.json" >/dev/null
 
 # The default is configurable, not implicitly Apache or the first PHP version.
-jq '."100.0".states.stable.php = "100.1" | ."100.0".variant = "fpm"' "$temporary/config.json" \
+jq '."100.0".states.stable.php = "100.1" | ."100.0".states.stable.variant = "fpm"' "$temporary/config.json" \
   | jq -f "$repository/src/build/lib/tags.jq" \
   | jq -e 'map(select(.tags | index("latest")))
       | length == 1 and .[0].directory == "images/100.0/stable/php100.1/fpm"' >/dev/null
 
 # Different states select their default independently while keeping the full matrix.
-jq '."100.0".states.beta.php = "100.1"' "$temporary/config.json" \
+jq '."100.0".states.beta.php = "100.1" | ."100.0".states.beta.variant = "fpm"' "$temporary/config.json" \
   | jq -f "$repository/src/build/lib/tags.jq" \
   | jq -e --slurpfile original "$temporary/plan.json" '
       length == ($original[0] | length)
-      and ([.[] | select(.tags | index("100.0-beta")) | .directory] == ["images/100.0/beta/php100.1/apache"])
+      and ([.[] | select(.tags | index("100.0-beta")) | .directory] == ["images/100.0/beta/php100.1/fpm"])
       and ([.[] | select(.tags | index("latest")) | .directory] == ["images/100.0/stable/php100.0/apache"])
       and ([.[] | select(.series == "100.0" and .state == "beta") | .php] | unique == ["100.0", "100.1"])
+    ' >/dev/null
+
+# Latest, series, major and development aliases follow the selected Alpine default.
+jq '."100.0".variants += ["fpm-alpine"]
+    | ."100.0".states.stable.variant = "fpm-alpine"' "$temporary/config.json" \
+  | jq -f "$repository/src/build/lib/tags.jq" \
+  | jq -e '
+      . as $plan
+      | all(["latest", "100", "100.0", "100.0.0"][];
+          . as $tag | [$plan[] | select(.tags | index($tag)) | .directory]
+            == ["images/100.0/stable/php100.0/fpm-alpine"])
+      and ([$plan[] | select(.tags | index("dev")) | .directory]
+        == ["images/100.0/stable/php100.0/fpm-alpine-dev"])
+      and ([$plan[] | select(.tags | index("100.0-beta")) | .directory]
+        == ["images/100.0/beta/php100.0/apache"])
     ' >/dev/null
 
 # Synthetic series are isolated from maintained releases and never downloaded.
@@ -96,8 +111,11 @@ reject() {
   [[ ! -s "$temporary/output" ]] || { printf 'FAIL: invalid config emitted a partial tag plan: %s\n' "$expression" >&2; exit 1; }
   grep -Fq "$diagnostic" "$temporary/error" || { cat "$temporary/error" >&2; printf 'FAIL: expected diagnostic: %s\n' "$diagnostic" >&2; exit 1; }
 }
-reject '.["100.0"].variant = [.["100.0"].variant]' 'default variant must be a string'
-reject '.["100.0"].php = "100.0"' 'php and packageType belong in each release state'
+reject '.["100.0"].variant = "apache"' 'php, variant and packageType belong in each release state'
+reject 'del(.["100.0"].states.beta.variant)' 'default variant must be a string'
+reject '.["100.0"].states.beta.variant = "missing"' 'default variant must be configured'
+reject '.["100.0"].states.beta.variant = false' 'default variant must be a string'
+reject '.["100.0"].php = "100.0"' 'php, variant and packageType belong in each release state'
 reject '.["100.0"].states.beta.php = "100.9"' 'default PHP must be configured'
 reject 'del(.["100.0"].states.beta.php)' 'php must be a string'
 reject '.["100.0"].states.alpha.aliases = ""' 'aliases must be an array'
@@ -108,9 +126,9 @@ reject '.["100.0"].states.stable.aliases += ["latest-dev"]' 'invalid or reserved
 reject '.["100.0"].states.stable.aliases += ["dev"]' 'invalid or reserved release alias'
 reject '.["100.0"].states.alpha.version = .["100.0"].states.beta.version' 'version does not match its series and state'
 reject '.["100.0"].states.alpha.version = "not-a-version"' 'version does not match its series and state'
-reject '.["101.0"].states = {stable: {version:"101.0.0", php:"100.0", aliases:["latest"]}}' 'tag collision'
+reject '.["101.0"].states = {stable: {version:"101.0.0", php:"100.0", variant:"apache", aliases:["latest"]}}' 'tag collision'
 # A release alias can collide with another alias only after suffix expansion.
-reject '.["101.0"].states = {stable: {version:"101.0.0", php:"100.0", aliases:["100.0.0-php" + .["100.0"].states.stable.php]}}' 'tag collision'
+reject '.["101.0"].states = {stable: {version:"101.0.0", php:"100.0", variant:"apache", aliases:["100.0.0-php" + .["100.0"].states.stable.php]}}' 'tag collision'
 reject '.["100.0"].states.stable.aliases += [("x" * 128)]' 'expanded image tag is invalid'
 
 printf 'Tag generation tests passed.\n'

@@ -10,7 +10,6 @@
       "development": true
     }
   },
-  "variant": "apache",
   "variants": [
     "apache",
     "fpm-alpine",
@@ -26,7 +25,8 @@
       ],
       "package": "https://github.com/joomla/joomla-cms/releases/download/{version}/Joomla_{version}-Stable-Full_Package.{packageType}",
       "php": "8.4",
-      "packageType": "tar.zst"
+      "packageType": "tar.zst",
+      "variant": "apache"
     }
   }
 }

@@ -79,7 +79,6 @@ Each Joomla series file has the following fields:
 | Field | Meaning |
 | --- | --- |
 | `phpVersions` | Map of selected PHP profile names to selection objects |
-| `variant` | Default runtime variant for unsuffixed aliases |
 | `variants` | Runtime variants to generate: `apache`, `fpm`, and/or `fpm-alpine` |
 | `states` | Configured `stable`, `alpha`, `beta` and/or `rc` tracks |
 
@@ -96,14 +95,21 @@ Every state owns:
 | `version` | Exact release version, including the prerelease suffix when applicable |
 | `aliases` | Additional publication aliases; the exact version is always included |
 | `php` | Selected PHP profile receiving the default aliases for this state |
+| `variant` | Selected runtime variant receiving the default aliases for this state |
 | `packageType` | Archive format: `tar.zst`, `tar.gz`, or `tar.bz2` |
 | `package` | HTTPS package URL, optionally using the fixed substitutions below |
 
-`php` and `packageType` must be in each state, not at series level. The default
-PHP must be one of that series' selected profiles. It chooses aliases; it does
+`php`, `variant` and `packageType` must be in each state, not at series level.
+The default PHP must be one of that series' selected profiles, and the default
+variant must appear in its `variants` list. This pair chooses aliases; it does
 not narrow the build matrix. Every selected PHP profile is built for every
 selected variant and configured state, with matching development contexts where
 enabled. Supported variants must have matching settings in the selected profiles.
+
+The state whose `aliases` contains `latest` selects the latest image: its
+`version`, `php` and `variant` identify the exact image receiving that tag.
+Series and major aliases follow the same selection. Alias collisions are rejected;
+no separate latest setting or automatic highest-version selection is used.
 
 The source `package` may be omitted to use the resolver's official Joomla full
 package URL. Keeping it explicit makes the source easier to review. The resolved

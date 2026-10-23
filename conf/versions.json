@@ -450,10 +450,10 @@
         "packageType": "tar.zst",
         "php": "8.3",
         "sha512": "31a29996d6234aa8d73384abd9ad91a1b7865cef79a17e747c389164ecf5f7c47deefcb38cd18ebf57eb409d10f531152c390caf7da50e6ad403acc32c791832",
+        "variant": "apache",
         "version": "5.4.10"
       }
     },
-    "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",
@@ -1437,10 +1437,10 @@
         "packageType": "tar.zst",
         "php": "8.4",
         "sha512": "5d61beed1b2ced52ee96b312d327e8f3616cdd93e5d4a759bef9bc0cee384232a21e3b85e15f659edcdb83fb5ea9969cd009722eeb6151303cc5e6c9d6dc26bc",
+        "variant": "apache",
         "version": "6.2.0"
       }
     },
-    "variant": "apache",
     "variants": [
       "apache",
       "fpm-alpine",

@@ -58,12 +58,12 @@ JSON
 cat >"$config/joomla/6.2.json" <<'JSON'
 {
   "phpVersions": {"8.3": {"development": false}},
-  "variant": "apache",
   "variants": ["apache"],
   "states": {
     "stable": {
       "version": "6.2.0",
       "php": "8.3",
+      "variant": "apache",
       "packageType": "tar.zst",
       "aliases": ["latest"]
     }
@@ -83,12 +83,12 @@ cat >"$config/joomla/6.3.json" <<'JSON'
       }
     }
   },
-  "variant": "apache",
   "variants": ["apache"],
   "states": {
     "stable": {
       "version": "6.3.0",
       "php": "8.3",
+      "variant": "apache",
       "packageType": "tar.gz",
       "aliases": []
     }

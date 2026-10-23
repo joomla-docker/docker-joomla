@@ -46,12 +46,8 @@ require(type == "object" and length > 0; "conf/versions.json must contain config
         "\($series): phpVersions must be a nonempty object")
     | require($settings.variants | type == "array" and length > 0;
         "\($series): variants must be a nonempty array")
-    | require($settings.variant | type == "string";
-        "\($series): default variant must be a string")
-    | require(($settings.variants | index($settings.variant)) != null;
-        "\($series): default variant must be configured")
-    | require(($settings | has("php") or has("packageType")) | not;
-        "\($series): php and packageType belong in each release state")
+    | require(($settings | has("php") or has("variant") or has("packageType")) | not;
+        "\($series): php, variant and packageType belong in each release state")
     | require($settings.states | type == "object" and length > 0;
         "\($series): states must be a nonempty object")
     | require(all($settings.states | keys[]; . == "stable" or . == "alpha" or . == "beta" or . == "rc");
@@ -61,13 +57,16 @@ require(type == "object" and length > 0; "conf/versions.json must contain config
     | $settings.states[$state] as $release
     | require($release.php | type == "string"; "\($series)/\($state): php must be a string")
     | require($settings.phpVersions | has($release.php); "\($series)/\($state): default PHP must be configured")
+    | require($release.variant | type == "string"; "\($series)/\($state): default variant must be a string")
+    | require(($settings.variants | index($release.variant)) != null;
+        "\($series)/\($state): default variant must be configured")
     | release_aliases($series; $state; $release) as $names
     | ($settings.phpVersions | keys | sort_by(split(".") | map(tonumber))[]) as $php
     | $settings.variants[] as $variant
     | require($php | test("^[0-9]+\\.[0-9]+$"); "\($series): invalid PHP version")
     | require($variant == "apache" or $variant == "fpm" or $variant == "fpm-alpine";
         "\($series): unsupported runtime variant")
-    | context_tags($names; $php; $variant; $php == $release.php and $variant == $settings.variant) as $tags
+    | context_tags($names; $php; $variant; $php == $release.php and $variant == $release.variant) as $tags
     | (if ($settings.phpVersions[$php].dev // null) == null then [false] else [false, true] end)[] as $development
     | {
         series: $series,

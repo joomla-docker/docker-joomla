@@ -56,7 +56,7 @@ require(type == "object" and length > 0; "configuration must contain at least on
     | require($series | test("^[0-9]+\\.[0-9]+$"); "invalid Joomla series: \($series)")
     | .value |= (
         require(type == "object"; "\($series): configuration must be an object")
-        | require((has("php") or has("packageType")) | not; "\($series): php and packageType belong in each release state")
+        | require((has("php") or has("variant") or has("packageType")) | not; "\($series): php, variant and packageType belong in each release state")
         | require(.archives | type == "object" and length > 0; "\($series): missing archive dependencies")
         | .archives |= with_entries(
             require(.key | package_type; "\($series): unsupported archive type")
@@ -96,9 +96,7 @@ require(type == "object" and length > 0; "configuration must contain at least on
         | require(.variants | type == "array" and length > 0; "\($series): variants must be a nonempty array")
         | require(all(.variants[]; IN("apache", "fpm", "fpm-alpine")); "\($series): unsupported runtime variant")
         | require((.variants | unique | length) == (.variants | length); "\($series): duplicate variants")
-        | require(.variant | type == "string"; "\($series): default variant must be a string")
-        | .variant as $defaultVariant
-        | require(.variants | index($defaultVariant) != null; "\($series): default variant must be in variants")
+        | .variants as $variants
         | require(.states | type == "object" and length > 0; "\($series): states must be a nonempty object")
         | .phpVersions as $phpVersions
         | .archives as $archives
@@ -118,6 +116,9 @@ require(type == "object" and length > 0; "configuration must contain at least on
                 | require(all(.aliases[]; length > 0); "\($series)/\($state): empty alias")
                 | require(.php | type == "string"; "\($series)/\($state): php must be a string")
                 | require($phpVersions[.php] != null; "\($series)/\($state): default PHP must be in phpVersions")
+                | require(.variant | type == "string"; "\($series)/\($state): default variant must be a string")
+                | .variant as $defaultVariant
+                | require($variants | index($defaultVariant) != null; "\($series)/\($state): default variant must be in variants")
                 | require(.packageType | package_type; "\($series)/\($state): unsupported packageType")
                 | require($archives[.packageType] != null; "\($series)/\($state): missing dependencies for selected packageType")
                 | if .package != null then

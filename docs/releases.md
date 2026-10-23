@@ -24,12 +24,12 @@ suffix shown and must belong to the series identified by the JSON filename.
 These forms describe the accepted syntax; the release still has to exist at the
 configured package URL.
 
-Every state contains `version`, `aliases`, `php`, `packageType` and normally an
-explicit `package` URL. The fields `php` and `packageType` belong in the state.
+Every state contains `version`, `aliases`, `php`, `variant`, `packageType` and normally an
+explicit `package` URL. The fields `php`, `variant` and `packageType` belong in the state.
 They must not be placed at series level.
 
 The state's `php` selects the PHP profile that receives its default aliases.
-The series' `variant` selects the corresponding default runtime. All configured
+The state's `variant` selects the corresponding default runtime. All configured
 states share the series' `phpVersions` and `variants` build matrix. A different
 state default does not exclude the other selected PHP versions from that state.
 Check that every active state supports the shared selections.
@@ -109,8 +109,9 @@ as a structural reference, then set all of the following deliberately:
 1. `version`: the published release with the correct suffix for this state.
 2. `aliases`: only the prerelease aliases this track should own.
 3. `php`: one of the PHP profiles selected by the series.
-4. `packageType`: a supported format published for this package.
-5. `package`: the matching state-label URL from the table above.
+4. `variant`: one of the runtime variants selected by the series.
+5. `packageType`: a supported format published for this package.
+6. `package`: the matching state-label URL from the table above.
 
 A state does not need another source file, a new shell branch, or a CI matrix
 entry. `./generate.sh` discovers the added state and produces its normal and
@@ -129,10 +130,10 @@ existing series file as a starting point. Then review the complete new file:
 - Select only PHP profiles supported by this Joomla series. Create any missing
   profile first using [the PHP procedure](maintenance.md#add-a-php-version).
 - Set each PHP selection's `development` flag intentionally.
-- Select the supported variants and the default `variant`.
+- Select the supported `variants`.
 - Replace the copied states with the release tracks to publish. Every state
   version must belong to the new series.
-- Set the default `php`, package format and matching package URL per state.
+- Set the default `php` and `variant`, package format and matching package URL per state.
 - Replace copied aliases. In particular, do not copy ownership of `latest`,
   a major alias or a global prerelease alias without removing that ownership
   from the previous track.
@@ -179,7 +180,7 @@ Promotion is an explicit configuration change, not a suffix-stripping operation:
 
 1. Add or update `states.stable` with the published stable version.
 2. Set its package URL to the `Stable` pattern and verify the archive format.
-3. Choose its default PHP from the series' selected profiles.
+3. Choose its default `php` and `variant` from the series' selected build matrix.
 4. Assign its stable aliases. Transfer `latest` and other shared aliases from
    their previous owner only when the new release should take them over.
 5. Keep or remove alpha, beta and RC states according to which tracks should

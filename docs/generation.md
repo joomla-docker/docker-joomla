@@ -171,9 +171,9 @@ The same tool-version substitution applies to an optional publisher checksum
 URL. Remaining braces are rejected, so an unsupported token cannot quietly
 become part of a requested URL. These substitutions do not execute shell code.
 
-The call to `tags.jq` checks the complete tag namespace. Exact release tags,
-configured aliases, PHP suffixes, runtime variants and development suffixes are
-expanded together. Prereleases must retain their state in their aliases; two
+The call to `tags.jq` checks the complete tag namespace. Each state's default PHP and variant select its short aliases, including
+`latest` when explicitly assigned. Configured aliases, PHP suffixes, runtime
+variants and development suffixes are expanded together. Prereleases must retain their state in their aliases; two
 contexts cannot claim the same tag. This happens before network requests.
 
 ### 4. Resolve Joomla releases
