@@ -25,6 +25,43 @@ joomla_die() {
     exit 1
 }
 
+# Reconcile PHP configuration on every start, before command or site handling.
+joomla_configure_hardening() {
+    local php_dir="${PHP_INI_DIR:-/usr/local/etc/php}"
+    local profile="$php_dir/joomla-hardening.ini"
+    local enabled="$php_dir/conf.d/zz-joomla-hardening.ini"
+    local setting="${JOOMLA_SECURITY_HARDENED:-false}"
+    local temporary
+
+    case "${setting,,}" in
+        true | 1)
+            [[ -f $profile && -s $profile && -r $profile && ! -L $profile ]] ||
+                joomla_die 'The PHP hardening profile must be a readable, nonempty regular file.'
+            [[ ! -L $enabled && ( ! -e $enabled || -f $enabled ) ]] ||
+                joomla_die 'The active PHP hardening profile must be a regular file.'
+            # A matching file needs no write, including in a prepared read-only image.
+            if [[ -f $enabled ]] && cmp -s -- "$profile" "$enabled"; then
+                return 0
+            fi
+            # Stage outside the *.ini scan, then publish a complete, worker-readable copy.
+            temporary="$(mktemp "$php_dir/conf.d/.joomla-hardening.XXXXXX")" ||
+                joomla_die 'Cannot enable the PHP hardening profile; conf.d must be writable.'
+            if ! cp -- "$profile" "$temporary" || ! chmod 0644 "$temporary" ||
+                ! mv -f -- "$temporary" "$enabled"; then
+                rm -f -- "$temporary"
+                joomla_die 'Cannot enable the PHP hardening profile.'
+            fi
+            ;;
+        false | 0 | '')
+            # Preserve the source and all operator-supplied PHP configuration.
+            if [[ -e $enabled || -L $enabled ]]; then
+                rm -f -- "$enabled" || joomla_die 'Cannot disable the PHP hardening profile.'
+            fi
+            ;;
+        *) joomla_die 'JOOMLA_SECURITY_HARDENED must be true, false, 1 or 0.' ;;
+    esac
+}
+
 joomla_echo_line() {
     printf '%s\n' '========================================================================' >&2
 }
@@ -404,6 +441,7 @@ joomla_initialize() {
 joomla_main() {
     local argument
     (($#)) || joomla_die 'No startup command was provided.'
+    joomla_configure_hardening
     case "$1" in
         apache2* | php-fpm) ;;
         *) exec "$@" ;;
