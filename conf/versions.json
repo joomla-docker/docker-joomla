@@ -88,11 +88,28 @@
             "ignore_repeated_source = Off",
             "html_errors = Off"
           ],
+          "/usr/local/etc/php/conf.d/expose-php.ini": [
+            "expose_php = Off"
+          ],
           "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
             "opcache.memory_consumption=128",
             "opcache.interned_strings_buffer=8",
             "opcache.max_accelerated_files=4000",
             "opcache.revalidate_freq=2"
+          ],
+          "/usr/local/etc/php/joomla-hardening.ini": [
+            "; Opt-in PHP hardening.",
+            "; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.",
+            "expose_php = Off",
+            "session.cookie_httponly = On",
+            "session.cookie_secure = On",
+            "session.use_strict_mode = On",
+            "session.use_cookies = On",
+            "session.use_only_cookies = On",
+            "session.cookie_samesite = Lax",
+            "allow_url_include = Off",
+            "zend.exception_ignore_args = On",
+            "session.upload_progress.enabled = Off"
           ]
         },
         "download": {
@@ -294,11 +311,28 @@
             "ignore_repeated_source = Off",
             "html_errors = Off"
           ],
+          "/usr/local/etc/php/conf.d/expose-php.ini": [
+            "expose_php = Off"
+          ],
           "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
             "opcache.memory_consumption=128",
             "opcache.interned_strings_buffer=8",
             "opcache.max_accelerated_files=4000",
             "opcache.revalidate_freq=2"
+          ],
+          "/usr/local/etc/php/joomla-hardening.ini": [
+            "; Opt-in PHP hardening.",
+            "; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.",
+            "expose_php = Off",
+            "session.cookie_httponly = On",
+            "session.cookie_secure = On",
+            "session.use_strict_mode = On",
+            "session.use_cookies = On",
+            "session.use_only_cookies = On",
+            "session.cookie_samesite = Lax",
+            "allow_url_include = Off",
+            "zend.exception_ignore_args = On",
+            "session.upload_progress.enabled = Off"
           ]
         },
         "download": {
@@ -549,11 +583,28 @@
             "ignore_repeated_source = Off",
             "html_errors = Off"
           ],
+          "/usr/local/etc/php/conf.d/expose-php.ini": [
+            "expose_php = Off"
+          ],
           "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
             "opcache.memory_consumption=128",
             "opcache.interned_strings_buffer=8",
             "opcache.max_accelerated_files=4000",
             "opcache.revalidate_freq=2"
+          ],
+          "/usr/local/etc/php/joomla-hardening.ini": [
+            "; Opt-in PHP hardening.",
+            "; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.",
+            "expose_php = Off",
+            "session.cookie_httponly = On",
+            "session.cookie_secure = On",
+            "session.use_strict_mode = On",
+            "session.use_cookies = On",
+            "session.use_only_cookies = On",
+            "session.cookie_samesite = Lax",
+            "allow_url_include = Off",
+            "zend.exception_ignore_args = On",
+            "session.upload_progress.enabled = Off"
           ]
         },
         "dev": {
@@ -862,11 +913,28 @@
             "ignore_repeated_source = Off",
             "html_errors = Off"
           ],
+          "/usr/local/etc/php/conf.d/expose-php.ini": [
+            "expose_php = Off"
+          ],
           "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
             "opcache.memory_consumption=128",
             "opcache.interned_strings_buffer=8",
             "opcache.max_accelerated_files=4000",
             "opcache.revalidate_freq=2"
+          ],
+          "/usr/local/etc/php/joomla-hardening.ini": [
+            "; Opt-in PHP hardening.",
+            "; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.",
+            "expose_php = Off",
+            "session.cookie_httponly = On",
+            "session.cookie_secure = On",
+            "session.use_strict_mode = On",
+            "session.use_cookies = On",
+            "session.use_only_cookies = On",
+            "session.cookie_samesite = Lax",
+            "allow_url_include = Off",
+            "zend.exception_ignore_args = On",
+            "session.upload_progress.enabled = Off"
           ]
         },
         "dev": {
@@ -1175,11 +1243,28 @@
             "ignore_repeated_source = Off",
             "html_errors = Off"
           ],
+          "/usr/local/etc/php/conf.d/expose-php.ini": [
+            "expose_php = Off"
+          ],
           "/usr/local/etc/php/conf.d/opcache-recommended.ini": [
             "opcache.memory_consumption=128",
             "opcache.interned_strings_buffer=8",
             "opcache.max_accelerated_files=4000",
             "opcache.revalidate_freq=2"
+          ],
+          "/usr/local/etc/php/joomla-hardening.ini": [
+            "; Opt-in PHP hardening.",
+            "; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.",
+            "expose_php = Off",
+            "session.cookie_httponly = On",
+            "session.cookie_secure = On",
+            "session.use_strict_mode = On",
+            "session.use_cookies = On",
+            "session.use_only_cookies = On",
+            "session.cookie_samesite = Lax",
+            "allow_url_include = Off",
+            "zend.exception_ignore_args = On",
+            "session.upload_progress.enabled = Off"
           ]
         },
         "dev": {

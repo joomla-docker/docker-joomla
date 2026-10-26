@@ -108,6 +108,7 @@ RUN set -eux; \
 RUN set -eux; \
 	mkdir -p \
 		/etc/apache2/conf-available \
+		/usr/local/etc/php \
 		/usr/local/etc/php/conf.d; \
 	printf '%s\n' \
 		'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR' \
@@ -120,11 +121,28 @@ RUN set -eux; \
 		'html_errors = Off' \
 		> /usr/local/etc/php/conf.d/error-logging.ini; \
 	printf '%s\n' \
+		'expose_php = Off' \
+		> /usr/local/etc/php/conf.d/expose-php.ini; \
+	printf '%s\n' \
 		opcache.memory_consumption=128 \
 		opcache.interned_strings_buffer=8 \
 		opcache.max_accelerated_files=4000 \
 		opcache.revalidate_freq=2 \
 		> /usr/local/etc/php/conf.d/opcache-recommended.ini; \
+	printf '%s\n' \
+		'; Opt-in PHP hardening.' \
+		'; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.' \
+		'expose_php = Off' \
+		'session.cookie_httponly = On' \
+		'session.cookie_secure = On' \
+		'session.use_strict_mode = On' \
+		'session.use_cookies = On' \
+		'session.use_only_cookies = On' \
+		'session.cookie_samesite = Lax' \
+		'allow_url_include = Off' \
+		'zend.exception_ignore_args = On' \
+		'session.upload_progress.enabled = Off' \
+		> /usr/local/etc/php/joomla-hardening.ini; \
 	printf '%s\n' \
 		'error_reporting = E_ALL' \
 		'display_errors = On' \

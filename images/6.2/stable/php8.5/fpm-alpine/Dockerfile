@@ -75,6 +75,7 @@ RUN set -eux; \
 # Configure and check PHP, extensions, tools and the web server after cleanup.
 RUN set -eux; \
 	mkdir -p \
+		/usr/local/etc/php \
 		/usr/local/etc/php/conf.d; \
 	printf '%s\n' \
 		'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR' \
@@ -87,11 +88,28 @@ RUN set -eux; \
 		'html_errors = Off' \
 		> /usr/local/etc/php/conf.d/error-logging.ini; \
 	printf '%s\n' \
+		'expose_php = Off' \
+		> /usr/local/etc/php/conf.d/expose-php.ini; \
+	printf '%s\n' \
 		opcache.memory_consumption=128 \
 		opcache.interned_strings_buffer=8 \
 		opcache.max_accelerated_files=4000 \
 		opcache.revalidate_freq=2 \
 		> /usr/local/etc/php/conf.d/opcache-recommended.ini; \
+	printf '%s\n' \
+		'; Opt-in PHP hardening.' \
+		'; Retained outside conf.d; the entrypoint copies it when JOOMLA_SECURITY_HARDENED=true.' \
+		'expose_php = Off' \
+		'session.cookie_httponly = On' \
+		'session.cookie_secure = On' \
+		'session.use_strict_mode = On' \
+		'session.use_cookies = On' \
+		'session.use_only_cookies = On' \
+		'session.cookie_samesite = Lax' \
+		'allow_url_include = Off' \
+		'zend.exception_ignore_args = On' \
+		'session.upload_progress.enabled = Off' \
+		> /usr/local/etc/php/joomla-hardening.ini; \
 	if ! php --version 2> /tmp/php-startup-errors.txt; then cat /tmp/php-startup-errors.txt >&2; exit 1; fi; \
 	if [ -s /tmp/php-startup-errors.txt ]; then cat /tmp/php-startup-errors.txt >&2; exit 1; fi; \
 	php --ri 'Zend OPcache' > /dev/null; \
