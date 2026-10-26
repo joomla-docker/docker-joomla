@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Install a real site once: CI runs this only for the context owning "latest".
-# Usage: tests/test-joomla.sh IMAGE VARIANT
+# Usage: tests/test-joomla.sh IMAGE VARIANT [HARDENING]
 set -Eeuo pipefail
 
 image=${1:?image is required}
 variant=${2:?base variant is required}
+hardening=${3:-false}
+case "$hardening" in true|false) ;; *) echo >&2 'HARDENING must be true or false'; exit 2 ;; esac
 case "$variant" in
   apache) container_port=80 ;;
   fpm|fpm-alpine) container_port=9000; command -v cgi-fcgi >/dev/null ;;
@@ -46,6 +48,7 @@ done
 
 phase='installing Joomla through its default entrypoint'
 docker run -d --name "$web" --network "$network" --publish "127.0.0.1::$container_port" \
+  -e "JOOMLA_SECURITY_HARDENED=$hardening" \
   -e JOOMLA_DB_HOST=db -e JOOMLA_DB_NAME=joomla -e JOOMLA_DB_USER=joomla \
   -e JOOMLA_DB_PASSWORD=joomla-test-password -e "JOOMLA_SITE_NAME=$site_name" \
   -e JOOMLA_ADMIN_USER='Image Test Administrator' -e JOOMLA_ADMIN_USERNAME=imageadmin \
@@ -84,4 +87,4 @@ done
 
 phase='booting the installed Joomla CLI as the web user'
 docker exec --user www-data "$web" php cli/joomla.php --no-interaction list >/dev/null
-echo "Joomla installation and page checks passed: $image ($variant)"
+echo "Joomla installation and page checks passed: $image ($variant, hardening=$hardening)"

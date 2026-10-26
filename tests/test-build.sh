@@ -141,6 +141,7 @@ while IFS= read -r context; do
     ' conf/versions.json)
     contains "$dockerfile" 'COPY --chmod='
     [[ "$(grep -c '^COPY --chmod=' "$dockerfile")" == 2 ]]
+    excludes "$dockerfile" 'COPY --chmod=0644 joomla-hardening.ini'
     if [[ "$(jq -r '.variant' <<<"$context")" == *alpine* ]]; then
         contains "$dockerfile" 'SHELL ["/bin/sh", "-o", "pipefail", "-c"]'
         # shellcheck disable=SC2016

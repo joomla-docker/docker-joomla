@@ -26,10 +26,52 @@ cleanup() {
 }
 trap cleanup EXIT
 
+test_case="opt-in hardening in $image"
+tests_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+docker run --rm -e JOOMLA_SECURITY_HARDENED=true \
+  --mount "type=bind,src=$tests_dir,dst=/hardening-tests,readonly" \
+  "$image" php /hardening-tests/hardening-check.php
+docker run --rm --mount "type=bind,src=$tests_dir,dst=/hardening-tests,readonly" \
+  "$image" bash /hardening-tests/test-hardening.sh \
+  /entrypoint.sh /usr/local/etc/php/joomla-hardening.ini
+
+test_case="hardening on/off restores the image PHP configuration in $image"
+docker run --rm --mount "type=bind,src=$tests_dir,dst=/hardening-tests,readonly" \
+  "$image" sh -ec '
+  profile="$PHP_INI_DIR/joomla-hardening.ini"
+  active="$PHP_INI_DIR/conf.d/zz-joomla-hardening.ini"
+  checker=/hardening-tests/hardening-check.php
+  test -s "$profile"
+  test ! -e "$active"
+  cp "$profile" /tmp/hardening-source.ini
+  php "$checker" snapshot >/tmp/hardening-baseline.json
+  for attempt in 1 2; do
+    JOOMLA_SECURITY_HARDENED=true /entrypoint.sh php "$checker"
+    cmp "$profile" "$active"
+    cmp "$profile" /tmp/hardening-source.ini
+    JOOMLA_SECURITY_HARDENED=false /entrypoint.sh php "$checker" snapshot >/tmp/hardening-disabled.json
+    test ! -e "$active"
+    cmp /tmp/hardening-baseline.json /tmp/hardening-disabled.json
+    cmp "$profile" /tmp/hardening-source.ini
+  done
+'
+
+test_case="already configured hardening works without write permissions in $image"
+docker run --rm "$image" cat /usr/local/etc/php/joomla-hardening.ini >"$tmp/hardening.ini"
+chmod 0644 "$tmp/hardening.ini"
+docker run --rm --read-only --user www-data "$image" php --version >/dev/null
+docker run --rm --read-only --user www-data -e JOOMLA_SECURITY_HARDENED=true \
+  --mount "type=bind,src=$tmp/hardening.ini,dst=/usr/local/etc/php/conf.d/zz-joomla-hardening.ini,readonly" \
+  --mount "type=bind,src=$tests_dir,dst=/hardening-tests,readonly" \
+  "$image" php /hardening-tests/hardening-check.php
+
 test_case="PHP and Joomla files in $image"
 docker run --rm "$image" php --version 2>"$tmp/php-stderr"
 test ! -s "$tmp/php-stderr"
 docker run --rm "$image" php -r '
+if (filter_var(ini_get("expose_php"), FILTER_VALIDATE_BOOLEAN)) {
+    fwrite(STDERR, "PHP exposure must be disabled by default\n"); exit(1);
+}
 foreach (["mysqli", "pdo_mysql", "pdo_pgsql", "intl", "gd", "zip", "imagick", "redis", "memcached", "apcu"] as $extension) {
     if (!extension_loaded($extension)) { fwrite(STDERR, "Missing extension: $extension\n"); exit(1); }
 }

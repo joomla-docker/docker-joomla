@@ -93,7 +93,9 @@ jobs:
         env:
           IMAGE: ${{ matrix.image }}
           VARIANT: ${{ matrix.variant }}
-        run: ./tests/test-joomla.sh "$IMAGE" "$VARIANT"
+        run: |
+          ./tests/test-joomla.sh "$IMAGE" "$VARIANT" false
+          ./tests/test-joomla.sh "$IMAGE" "$VARIANT" true
       - name: Image history
         if: always()
         env:

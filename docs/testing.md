@@ -13,8 +13,8 @@ repository root unless stated otherwise.
 ## Host requirements
 
 Generation uses Bash, jq, curl and standard Linux utilities, including GNU
-coreutils, findutils, awk, sed and grep. Tests also use Git. ShellCheck checks
-the generator and test scripts. No Python interpreter or template engine is
+coreutils, findutils, awk, sed and grep. Tests also use Git and PHP CLI.
+ShellCheck checks the generator, runtime and test scripts. No Python interpreter or template engine is
 needed to generate Dockerfiles.
 
 On a Debian-based development host, install the generator and test tools with:
@@ -22,7 +22,7 @@ On a Debian-based development host, install the generator and test tools with:
 ```bash
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
-  bash jq curl git coreutils findutils gawk sed grep shellcheck
+  bash jq curl git coreutils findutils gawk sed grep shellcheck php-cli
 ```
 
 Actual image tests require a working Docker daemon running Linux containers.
@@ -53,8 +53,8 @@ not for the generator tests or the direct Docker runtime test scripts.
 ## Check the generators
 
 ```bash
-shellcheck generate.sh release.sh src/build/*.sh src/build/lib/*.sh tests/*.sh
-for suite in assemble generate config versions tags manifest build cleanup; do
+shellcheck generate.sh release.sh src/build/*.sh src/build/lib/*.sh src/runtime/*.sh tests/*.sh
+for suite in assemble generate config versions tags manifest build cleanup hardening; do
   "./tests/test-$suite.sh" || exit 1
 done
 ```
@@ -74,6 +74,7 @@ host.
 | `test-manifest.sh` | Publication metadata, architecture parsing, selected contexts and committed-context checks |
 | `test-build.sh` | Dockerfile contents, runtime file copies, installation/check/cleanup order, quoting and deterministic generation |
 | `test-cleanup.sh` | Debian and Alpine dependency retention and removal behaviour |
+| `test-hardening.sh` | Real PHP settings, copying/removing the active profile while preserving its source, repeat startup and restoration of the underlying configuration in an isolated INI directory |
 
 Inspect assembled inputs without downloading artifacts:
 
@@ -120,6 +121,7 @@ docker build --pull --progress=plain --tag "$image" "$directory" \
   2>&1 | tee /tmp/joomla-candidate-build.log
 ./tests/test-images.sh "$image" "$variant" "$development"
 ./tests/test-joomla.sh "$image" "$variant"
+./tests/test-joomla.sh "$image" "$variant" true
 docker history "$image"
 )
 ```
@@ -164,6 +166,7 @@ while IFS= read -r context; do
   ./tests/test-images.sh "$image" "$variant" "$development"
   if jq -e '.tags | index("latest") != null' <<<"$context" > /dev/null; then
     ./tests/test-joomla.sh "$image" "$variant"
+    ./tests/test-joomla.sh "$image" "$variant" true
   fi
 done < <(jq -c '.[]' "$plan_file")
 )
@@ -175,8 +178,11 @@ The test containers and
 networks are disposable; the test scripts remove the resources they create.
 The locally tagged test images remain available for inspection.
 
-`test-images.sh` verifies PHP startup and required modules. Normal images are
-checked for the absence of development tooling. Development images also check
+`test-images.sh` verifies PHP startup, required modules and opt-in hardening
+with the image's real PHP configuration and isolated lifecycle checks. It checks
+repeated on/off cycles, restoration of the original PHP settings, source-profile
+preservation and already configured non-root/read-only starts. Normal images
+are checked for the absence of development tooling. Development images also check
 Composer, npm and native build tools; a small offline npm build; Xdebug mode
 overrides; and real debugger protocol exchanges from CLI and HTTP/FastCGI
 requests. The tests check that temporary installers and bootstrap files were
@@ -185,7 +191,8 @@ removed.
 `test-joomla.sh` starts a disposable database, automatically installs Joomla
 through the normal entrypoint, requests a page, and runs the installed Joomla
 CLI as the web user. The database image reference is maintained in that test
-script. CI runs this installation check for the context owning `latest`; it does
+script. Its optional third argument enables hardening when set to `true`.
+CI runs this installation check both with and without hardening for the context owning `latest`; it does
 not install every prerelease against every supported database.
 
 To investigate a failed matrix entry, use its directory with the single-candidate
