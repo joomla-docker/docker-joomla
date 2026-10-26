@@ -22,8 +22,8 @@ See a change merged here that doesn't show up on the Docker Hub yet? Check [the 
 
 | Check | Status |
 | --- | --- |
-| This branch: image builds and runtime tests | [![Image tests](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/ci.yml/badge.svg?branch=feature%2Fprerelease-dev-images-clean)](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/ci.yml?query=branch%3Afeature%2Fprerelease-dev-images-clean) |
-| This branch: generation and shell tests | [![Generation tests](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/verify-build.yml/badge.svg?branch=feature%2Fprerelease-dev-images-clean)](https://github.com/Llewellynvdm/docker-joomla/actions/workflows/verify-build.yml?query=branch%3Afeature%2Fprerelease-dev-images-clean) |
+| This branch: image builds and runtime tests | [![Image tests](https://github.com/joomla-docker/docker-joomla/actions/workflows/ci.yml/badge.svg)](https://github.com/joomla-docker/docker-joomla/actions/workflows/ci.yml) |
+| This branch: generation and shell tests | [![Generation tests](https://github.com/joomla-docker/docker-joomla/actions/workflows/verify-build.yml/badge.svg)](https://github.com/joomla-docker/docker-joomla/actions/workflows/verify-build.yml) |
 
 These branch checks validate proposed image definitions. Published tag and
 architecture availability is recorded in the Official Images manifest linked
