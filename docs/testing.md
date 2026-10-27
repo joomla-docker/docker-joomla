@@ -25,7 +25,8 @@ sudo apt-get install -y --no-install-recommends \
   bash jq curl git coreutils findutils gawk sed grep shellcheck php-cli
 ```
 
-Actual image tests require a working Docker daemon running Linux containers.
+Actual image tests require a working Docker daemon running Linux containers
+and the Docker Buildx plugin, which builds the images with BuildKit.
 Docker Engine on Linux or Docker Desktop can provide it. On Windows, run the
 commands in a Linux WSL 2 environment with
 [Docker Desktop integration enabled](https://docs.docker.com/desktop/features/wsl/).
@@ -38,6 +39,7 @@ Check that the daemon is reachable before attempting a build:
 ```bash
 docker version
 docker info
+docker buildx version
 ```
 
 The FPM tests also require `cgi-fcgi` in the environment running the test scripts;
@@ -71,7 +73,7 @@ host.
 | `test-config.sh` | Configuration schema, required values and invalid combinations |
 | `test-versions.sh` | Download URL expansion, hashes, caching, selective force refresh and preservation of the previous resolved file on failure |
 | `test-tags.sh` | Release states, aliases, PHP defaults, development tags, collisions and context paths |
-| `test-manifest.sh` | Publication metadata, architecture parsing, selected contexts and committed-context checks |
+| `test-manifest.sh` | BuildKit publication metadata, generator provenance, architecture parsing, selected contexts and independent committed-context pins |
 | `test-build.sh` | Dockerfile contents, runtime file copies, installation/check/cleanup order, quoting and deterministic generation |
 | `test-cleanup.sh` | Debian and Alpine dependency retention and removal behaviour |
 | `test-hardening.sh` | Real PHP settings, copying/removing the active profile while preserving its source, repeat startup and restoration of the underlying configuration in an isolated INI directory |
@@ -117,7 +119,7 @@ variant="$(jq -r '.variant' <<<"$context")"
 development="$(jq -r '.development' <<<"$context")"
 image=joomla-test:candidate
 
-docker build --pull --progress=plain --tag "$image" "$directory" \
+docker buildx build --load --pull --progress=plain --tag "$image" "$directory" \
   2>&1 | tee /tmp/joomla-candidate-build.log
 ./tests/test-images.sh "$image" "$variant" "$development"
 ./tests/test-joomla.sh "$image" "$variant"
@@ -128,8 +130,9 @@ docker history "$image"
 
 `joomla-test:candidate` is a local validation tag. The parentheses scope the shell
 failure settings, and `pipefail` preserves a failed build's status when its log
-is also written by `tee`. `--pull` refreshes the PHP parent image. Keep the log
-when reporting a failure, together with the context directory, source commit
+is also written by `tee`. `--pull` refreshes the PHP parent image. `--load` makes
+the built image available to the local Docker daemon for the runtime tests. Keep
+the log when reporting a failure, together with the context directory, source commit
 and host architecture. The next run replaces this candidate tag and log.
 
 The first test checks PHP modules and the tooling appropriate to that image.
@@ -162,7 +165,7 @@ while IFS= read -r context; do
   image="joomla-test:$(jq -r '.tags[0]' <<<"$context")"
   variant="$(jq -r '.variant' <<<"$context")"
   development="$(jq -r '.development' <<<"$context")"
-  docker build --pull --tag "$image" "$directory"
+  docker buildx build --load --pull --progress=plain --tag "$image" "$directory"
   ./tests/test-images.sh "$image" "$variant" "$development"
   if jq -e '.tags | index("latest") != null' <<<"$context" > /dev/null; then
     ./tests/test-joomla.sh "$image" "$variant"
@@ -209,12 +212,26 @@ Commit edited source configuration, the resolved file and generated contexts
 together.
 
 [`ci.yml`](../.github/workflows/ci.yml) creates its matrix from the shared
-context plan, checks deterministic generation, builds every configured image,
-runs the Docker Official Images tests and this repository's runtime tests, and
-runs the Joomla installation check for `latest`. A scheduled run also detects
-changes in mutable parent images or distribution packages.
+context plan, checks deterministic generation and rejects uncommitted outputs.
+It then runs `release.sh` with full Git history, checks `Builder: buildkit`, and
+verifies that every manifest pin contains the same context tree as the reviewed
+checkout. The manifest is retained as the `publication-manifest` workflow
+artifact for inspection; regenerate it from the publication checkout before
+submission, as branch CI does not validate remote fetchability. Each matrix job
+extracts its context with `git archive` from that
+exact pin and builds it using native Docker Buildx. This exercises the committed
+inputs selected for publication, rather than an uncommitted generated directory.
+No Bashbrew installation is required.
 
-The publication manifest requires committed, clean contexts. After committing,
+After building, CI runs the Docker Official Images test suite and this
+repository's runtime tests, plus the Joomla installation check for `latest`.
+A scheduled run also detects changes in mutable parent images or distribution
+packages. These jobs test the runner's architecture; the Official Images
+pipeline still validates its own manifest processing and all publication
+architectures.
+
+The publication manifest requires committed, clean contexts and full Git history
+so each directory's last change can be identified independently. After committing,
 verify it separately with:
 
 ```bash
@@ -222,7 +239,11 @@ verify it separately with:
 ```
 
 Review the result before following [Publishing](publishing.md). Generating a
-manifest does not publish an image.
+manifest does not publish an image. Its comment identifies `release.sh` at the
+checkout's `HEAD`; the image entries retain their independent context commits.
+The global `Builder: buildkit` field makes Bashbrew use the same modern builder
+as the image tests. Omitting it selects Bashbrew's legacy backend, even when
+ordinary local Docker builds use BuildKit by default.
 
 ## Before requesting publication
 
@@ -250,6 +271,8 @@ manifest does not publish an image.
 | npm rejects its Node.js engine | Node.js comes from the base distribution; select a compatible npm release in the profile or deliberately update the base/runtime configuration. |
 | Generated-output check fails in CI | Run `./generate.sh`, inspect `git diff`, and commit both configuration and generated output. Do not edit Dockerfiles directly. |
 | Manifest reports an untracked or dirty context | Commit the generated context, including its copied runtime files, before running `release.sh`. |
+| Manifest reports shallow Git history | Run `git fetch --unshallow`, then regenerate the manifest so unchanged image contexts retain their own commit pins. |
+| Official Images reports that `COPY --chmod` requires BuildKit | Confirm the generated manifest includes the global `Builder: buildkit` field; Bashbrew otherwise selects the deprecated legacy builder. |
 | Container cannot connect to the database | Check host/port, network, credentials, readiness and database permissions; inspect `docker compose logs`. |
 | A new container still serves the old Joomla release | Inspect the persistent site volume. Image replacement does not overwrite an installed site. See [Using the images](usage.md). |
 | Xdebug loads but the IDE does not stop | Check the trigger, outbound address/port, listener and path mappings using [Development images](development.md#check-an-ide-connection). |

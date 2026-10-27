@@ -34,12 +34,25 @@ A commit that exists only on a fork cannot be fetched from that upstream URL.
 Use the fork settings below while testing this branch; use the upstream default
 for the upstream publication checkout after merge.
 
-The script requires each selected context to be tracked and clean. It checks the
+Use a full-history checkout when preparing a release. A shallow clone cannot
+reliably identify the last commit affecting each context; fetch its history
+with `git fetch --unshallow` before running `release.sh`.
+
+The script requires its release inputs and each selected context to be tracked
+and clean. It checks the
 configured PHP parent and Joomla version against each Dockerfile, derives tags
 and directories from the shared tag plan, and reads the official PHP manifest to
-determine the parent architectures. The generated `GitCommit` is the last commit
-affecting that context, so a source edit must be regenerated and committed before
-it can appear in an image release.
+determine the parent architectures. Each context has its own `GitCommit`, based
+on the last commit affecting that directory. Unchanged contexts retain their
+existing pins even when another image changes. A source edit must therefore be
+regenerated and committed before it can appear in an image release.
+
+The generated comment links to `release.sh` at the checkout's current `HEAD`,
+identifying the generator used to produce the manifest. That commit can differ
+from the individual context pins. The global `Builder: buildkit` field selects
+the supported BuildKit builder through Bashbrew for every image. Keep this field:
+the Dockerfiles use `COPY --chmod`, which the deprecated legacy builder cannot
+process.
 
 ## Prepare the neighbouring Official Images checkout
 
@@ -66,8 +79,8 @@ git -C ../official-images diff -- library/joomla
 ```
 
 Use an available branch name if `joomla-update` already exists. Review the tags,
-architectures, `GitRepo`, `GitCommit` and `Directory` fields. The directory paths
-must point into the committed `images/` tree. Only proceed if the release command
+architectures, `GitRepo`, `Builder`, `GitCommit` and `Directory` fields. Directory
+paths must point into the committed `images/` tree. Only proceed if the release command
 succeeded: shell redirection opens the destination before the script runs, so a
 failed command can leave an empty destination. Correct the error and rerun it.
 

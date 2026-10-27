@@ -23,6 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Install generator dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends jq
@@ -30,8 +31,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: ./generate.sh
-      - name: Verify deterministic generation and prepare matrix
+      - name: Verify generation and publication metadata
         id: generate
+        env:
+          STACKBREW_GIT_REPO: ${{ github.server_url }}/${{ github.repository }}.git
         run: |
           jq -c -f src/build/lib/tags.jq conf/versions.json > "$RUNNER_TEMP/contexts.json"
           mapfile -t contexts < <(jq -r '.[].directory' "$RUNNER_TEMP/contexts.json")
@@ -39,14 +42,34 @@ jobs:
           ./src/build/build.sh
           find "${contexts[@]}" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/after.sha256"
           cmp "$RUNNER_TEMP/before.sha256" "$RUNNER_TEMP/after.sha256"
-          matrix=$(jq -c '{include: map({directory, variant, development, latest: (.tags | index("latest") != null), image: ("joomla:" + .tags[0])})}' "$RUNNER_TEMP/contexts.json")
+          status=$(git status --porcelain -- conf/versions.json "${contexts[@]}")
+          if [[ -n "$status" ]]; then
+            printf '%s\n' "$status"
+            echo '::error::Run ./generate.sh and commit the active generated contexts and conf/versions.json.'
+            exit 1
+          fi
+          ./release.sh > "$RUNNER_TEMP/joomla-library"
+          [[ "$(grep -c '^Builder:' "$RUNNER_TEMP/joomla-library")" == 1 ]]
+          grep -qx 'Builder: buildkit' "$RUNNER_TEMP/joomla-library"
+          awk '$1 == "GitCommit:" { commit = $2 } $1 == "Directory:" { print $2 "\t" commit }' \
+            "$RUNNER_TEMP/joomla-library" > "$RUNNER_TEMP/context-pins.tsv"
+          while IFS=$'\t' read -r directory commit; do
+            [[ "$commit" =~ ^[0-9a-f]{40}$ ]]
+            [[ "$(git rev-parse "$commit:$directory")" == "$(git rev-parse "HEAD:$directory")" ]]
+          done < "$RUNNER_TEMP/context-pins.tsv"
+          pins=$(jq -Rn '[inputs | split("\t") | {key: .[0], value: .[1]}] | from_entries' \
+            < "$RUNNER_TEMP/context-pins.tsv")
+          jq -e --argjson pins "$pins" \
+            'length == ($pins | length) and all(.[]; $pins[.directory] != null)' \
+            "$RUNNER_TEMP/contexts.json" > /dev/null
+          matrix=$(jq -c --argjson pins "$pins" \
+            '{include: map({directory, commit: $pins[.directory], variant, development, latest: (.tags | index("latest") != null), image: ("joomla:" + .tags[0])})}' \
+            "$RUNNER_TEMP/contexts.json")
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-          jq -j '.[] | .directory + "\u0000"' "$RUNNER_TEMP/contexts.json" > "$RUNNER_TEMP/context-paths"
-          tar -czf "$RUNNER_TEMP/generated-contexts.tar.gz" --null -T "$RUNNER_TEMP/context-paths" conf/versions.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: generated-contexts
-          path: ${{ runner.temp }}/generated-contexts.tar.gz
+          name: publication-manifest
+          path: ${{ runner.temp }}/joomla-library
           if-no-files-found: error
           retention-days: 3
 
@@ -60,23 +83,22 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: generated-contexts
-          path: ${{ runner.temp }}
-      - name: Restore generated contexts
-        run: tar -xzf "$RUNNER_TEMP/generated-contexts.tar.gz"
       - name: Prepare runtime tests
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libfcgi-bin
           git clone --depth 1 https://github.com/docker-library/official-images.git "$RUNNER_TEMP/official-images"
-      - name: Build image
+      - name: Build the committed publication context
         env:
           IMAGE: ${{ matrix.image }}
           CONTEXT: ${{ matrix.directory }}
-        run: docker build --pull --tag "$IMAGE" "$CONTEXT"
+          COMMIT: ${{ matrix.commit }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/build-context"
+          git archive "$COMMIT:$CONTEXT" | tar -x -C "$RUNNER_TEMP/build-context"
+          docker buildx build --load --pull --progress=plain --tag "$IMAGE" "$RUNNER_TEMP/build-context"
       - name: Official Images tests
         env:
           IMAGE: ${{ matrix.image }}
