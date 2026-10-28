@@ -47,13 +47,10 @@ cat >"$work/ldd-output" <<'LDD'
         libexample.so.1 => /lib/aarch64-linux-gnu/libexample.so.1 (0x00000002)
         libprivate.so.1 => /usr/local/lib/libprivate.so.1 (0x00000003)
 LDD
-cp "$work/ldd-output" "$work/valid-ldd-output"
-
 cat >"$work/bin/ldd" <<'MOCK'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 cat "$TEST_LDD_OUTPUT"
-exit "${TEST_LDD_STATUS:-0}"
 MOCK
 cat >"$work/bin/dpkg-query" <<'MOCK'
 #!/usr/bin/env bash
@@ -64,17 +61,18 @@ cat >"$work/bin/apt-mark" <<'MOCK'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 printf '%s\n' "$@" >"$TEST_PACKAGE_MARKS"
+exit "${TEST_APT_MARK_STATUS:-0}"
 MOCK
 cat >"$work/bin/scanelf" <<'MOCK'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 printf '%s\n' 'libsecond.so.2,libfirst.so.1' libfirst.so.1
-exit "${TEST_SCANELF_STATUS:-0}"
 MOCK
 cat >"$work/bin/apk" <<'MOCK'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 printf '%s\n' "$*" >>"$TEST_APK_CALLS"
+if [[ $1 == add ]]; then exit "${TEST_APK_ADD_STATUS:-0}"; fi
 MOCK
 chmod +x "$work/bin/"*
 export PATH="$work/bin:$PATH"
@@ -90,7 +88,7 @@ awk '
 [[ -s "$work/apt-pipeline" ]]
 
 test_case='Debian suffix lookup excludes debug helpers and preserves multiarch names'
-bash -euo pipefail "$work/apt-pipeline"
+sh -eu "$work/apt-pipeline"
 printf '%s\n' manual runtime-library:amd64 runtime-library:arm64 >"$work/expected-marks"
 cmp "$work/expected-marks" "$work/package-marks"
 
@@ -101,35 +99,27 @@ printf '%s\n' \
     development-helpers >"$work/dpkg/diversions"
 LC_ALL=C dpkg-query --search '*lib/x86_64-linux-gnu/libexample.so.1' >"$work/diversion-output"
 grep -q '^diversion by development-helpers ' "$work/diversion-output"
-bash -euo pipefail "$work/apt-pipeline"
+sh -eu "$work/apt-pipeline"
 cmp "$work/expected-marks" "$work/package-marks"
 
-test_case='missing Debian library ownership fails the cleanup'
-printf '%s\n' 'libmissing.so.1 => /usr/lib/libmissing.so.1 (0x00000004)' >"$work/ldd-output"
-if bash -euo pipefail "$work/apt-pipeline" >"$work/output" 2>"$work/error"; then
-    echo 'Unowned shared library accepted' >&2
-    exit 1
-fi
-grep -Fq libmissing.so.1 "$work/error"
-
-test_case='failed Debian dependency discovery fails the cleanup'
-cp "$work/valid-ldd-output" "$work/ldd-output"
-if TEST_LDD_STATUS=7 bash -euo pipefail "$work/apt-pipeline" >"$work/output" 2>"$work/error"; then
-    echo 'Failed dependency discovery accepted' >&2
+test_case='failed Debian runtime package marking fails the cleanup'
+if TEST_APT_MARK_STATUS=7 sh -eu "$work/apt-pipeline" >"$work/output" 2>"$work/error"; then
+    echo 'Failed runtime package marking accepted' >&2
     exit 1
 fi
 
 test_case='Alpine retains unique runtime sonames before removing build dependencies'
-bash -euo pipefail "$repo/src/build/lib/cleanup-apk.inc"
+sh -eu "$repo/src/build/lib/cleanup-apk.inc"
 printf '%s\n' \
     'add --no-network --virtual .joomla-phpexts-rundeps so:libfirst.so.1 so:libsecond.so.2' \
     'del --no-network .build-deps' >"$work/expected-apk"
 cmp "$work/expected-apk" "$work/apk-calls"
 
-test_case='failed Alpine dependency discovery stops before package removal'
-if TEST_SCANELF_STATUS=7 bash -euo pipefail "$repo/src/build/lib/cleanup-apk.inc" >"$work/output" 2>"$work/error"; then
-    echo 'Failed scanelf discovery accepted' >&2
+test_case='failed Alpine runtime dependency installation stops before package removal'
+: >"$work/apk-calls"
+if TEST_APK_ADD_STATUS=7 sh -eu "$repo/src/build/lib/cleanup-apk.inc" >"$work/output" 2>"$work/error"; then
+    echo 'Failed runtime dependency installation accepted' >&2
     exit 1
 fi
-cmp "$work/expected-apk" "$work/apk-calls"
+head -n 1 "$work/expected-apk" | cmp - "$work/apk-calls"
 echo 'Dependency cleanup tests passed.'

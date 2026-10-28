@@ -34,6 +34,7 @@ jobs:
           ./tests/test-build.sh
           ./tests/test-cleanup.sh
           ./tests/test-hardening.sh
+          ./tests/test-makedb.sh
       - name: Verify committed generated outputs
         env:
           GITHUB_TOKEN: ${{ github.token }}

@@ -153,9 +153,9 @@ their state: the bare state name is allowed, as are names ending with that
 state and an optional numeric sequence suffix. Do not assign `latest` or a
 plain stable-looking alias to a prerelease state.
 
-The names `dev` and names already ending in `-dev` are reserved for generated
-development aliases. The generator derives development names from normal tags;
-`latest` becomes `dev`, and other normal names receive `-dev`.
+The name `dev` and names already ending in `-dev` cannot be used as release
+aliases. The generator derives development names by appending `-dev` to normal
+tags, excluding `latest`. It does not publish bare `dev` or `latest-dev` aliases.
 
 Fully qualified tags identify the release/alias, PHP version and runtime.
 The default PHP/runtime combination also receives the shorter aliases.

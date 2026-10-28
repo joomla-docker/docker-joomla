@@ -134,7 +134,7 @@
   },
   "variants": {
     "apache": {
-      "base": "php:8.5-apache",
+      "base": "php:8.5-apache-trixie",
       "command": [
         "apache2-foreground"
       ],
@@ -174,7 +174,7 @@
       ]
     },
     "fpm-alpine": {
-      "base": "php:8.5-fpm-alpine",
+      "base": "php:8.5-fpm-alpine3.24",
       "command": [
         "php-fpm"
       ],
@@ -191,7 +191,7 @@
       ]
     },
     "fpm": {
-      "base": "php:8.5-fpm",
+      "base": "php:8.5-fpm-trixie",
       "command": [
         "php-fpm"
       ],

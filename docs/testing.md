@@ -56,7 +56,7 @@ not for the generator tests or the direct Docker runtime test scripts.
 
 ```bash
 shellcheck generate.sh release.sh src/build/*.sh src/build/lib/*.sh src/runtime/*.sh tests/*.sh
-for suite in assemble generate config versions tags manifest build cleanup hardening; do
+for suite in assemble generate config versions tags manifest build cleanup hardening makedb; do
   "./tests/test-$suite.sh" || exit 1
 done
 ```
@@ -76,6 +76,7 @@ host.
 | `test-manifest.sh` | BuildKit publication metadata, generator provenance, architecture parsing, selected contexts and independent committed-context pins |
 | `test-build.sh` | Dockerfile contents, runtime file copies, installation/check/cleanup order, quoting and deterministic generation |
 | `test-cleanup.sh` | Debian and Alpine dependency retention and removal behaviour |
+| `test-makedb.sh` | PostgreSQL connection-string quoting, query parameters, database identifiers and failure handling using isolated PHP stubs |
 | `test-hardening.sh` | Real PHP settings, copying/removing the active profile while preserving its source, repeat startup and restoration of the underlying configuration in an isolated INI directory |
 
 Inspect assembled inputs without downloading artifacts:
@@ -272,7 +273,7 @@ ordinary local Docker builds use BuildKit by default.
 | Generated-output check fails in CI | Run `./generate.sh`, inspect `git diff`, and commit both configuration and generated output. Do not edit Dockerfiles directly. |
 | Manifest reports an untracked or dirty context | Commit the generated context, including its copied runtime files, before running `release.sh`. |
 | Manifest reports shallow Git history | Run `git fetch --unshallow`, then regenerate the manifest so unchanged image contexts retain their own commit pins. |
-| Official Images reports that `COPY --chmod` requires BuildKit | Confirm the generated manifest includes the global `Builder: buildkit` field; Bashbrew otherwise selects the deprecated legacy builder. |
+| Publication uses a different builder from CI | Confirm the generated manifest includes the global `Builder: buildkit` field. |
 | Container cannot connect to the database | Check host/port, network, credentials, readiness and database permissions; inspect `docker compose logs`. |
 | A new container still serves the old Joomla release | Inspect the persistent site volume. Image replacement does not overwrite an installed site. See [Using the images](usage.md). |
 | Xdebug loads but the IDE does not stop | Check the trigger, outbound address/port, listener and path mappings using [Development images](development.md#check-an-ide-connection). |

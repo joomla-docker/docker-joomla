@@ -1,9 +1,7 @@
 # NOTE: THIS DOCKERFILE IS GENERATED VIA "src/build/build.sh". DO NOT EDIT.
-FROM php:8.4-fpm-alpine
+FROM php:8.4-fpm-alpine3.24
 
-LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
-
-SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+LABEL org.opencontainers.image.authors="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK="1"
 ENV JOOMLA_XDEBUG_CLIENT_HOST="host.docker.internal"
@@ -77,13 +75,13 @@ RUN set -eux; \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$PIE_URL" --output /tmp/pie; \
-	printf '%s  %s\n' "$PIE_SHA256" /tmp/pie | sha256sum -c -; \
+	printf '%s *%s\n' "$PIE_SHA256" /tmp/pie | sha256sum -c -; \
 	chmod 0755 /tmp/pie; \
 	curl --fail --show-error --silent --location \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$COMPOSER_URL" --output /usr/local/bin/composer; \
-	printf '%s  %s\n' "$COMPOSER_SHA256" /usr/local/bin/composer | sha256sum -c -; \
+	printf '%s *%s\n' "$COMPOSER_SHA256" /usr/local/bin/composer | sha256sum -c -; \
 	chmod 0755 /usr/local/bin/composer; \
 	PIE_WORKING_DIRECTORY=/tmp/joomla-pie /tmp/pie install --no-interaction --no-cache --make-parallel-jobs="$(nproc)" apcu/apcu:5.1.28; \
 	PIE_WORKING_DIRECTORY=/tmp/joomla-pie /tmp/pie install --no-interaction --no-cache --make-parallel-jobs="$(nproc)" imagick/imagick:3.8.1; \
@@ -203,7 +201,7 @@ RUN set -eux; \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$JOOMLA_URL" --output /tmp/joomla.tar.zst; \
-	printf '%s  %s\n' "$JOOMLA_SHA512" /tmp/joomla.tar.zst | sha512sum -c -; \
+	printf '%s *%s\n' "$JOOMLA_SHA512" /tmp/joomla.tar.zst | sha512sum -c -; \
 	mkdir -p /usr/src/joomla; \
 	tar --zstd -xf /tmp/joomla.tar.zst -C /usr/src/joomla --no-same-owner; \
 	test -s /usr/src/joomla/index.php; \
@@ -215,8 +213,8 @@ RUN set -eux; \
 VOLUME ["/var/www/html"]
 WORKDIR /var/www/html
 
-COPY --chmod=0755 docker-entrypoint.sh /entrypoint.sh
-COPY --chmod=0644 makedb.php /makedb.php
+COPY docker-entrypoint.sh /entrypoint.sh
+COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm"]

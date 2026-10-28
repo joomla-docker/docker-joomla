@@ -76,7 +76,7 @@ require(type == "object" and length > 0; "conf/versions.json must contain config
         variant: $variant,
         development: $development,
         directory: ("images/\($series)/\($state)/php\($php)/\($variant)" + (if $development then "-dev" else "" end)),
-        tags: (if $development then $tags | map(if . == "latest" then "dev" else . + "-dev" end) else $tags end)
+        tags: (if $development then $tags | map(select(. != "latest") | . + "-dev") else $tags end)
       }
   ]
 | require(all(.[] | .tags[]; valid_tag); "an expanded image tag is invalid or longer than 128 characters")

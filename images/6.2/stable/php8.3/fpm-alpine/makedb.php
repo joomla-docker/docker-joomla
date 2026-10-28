@@ -58,9 +58,17 @@ elseif ($dbType === 'pgsql')
 {
 	$port = $port ? (int)$port : 5432;
 	$maxTries = 10;
+	// libpq connection values use their own quoting rules, not SQL escaping.
+	$quoteConnectionValue = static function ($value) {
+		return "'" . strtr($value, array('\\' => '\\\\', "'" => "\\'")) . "'";
+	};
+	$connection = 'host=' . $quoteConnectionValue($host)
+		. ' port=' . $port
+		. ' user=' . $quoteConnectionValue($user)
+		. ' password=' . $quoteConnectionValue($password)
+		. ' dbname=postgres';
 
 	do {
-		$connection = "host={$host} port={$port} user={$user} password={$password} dbname=postgres";
 		$dbconn = @pg_connect($connection);
 
 		if (!$dbconn)
@@ -77,13 +85,25 @@ elseif ($dbType === 'pgsql')
 		}
 	} while (!$dbconn);
 
-	$query = "SELECT 1 FROM pg_database WHERE datname = '$db'";
-	$result = pg_query($dbconn, $query);
+	$result = @pg_query_params($dbconn, 'SELECT 1 FROM pg_database WHERE datname = $1', array($db));
+	if ($result === false)
+	{
+		fwrite($stderr, "\nPostgreSQL Database Lookup Error\n");
+		pg_close($dbconn);
+		exit(1);
+	}
 
 	if (pg_num_rows($result) == 0)
 	{
-		$createDbQuery = "CREATE DATABASE \"$db\"";
-		if (!pg_query($dbconn, $createDbQuery))
+		$databaseIdentifier = pg_escape_identifier($dbconn, $db);
+		if ($databaseIdentifier === false)
+		{
+			fwrite($stderr, "\nPostgreSQL Database Name Error\n");
+			pg_close($dbconn);
+			exit(1);
+		}
+		$createDbQuery = 'CREATE DATABASE ' . $databaseIdentifier;
+		if (!@pg_query($dbconn, $createDbQuery))
 		{
 			fwrite($stderr, "\nPostgreSQL 'CREATE DATABASE' Error\n");
 			pg_close($dbconn);

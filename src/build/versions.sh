@@ -127,7 +127,7 @@ for release in "${releases[@]}"; do
         fi
         fetch "$package" -o "$work/package"
         if [ -n "$digest" ]; then
-            printf '%s  %s\n' "$digest" "$work/package" | sha256sum --check --status
+            printf '%s *%s\n' "$digest" "$work/package" | sha256sum --check --status
         fi
         sha512="$(sha512sum "$work/package")"
         sha512="${sha512%% *}"
@@ -173,7 +173,7 @@ while IFS=$'\t' read -r series path package checksumUrl; do
                 fetch "$checksumUrl" -o "$work/published.sha256"
                 read -r expected _ < "$work/published.sha256" || true
                 [[ "$expected" =~ ^[a-fA-F0-9]{64}$ ]] || { echo 'Invalid published SHA256' >&2; exit 1; }
-                printf '%s  %s\n' "$expected" "$work/artifact" | sha256sum --check --status
+                printf '%s *%s\n' "$expected" "$work/artifact" | sha256sum --check --status
             fi
         fi
     fi

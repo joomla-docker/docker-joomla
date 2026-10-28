@@ -181,9 +181,23 @@ and runtime commands. The manifest generator discovers architectures from the
 official PHP image metadata; do not maintain a second architecture list in the
 profile. The supported base-image format is an official `php:` tag.
 
+Use an explicit OS release in each base reference, such as
+`php:8.4-apache-trixie` or `php:8.4-fpm-alpine3.24`. This keeps OS release
+transitions under review while allowing PHP and distribution updates within
+the selected release. These base references do not change the published Joomla
+tag names or the `apache`, `fpm` and `fpm-alpine` variant names.
+
 A base tag can receive upstream rebuilds without a JSON change. Use Docker's
 `--pull` option when validating against the refreshed base. Updating a tool pin
 or extension requirement is still an explicit source change.
+
+Choose PHP versions using the [Joomla roadmap](https://developer.joomla.org/roadmap),
+the [Joomla 5 requirements](https://manual.joomla.org/docs/5.4/get-started/technical-requirements/)
+and [Joomla 6 requirements](https://manual.joomla.org/docs/next/get-started/technical-requirements/).
+Joomla compatibility does not extend [upstream PHP security support](https://www.php.net/supported-versions.php).
+Retire the PHP 8.2 image selections when that support ends on 31 December 2026;
+Joomla 5 also provides PHP 8.3 images. Development images remain focused
+on the current Joomla 6 series.
 
 ## Add a PHP version
 

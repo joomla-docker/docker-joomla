@@ -1,9 +1,7 @@
 # NOTE: THIS DOCKERFILE IS GENERATED VIA "src/build/build.sh". DO NOT EDIT.
-FROM php:8.4-apache
+FROM php:8.4-apache-trixie
 
-LABEL maintainer="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+LABEL org.opencontainers.image.authors="Llewellyn van der Merwe <llewellyn.van-der-merwe@community.joomla.org> (@Llewellynvdm), Harald Leithner <harald.leithner@community.joomla.org> (@HLeithner)"
 
 ENV JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK="1"
 ENV JOOMLA_XDEBUG_CLIENT_HOST="host.docker.internal"
@@ -17,7 +15,6 @@ ARG COMPOSER_SHA256=7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17
 
 # Install PHP extensions and tools; remove temporary dependencies in this layer.
 RUN set -eux; \
-	export DEBIAN_FRONTEND=noninteractive; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
 		ghostscript \
@@ -75,13 +72,13 @@ RUN set -eux; \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$PIE_URL" --output /tmp/pie; \
-	printf '%s  %s\n' "$PIE_SHA256" /tmp/pie | sha256sum -c -; \
+	printf '%s *%s\n' "$PIE_SHA256" /tmp/pie | sha256sum -c -; \
 	chmod 0755 /tmp/pie; \
 	curl --fail --show-error --silent --location \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$COMPOSER_URL" --output /usr/local/bin/composer; \
-	printf '%s  %s\n' "$COMPOSER_SHA256" /usr/local/bin/composer | sha256sum -c -; \
+	printf '%s *%s\n' "$COMPOSER_SHA256" /usr/local/bin/composer | sha256sum -c -; \
 	chmod 0755 /usr/local/bin/composer; \
 	PIE_WORKING_DIRECTORY=/tmp/joomla-pie /tmp/pie install --no-interaction --no-cache --make-parallel-jobs="$(nproc)" apcu/apcu:5.1.28; \
 	PIE_WORKING_DIRECTORY=/tmp/joomla-pie /tmp/pie install --no-interaction --no-cache --make-parallel-jobs="$(nproc)" imagick/imagick:3.8.1; \
@@ -210,7 +207,6 @@ ARG JOOMLA_URL="https://github.com/joomla/joomla-cms/releases/download/6.2.0/Joo
 ENV JOOMLA_SHA512=5d61beed1b2ced52ee96b312d327e8f3616cdd93e5d4a759bef9bc0cee384232a21e3b85e15f659edcdb83fb5ea9969cd009722eeb6151303cc5e6c9d6dc26bc
 
 RUN set -eux; \
-	export DEBIAN_FRONTEND=noninteractive; \
 	savedAptMark="$(apt-mark showmanual)"; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
@@ -219,7 +215,7 @@ RUN set -eux; \
 		--retry 3 --retry-all-errors --connect-timeout 15 --max-time 300 \
 		--proto '=https' --proto-redir '=https' \
 		"$JOOMLA_URL" --output /tmp/joomla.tar.zst; \
-	printf '%s  %s\n' "$JOOMLA_SHA512" /tmp/joomla.tar.zst | sha512sum -c -; \
+	printf '%s *%s\n' "$JOOMLA_SHA512" /tmp/joomla.tar.zst | sha512sum -c -; \
 	mkdir -p /usr/src/joomla; \
 	tar --zstd -xf /tmp/joomla.tar.zst -C /usr/src/joomla --no-same-owner; \
 	test -s /usr/src/joomla/index.php; \
@@ -234,8 +230,8 @@ RUN set -eux; \
 VOLUME ["/var/www/html"]
 WORKDIR /var/www/html
 
-COPY --chmod=0755 docker-entrypoint.sh /entrypoint.sh
-COPY --chmod=0644 makedb.php /makedb.php
+COPY docker-entrypoint.sh /entrypoint.sh
+COPY makedb.php /makedb.php
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]

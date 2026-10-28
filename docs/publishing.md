@@ -50,9 +50,8 @@ regenerated and committed before it can appear in an image release.
 The generated comment links to `release.sh` at the checkout's current `HEAD`,
 identifying the generator used to produce the manifest. That commit can differ
 from the individual context pins. The global `Builder: buildkit` field selects
-the supported BuildKit builder through Bashbrew for every image. Keep this field:
-the Dockerfiles use `COPY --chmod`, which the deprecated legacy builder cannot
-process.
+the supported BuildKit builder through Bashbrew for every image. Keep this field
+so publication uses the same builder as CI.
 
 ## Prepare the neighbouring Official Images checkout
 

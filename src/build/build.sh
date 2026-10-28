@@ -109,7 +109,6 @@ render_dockerfile() (
   manager=apt
   if [[ $variant == *alpine* ]]; then manager=apk; fi
   if [[ $manager == apt ]]; then
-    step 'export DEBIAN_FRONTEND=noninteractive'
     step 'apt-get update'
     json_step 'apt-get install -y --no-install-recommends' '.apt // []'
     step 'savedAptMark="$(apt-mark showmanual)"'
@@ -151,7 +150,7 @@ render_dockerfile() (
     target="/tmp/download-$name"
     if [[ $type == binary ]]; then target=$destination; fi
     step "$fetch\"\$${variable}_URL\" --output $(quote "$target")"
-    step "printf '%s  %s\\n' \"\$${variable}_SHA256\" $(quote "$target") | sha256sum -c -"
+    step "printf '%s *%s\\n' \"\$${variable}_SHA256\" $(quote "$target") | sha256sum -c -"
     if [[ $type == binary ]]; then
       step "chmod 0755 $(quote "$target")"
     else
@@ -188,11 +187,7 @@ render_dockerfile() (
 
   printf '# NOTE: THIS DOCKERFILE IS GENERATED VIA "src/build/build.sh". DO NOT EDIT.\n'
   printf 'FROM %s\n\n' "$(jq -r '.base' <<<"$image")"
-  printf 'LABEL maintainer="%s"\n\n' "$(jq -r 'map("\(.firstname) \(.lastname) <\(.email)> (@\(.github))") | join(", ")' "$script_dir/../../conf/maintainers.json")"
-  # Alpine provides ash before runtime packages (including Bash) are installed.
-  shell=/bin/bash
-  if [[ $manager == apk ]]; then shell=/bin/sh; fi
-  printf 'SHELL ["%s", "-o", "pipefail", "-c"]\n\n' "$shell"
+  printf 'LABEL org.opencontainers.image.authors="%s"\n\n' "$(jq -r 'map("\(.firstname) \(.lastname) <\(.email)> (@\(.github))") | join(", ")' "$script_dir/../../conf/maintainers.json")"
   jq -r '.environment | to_entries[] | "ENV \(.key)=\(.value | tojson)"' <<<"$image"
   printf '\n'
   if (( ${#declarations[@]} )); then printf '%s\n' "${declarations[@]}"; fi
@@ -235,7 +230,6 @@ render_dockerfile() (
   archive="/tmp/joomla.$package_type"
   mapfile -t packages < <(jq -r --arg type "$package_type" --arg manager "$manager" '.archives[$type][$manager][]' <<<"$selected")
   if [[ $manager == apt ]]; then
-    step 'export DEBIAN_FRONTEND=noninteractive'
     step 'savedAptMark="$(apt-mark showmanual)"'
     if (( ${#packages[@]} )); then
       step 'apt-get update'
@@ -245,7 +239,7 @@ render_dockerfile() (
     list_step 'apk add --no-cache --virtual .joomla-extract-deps' "${packages[@]}"
   fi
   step "$fetch\"\$JOOMLA_URL\" --output $(quote "$archive")"
-  step "printf '%s  %s\\n' \"\$JOOMLA_SHA512\" $(quote "$archive") | sha512sum -c -"
+  step "printf '%s *%s\\n' \"\$JOOMLA_SHA512\" $(quote "$archive") | sha512sum -c -"
   step 'mkdir -p /usr/src/joomla'
   tar_option=''
   if [[ $package_type == tar.zst ]]; then tar_option='--zstd '; fi
@@ -270,7 +264,7 @@ render_dockerfile() (
 
   printf 'VOLUME %s\n' "$(jq -r '.volume | map(tojson) | "[" + join(", ") + "]"' <<<"$image")"
   printf 'WORKDIR %s\n' "$(jq -r '.workdir' <<<"$image")"
-  printf '\nCOPY --chmod=0755 docker-entrypoint.sh /entrypoint.sh\nCOPY --chmod=0644 makedb.php /makedb.php\n\n'
+  printf '\nCOPY docker-entrypoint.sh /entrypoint.sh\nCOPY makedb.php /makedb.php\n\n'
   printf 'ENTRYPOINT %s\n' "$(jq -r '.entrypoint | map(tojson) | "[" + join(", ") + "]"' <<<"$image")"
   printf 'CMD %s\n' "$(jq -r '.command | map(tojson) | "[" + join(", ") + "]"' <<<"$image")"
 )

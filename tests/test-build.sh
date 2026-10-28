@@ -73,6 +73,8 @@ while IFS= read -r context; do
     [[ "$directory" == images/* ]]
     cmp src/runtime/docker-entrypoint.sh "$directory/docker-entrypoint.sh"
     cmp src/runtime/makedb.php "$directory/makedb.php"
+    [[ "$(stat -c '%a' "$directory/docker-entrypoint.sh")" == 755 ]]
+    [[ "$(stat -c '%a' "$directory/makedb.php")" == 644 ]]
     dockerfile="$directory/Dockerfile"
     # These expected fields are maps with scalar/array leaves. Object merging
     # selects per-variant overrides after any per-PHP development additions.
@@ -139,15 +141,18 @@ while IFS= read -r context; do
     done < <(jq -r --argjson context "$context" --arg manager "$manager" '
         .[$context.series] | .archives[.states[$context.state].packageType][$manager][]
     ' conf/versions.json)
-    contains "$dockerfile" 'COPY --chmod='
-    [[ "$(grep -c '^COPY --chmod=' "$dockerfile")" == 2 ]]
-    excludes "$dockerfile" 'COPY --chmod=0644 joomla-hardening.ini'
+    contains "$dockerfile" 'COPY docker-entrypoint.sh /entrypoint.sh'
+    contains "$dockerfile" 'COPY makedb.php /makedb.php'
+    excludes "$dockerfile" 'COPY --chmod='
+    excludes "$dockerfile" 'SHELL '
+    excludes "$dockerfile" 'DEBIAN_FRONTEND'
+    contains "$dockerfile" 'LABEL org.opencontainers.image.authors='
+    excludes "$dockerfile" 'LABEL maintainer='
+    contains "$dockerfile" "printf '%s *%s\\n'"
+    excludes "$dockerfile" "printf '%s  %s\\n'"
     if [[ "$(jq -r '.variant' <<<"$context")" == *alpine* ]]; then
-        contains "$dockerfile" 'SHELL ["/bin/sh", "-o", "pipefail", "-c"]'
         # shellcheck disable=SC2016
         excludes "$dockerfile" 'ldd "$extDir"/*.so | grep "not found"'
-    else
-        contains "$dockerfile" 'SHELL ["/bin/bash", "-o", "pipefail", "-c"]'
     fi
     # Release metadata must not invalidate the extensions or configuration layers.
     awk '

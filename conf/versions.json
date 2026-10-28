@@ -180,7 +180,7 @@
               ],
               "remoteAddress": true
             },
-            "base": "php:8.2-apache",
+            "base": "php:8.2-apache-trixie",
             "checks": [
               [
                 "apache2ctl",
@@ -209,7 +209,7 @@
             }
           },
           "fpm": {
-            "base": "php:8.2-fpm",
+            "base": "php:8.2-fpm-trixie",
             "checks": [
               [
                 "php-fpm",
@@ -228,7 +228,7 @@
             }
           },
           "fpm-alpine": {
-            "base": "php:8.2-fpm-alpine",
+            "base": "php:8.2-fpm-alpine3.24",
             "checks": [
               [
                 "php-fpm",
@@ -403,7 +403,7 @@
               ],
               "remoteAddress": true
             },
-            "base": "php:8.3-apache",
+            "base": "php:8.3-apache-trixie",
             "checks": [
               [
                 "apache2ctl",
@@ -432,7 +432,7 @@
             }
           },
           "fpm": {
-            "base": "php:8.3-fpm",
+            "base": "php:8.3-fpm-trixie",
             "checks": [
               [
                 "php-fpm",
@@ -451,7 +451,7 @@
             }
           },
           "fpm-alpine": {
-            "base": "php:8.3-fpm-alpine",
+            "base": "php:8.3-fpm-alpine3.24",
             "checks": [
               [
                 "php-fpm",
@@ -782,7 +782,7 @@
               ],
               "remoteAddress": true
             },
-            "base": "php:8.3-apache",
+            "base": "php:8.3-apache-trixie",
             "checks": [
               [
                 "apache2ctl",
@@ -811,7 +811,7 @@
             }
           },
           "fpm": {
-            "base": "php:8.3-fpm",
+            "base": "php:8.3-fpm-trixie",
             "checks": [
               [
                 "php-fpm",
@@ -830,7 +830,7 @@
             }
           },
           "fpm-alpine": {
-            "base": "php:8.3-fpm-alpine",
+            "base": "php:8.3-fpm-alpine3.24",
             "checks": [
               [
                 "php-fpm",
@@ -1112,7 +1112,7 @@
               ],
               "remoteAddress": true
             },
-            "base": "php:8.4-apache",
+            "base": "php:8.4-apache-trixie",
             "checks": [
               [
                 "apache2ctl",
@@ -1141,7 +1141,7 @@
             }
           },
           "fpm": {
-            "base": "php:8.4-fpm",
+            "base": "php:8.4-fpm-trixie",
             "checks": [
               [
                 "php-fpm",
@@ -1160,7 +1160,7 @@
             }
           },
           "fpm-alpine": {
-            "base": "php:8.4-fpm-alpine",
+            "base": "php:8.4-fpm-alpine3.24",
             "checks": [
               [
                 "php-fpm",
@@ -1440,7 +1440,7 @@
               ],
               "remoteAddress": true
             },
-            "base": "php:8.5-apache",
+            "base": "php:8.5-apache-trixie",
             "checks": [
               [
                 "apache2ctl",
@@ -1469,7 +1469,7 @@
             }
           },
           "fpm": {
-            "base": "php:8.5-fpm",
+            "base": "php:8.5-fpm-trixie",
             "checks": [
               [
                 "php-fpm",
@@ -1488,7 +1488,7 @@
             }
           },
           "fpm-alpine": {
-            "base": "php:8.5-fpm-alpine",
+            "base": "php:8.5-fpm-alpine3.24",
             "checks": [
               [
                 "php-fpm",

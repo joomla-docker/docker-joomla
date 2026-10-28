@@ -43,12 +43,11 @@ variant only with a separate web server.
 
 ## Switch between normal and development images
 
-Development tags follow the normal tag with a `-dev` suffix. The
-exception is `joomla:latest`, whose development counterpart is `joomla:dev`.
-Select the matching tag from Docker Hub before changing your Compose image.
-Use the matching exact Joomla version, PHP version and runtime tag when you
-want to keep those versions fixed. `joomla:dev` follows the stable release
-selected by `joomla:latest`; it is not a nightly Joomla source build.
+Development tags follow the normal tag with a `-dev` suffix. There is no bare
+`joomla:dev` or `joomla:latest-dev` alias. Select the matching tag from Docker Hub
+before changing your Compose image. Use the matching exact Joomla version, PHP
+version and runtime tag when you want to keep those versions fixed. The `-dev`
+suffix selects development tooling without changing the Joomla release channel.
 
 Set `JOOMLA_IMAGE` in `.env` to the selected reference when using this guide's
 Compose example, or edit your service's `image:` field. Keep the same `/var/www/html`

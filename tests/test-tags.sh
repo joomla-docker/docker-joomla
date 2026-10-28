@@ -21,6 +21,7 @@ for fixture in current synthetic; do
     . as $plan | $config[0] as $config
     | ([.[] | .tags[]] | length == (unique | length))
       and ([.[].directory] | length == (unique | length))
+      and all(.[]; (.tags | length) > 0 and all(.tags[]; . != "dev" and . != "latest-dev"))
       and (length == ([$config[] | ([.phpVersions[] | if .dev == null then 1 else 2 end] | add) * (.variants | length) * (.states | length)] | add))
       and all(.[]; . as $context | .version == $config[.series].states[.state].version
         and ($config[.series].phpVersions | has($context.php))
@@ -34,7 +35,7 @@ for fixture in current synthetic; do
         | ($plan | map(select(.directory == ($normal.directory + "-dev")))) as $siblings
         | if $config[.series].phpVersions[.php].dev == null then $siblings == []
           else ($siblings | length) == 1 and $siblings[0].tags ==
-            (.tags | map(if . == "latest" then "dev" else . + "-dev" end)) end)
+            (.tags | map(select(. != "latest") | . + "-dev")) end)
   ' "$temporary/plan.json" >/dev/null
 done
 
@@ -47,6 +48,12 @@ cat >"$temporary/expected.json" <<'JSON'
     "100.0.0-apache", "100.0-apache", "100-apache", "apache",
     "100.0.0-php100.0", "100.0-php100.0", "100-php100.0", "php100.0",
     "100.0.0-php100.0-apache", "100.0-php100.0-apache", "100-php100.0-apache", "php100.0-apache"
+  ],
+  "images/100.0/stable/php100.0/apache-dev": [
+    "100.0.0-dev", "100.0-dev", "100-dev",
+    "100.0.0-apache-dev", "100.0-apache-dev", "100-apache-dev", "apache-dev",
+    "100.0.0-php100.0-dev", "100.0-php100.0-dev", "100-php100.0-dev", "php100.0-dev",
+    "100.0.0-php100.0-apache-dev", "100.0-php100.0-apache-dev", "100-php100.0-apache-dev", "php100.0-apache-dev"
   ],
   "images/100.0/alpha/php100.0/apache": [
     "100.0.1-alpha1", "100.0-alpha", "100.0.1-alpha1-apache", "100.0-alpha-apache",
@@ -91,8 +98,9 @@ jq '."100.0".variants += ["fpm-alpine"]
       | all(["latest", "100", "100.0", "100.0.0"][];
           . as $tag | [$plan[] | select(.tags | index($tag)) | .directory]
             == ["images/100.0/stable/php100.0/fpm-alpine"])
-      and ([$plan[] | select(.tags | index("dev")) | .directory]
-        == ["images/100.0/stable/php100.0/fpm-alpine-dev"])
+      and all(["100-dev", "100.0-dev", "100.0.0-dev", "fpm-alpine-dev"][];
+          . as $tag | [$plan[] | select(.tags | index($tag)) | .directory]
+            == ["images/100.0/stable/php100.0/fpm-alpine-dev"])
       and ([$plan[] | select(.tags | index("100.0-beta")) | .directory]
         == ["images/100.0/beta/php100.0/apache"])
     ' >/dev/null
