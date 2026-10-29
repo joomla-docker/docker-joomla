@@ -42,22 +42,32 @@ jq '
 ' conf/versions.json >"$temporary/configured.json"
 mv "$temporary/configured.json" conf/versions.json
 jq -f src/build/lib/tags.jq conf/versions.json >"$temporary/plan.json"
-while IFS=$'\t' read -r directory version parent; do
+while IFS=$'\t' read -r directory version parent development; do
   mkdir -p "$directory"
-  printf 'FROM %s\nENV JOOMLA_VERSION=%s\nCOPY runtime.ini /usr/local/etc/php/conf.d/runtime.ini\n' \
-    "$parent" "$version" >"$directory/Dockerfile"
-  printf '; fixture\n' >"$directory/runtime.ini"
-  printf '%s\n' "$parent" >>"$temporary/parents"
+  if [[ "$development" == true ]]; then
+    # Runtime metadata and files are inherited from the matching normal image.
+    printf 'FROM %s\n' "$parent" >"$directory/Dockerfile"
+  else
+    printf 'FROM %s\nENV JOOMLA_VERSION=%s\nCOPY runtime.ini /usr/local/etc/php/conf.d/runtime.ini\n' \
+      "$parent" "$version" >"$directory/Dockerfile"
+    printf '; fixture\n' >"$directory/runtime.ini"
+    printf '%s\n' "$parent" >>"$temporary/parents"
+  fi
 done < <(jq -r --slurpfile config conf/versions.json '
   .[] as $context
-  | $config[0][$context.series].phpVersions[$context.php]
-  | if $context.development then . * .dev else . end
-  | [$context.directory, $context.version, .variants[$context.variant].base] | @tsv
+  | (if $context.development then
+       "joomla:" + $context.version + "-php" + $context.php + "-" + $context.variant
+     else $config[0][$context.series].phpVersions[$context.php].variants[$context.variant].base end) as $parent
+  | [$context.directory, $context.version, $parent, $context.development] | @tsv
 ' "$temporary/plan.json")
 while IFS= read -r parent; do
-  # Exercise wrapped Tags and Architectures, plus an unrelated tag per stanza.
-  printf 'Tags: unrelated-%s,\n      %s\nArchitectures: amd64,\n               arm64v8\n\n' \
-    "${parent#php:}" "${parent#php:}"
+  # Different runtime parents have different architecture sets; the dev image
+  # must inherit exactly the matching normal image's set without remote lookup.
+  architectures='amd64,
+               arm64v8'
+  if [[ "$parent" == *alpine* ]]; then architectures=amd64; fi
+  printf 'Tags: unrelated-%s,\n      %s\nArchitectures: %b\n\n' \
+    "${parent#php:}" "${parent#php:}" "$architectures"
 done < <(sort -u "$temporary/parents") >"$PHP_METADATA_TEST_FILE"
 cp "$PHP_METADATA_TEST_FILE" "$temporary/valid-metadata"
 mkdir -p obsolete
@@ -102,6 +112,12 @@ jq -r '.[] | "Directory: " + .directory' "$temporary/plan.json" >"$temporary/exp
 grep '^Directory:' "$temporary/manifest" >"$temporary/actual-paths"
 cmp "$temporary/expected-paths" "$temporary/actual-paths"
 assert_context_commits "$temporary/manifest"
+test_case="dev contexts inherit architectures from their matching normal images"
+jq -r '.[] | .directory + " " + (if .variant == "fpm-alpine" then "amd64" else "amd64, arm64v8" end)' \
+  "$temporary/plan.json" | sort >"$temporary/expected-architectures"
+awk '$1 == "Architectures:" { sub(/^Architectures: /, ""); arches = $0 } $1 == "Directory:" { print $2 " " arches }' \
+  "$temporary/manifest" | sort >"$temporary/actual-architectures"
+cmp "$temporary/expected-architectures" "$temporary/actual-architectures"
 test_case="manifest names the committed generator and selects BuildKit globally"
 assert_header "$temporary/manifest"
 [[ "$(grep -c '^Builder:' "$temporary/manifest")" == 1 ]]
@@ -172,7 +188,7 @@ assert_header "$temporary/dockerfile-change"
 assert_context_commits "$temporary/dockerfile-change"
 
 test_case="a copied runtime change has its own context commit"
-other_directory="$(jq -er '.[1].directory' "$temporary/plan.json")"
+other_directory="$(jq -er --arg directory "$directory" '[.[] | select(.development == false and .directory != $directory)][0].directory' "$temporary/plan.json")"
 [[ "$other_directory" != "$directory" ]]
 printf '; changed runtime settings\n' >>"$other_directory/runtime.ini"
 git add "$other_directory/runtime.ini"
@@ -209,6 +225,25 @@ cp "$temporary/valid-metadata" "$PHP_METADATA_TEST_FILE"
 export PHP_METADATA_TEST_FAIL=1
 reject 'could not download PHP architecture metadata'
 unset PHP_METADATA_TEST_FAIL
+
+# A dev context cannot silently switch to another release, PHP, runtime, or
+# redefine the version that its official Joomla parent supplies.
+dev_directory="$(jq -er '[.[] | select(.development)][0].directory' "$temporary/plan.json")"
+cp "$dev_directory/Dockerfile" "$temporary/dev-Dockerfile"
+for invalid_parent in joomla:100.0.0-php100.0-fpm php:100.0-fpm; do
+  printf 'FROM %s\n' "$invalid_parent" >"$dev_directory/Dockerfile"
+  git add "$dev_directory/Dockerfile"
+  git commit -qm 'Change dev parent incorrectly'
+  reject 'expected joomla:'
+done
+cp "$temporary/dev-Dockerfile" "$dev_directory/Dockerfile"
+printf 'ENV JOOMLA_VERSION=100.0.0\n' >>"$dev_directory/Dockerfile"
+git add "$dev_directory/Dockerfile"
+git commit -qm 'Override inherited dev version incorrectly'
+reject 'inherit'
+cp "$temporary/dev-Dockerfile" "$dev_directory/Dockerfile"
+git add "$dev_directory/Dockerfile"
+git commit -qm 'Restore dev parent'
 
 for instruction in $'COPY \\\n  --from=external:test /tool /tool' \
     $'RUN \\\n  --mount=type=bind,from=external:test,target=/tools true' 'FROM unknown:test'; do

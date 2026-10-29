@@ -246,7 +246,6 @@
       "patch",
       "unzip",
       "zip",
-      "zlib",
       "nodejs",
       "python3",
       "make",
@@ -275,7 +274,6 @@
         "error_reporting = E_ALL",
         "display_errors = On",
         "display_startup_errors = On",
-        "log_errors = On",
         "ignore_repeated_errors = Off",
         "opcache.validate_timestamps = 1",
         "opcache.revalidate_freq = 0",
@@ -300,6 +298,7 @@
         "npm"
       ],
       "apk": [
+        "linux-headers",
         "npm"
       ]
     },

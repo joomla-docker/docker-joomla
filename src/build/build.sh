@@ -27,9 +27,15 @@ render_dockerfile() (
                 ([]; if index($item) == null then . + [$item] else . end)
             else $value end));
     .[$series] as $settings
-    | $settings.phpVersions[$php]
-    | if $development == "1" then merge(.dev) else . end
-    | merge(.variants[$variant])
+    | $settings.phpVersions[$php] as $php_settings
+    | if $development == "1" then
+        $php_settings.dev
+        # PIE is temporary in the parent, so fetch it again only for new modules.
+        | if ((.pie // {}) | length) > 0 and .download.pie == null then
+            .download.pie = $php_settings.download.pie
+          else . end
+        | .base = "joomla:\($settings.states[$state].version)-php\($php)-\($variant)"
+      else $php_settings | merge(.variants[$variant]) end
     | {image: ., release: $settings.states[$state], archives: $settings.archives}
   ' "$configuration")"
   image="$(jq -c '.image' <<<"$selected")"
@@ -84,15 +90,18 @@ render_dockerfile() (
     local line
     printf 'RUN set -eux'
     for line in "${steps[@]}"; do printf '; \\\n\t%s' "$line"; done
-    printf '\n\n'
+    printf '\n'
+    if [[ ${1:-} != final ]]; then printf '\n'; fi
     steps=()
   }
   append_cleanup() {
     local line command='' ending='; '
+    local runtime_dependencies=${1:-.joomla-phpexts-rundeps}
     ending+="\\"
     # A semicolon ending a continued line separates commands, while other
     # continuations belong to the same readable pipeline or substitution.
     while IFS= read -r line; do
+      line=${line//.joomla-phpexts-rundeps/$runtime_dependencies}
       line="${line#"${line%%[![:space:]]*}"}"
       [[ -n $line && $line != \#* && $line != "\\" ]] || continue
       if [[ $line == *"$ending" ]]; then
@@ -112,11 +121,11 @@ render_dockerfile() (
     step 'apt-get update'
     json_step 'apt-get install -y --no-install-recommends' '.apt // []'
     step 'savedAptMark="$(apt-mark showmanual)"'
-    json_step 'apt-get install -y --no-install-recommends $PHPIZE_DEPS' '.build.apt' always
+    json_step 'apt-get install -y --no-install-recommends $PHPIZE_DEPS' '.build.apt // []' always
     step 'DEB_BUILD_MULTIARCH="$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"'
   else
     json_step 'apk add --no-cache' '.apk // []'
-    json_step 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS' '.build.apk' always
+    json_step 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS' '.build.apk // []' always
   fi
   while IFS= read -r extension; do
     name="$(jq -r '.key' <<<"$extension")"
@@ -183,12 +192,19 @@ render_dockerfile() (
   fi
   step "rm -rf $(words "${temporary[@]}" /tmp/joomla-pie /tmp/joomla-npm /tmp/pear /root/.cache)"
   step 'extDir="$(php-config --extension-dir)"'
-  append_cleanup
+  if [[ $development == 1 ]]; then
+    # Keep the parent's Alpine runtime dependency package intact.
+    append_cleanup .joomla-dev-phpexts-rundeps
+  else
+    append_cleanup
+  fi
 
   printf '# NOTE: THIS DOCKERFILE IS GENERATED VIA "src/build/build.sh". DO NOT EDIT.\n'
   printf 'FROM %s\n\n' "$(jq -r '.base' <<<"$image")"
-  printf 'LABEL org.opencontainers.image.authors="%s"\n\n' "$(jq -r 'map("\(.firstname) \(.lastname) <\(.email)> (@\(.github))") | join(", ")' "$script_dir/../../conf/maintainers.json")"
-  jq -r '.environment | to_entries[] | "ENV \(.key)=\(.value | tojson)"' <<<"$image"
+  if [[ $development != 1 ]]; then
+    printf 'LABEL org.opencontainers.image.authors="%s"\n\n' "$(jq -r 'map("\(.firstname) \(.lastname) <\(.email)> (@\(.github))") | join(", ")' "$script_dir/../../conf/maintainers.json")"
+  fi
+  jq -r '.environment // {} | to_entries[] | "ENV \(.key)=\(.value | tojson)"' <<<"$image"
   printf '\n'
   if (( ${#declarations[@]} )); then printf '%s\n' "${declarations[@]}"; fi
   printf '\n'
@@ -223,6 +239,12 @@ render_dockerfile() (
     mapfile -t args < <(jq -r '.[]' <<<"$check")
     step "$(words "${args[@]}")"
   done < <(jq -c '.checks // [] | .[]' <<<"$image")
+  if [[ $development == 1 ]]; then
+    printf '# Configure and check the added development tools and PHP extensions.\n'
+    emit_run final
+    # Inherit Joomla, its configuration and startup metadata from the parent.
+    return
+  fi
   printf '# Configure and check PHP, extensions, tools and the web server after cleanup.\n'
   emit_run
 
@@ -300,13 +322,15 @@ main() (
   trap 'rm -rf "$staging"' EXIT
   directories=()
   while IFS=$'\t' read -r version state phpVersion variant development dir; do
-    docker_entrypoint='src/runtime/docker-entrypoint.sh'
-    if [[ -f "src/runtime/docker-entrypoint-$version.sh" ]]; then
-      docker_entrypoint="src/runtime/docker-entrypoint-$version.sh"
-    fi
     mkdir -p "$staging/$dir"
-    cp -p "$docker_entrypoint" "$staging/$dir/docker-entrypoint.sh"
-    cp -p src/runtime/makedb.php "$staging/$dir/makedb.php"
+    if [[ $development != 1 ]]; then
+      docker_entrypoint='src/runtime/docker-entrypoint.sh'
+      if [[ -f "src/runtime/docker-entrypoint-$version.sh" ]]; then
+        docker_entrypoint="src/runtime/docker-entrypoint-$version.sh"
+      fi
+      cp -p "$docker_entrypoint" "$staging/$dir/docker-entrypoint.sh"
+      cp -p src/runtime/makedb.php "$staging/$dir/makedb.php"
+    fi
     render_dockerfile conf/versions.json "$version" "$state" "$phpVersion" "$variant" "$development" >"$staging/$dir/Dockerfile"
     directories+=("$dir")
   done < <(jq -r '.[] | [.series, .state, .php, .variant, (if .development then 1 else 0 end), .directory] | @tsv' <<<"$plan")
@@ -316,6 +340,10 @@ main() (
   for dir in "${directories[@]}"; do
     mkdir -p "$dir"
     for file in "$staging/$dir/"*; do mv -f "$file" "$dir/${file##*/}"; done
+    # These generated helpers are inherited from Joomla in development images.
+    if [[ $dir == *-dev ]]; then
+      rm -f "$dir/docker-entrypoint.sh" "$dir/makedb.php"
+    fi
     echo "processed $dir"
   done
 )

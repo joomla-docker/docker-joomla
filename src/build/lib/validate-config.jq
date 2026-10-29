@@ -88,8 +88,14 @@ require(type == "object" and length > 0; "configuration must contain at least on
                 | ((.pie // {}) + (.dev.pie // {})) as $pie
                 | ((.pecl // {}) + (.dev.pecl // {})) as $pecl
                 | require(all($pie | keys[]; . as $name | ($pecl | has($name) | not)); "duplicate installer ownership across dev settings")
-                | if ($pie | length) > 0 then
+                | if ((.pie // {}) | length) > 0 then
                     require(.download.pie.type == "binary" and .download.pie.temporary == true; "PIE must be a temporary binary download")
+                  else . end
+                | if ((.dev.pie // {}) | length) > 0 then
+                    # The base image removes PIE, so development builds download
+                    # it again using the shared metadata unless overridden.
+                    (.dev.download.pie // .download.pie) as $devPie
+                    | require($devPie.type == "binary" and $devPie.temporary == true; "development PIE must be a temporary binary download")
                   else . end
               )
           )

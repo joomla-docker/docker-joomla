@@ -7,8 +7,10 @@ listed there before using this guide. A tag proposed in this repository may
 still be awaiting publication. No repository checkout is needed to use a
 published image.
 
-The `-dev` variants contain the same Joomla release and PHP/runtime as their
-normal counterparts, plus backend and frontend development tools. Xdebug is
+Each `-dev` image extends its matching official Joomla image, using the exact
+Joomla release, PHP version and runtime variant. This applies to stable, alpha,
+beta and RC releases. Only development tools and settings are added; Joomla,
+its normal PHP extensions and startup behaviour come from the parent. Xdebug is
 **enabled by default** with `develop,debug`. PHP reports development errors,
 checks changed files immediately, and disables JIT.
 

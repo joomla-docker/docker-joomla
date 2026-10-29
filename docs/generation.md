@@ -150,10 +150,10 @@ bash src/build/lib/assemble-config.sh conf/versions-helper.json | jq .
 
 There are two intentional merge rules in the overall process. During source
 assembly, overrides merge objects recursively and replace arrays and scalar
-values. Later, during image rendering, normal, development and variant package
-lists are combined. The distinction allows a series override to replace a
-shared package list, while a development image can add tools to its normal
-image. The [configuration reference](configuration.md) describes both rules.
+values. During normal image rendering, profile and variant package lists are
+combined. Development images use only `dev` additions on top of the matching
+normal image. The [configuration reference](configuration.md) describes these
+selection rules.
 
 ### 3. Validate, expand URLs, and check tags
 
@@ -256,7 +256,7 @@ flowchart TD
     B --> C["Validate and apply selectors"]
     C --> D["Create temporary staging directory"]
     D --> E["Read next context from plan"]
-    E --> F["Copy runtime files"]
+    E --> F["Copy runtime files for normal images"]
     F --> G["render_dockerfile: combine selected settings"]
     G --> H["Emit Dockerfile instructions"]
     H --> I{"More selected contexts?"}
@@ -277,31 +277,33 @@ This is why a change to path or tag policy belongs in `tags.jq`, rather than in
 separate loops in each consumer.
 
 Selectors filter the plan after validation. The script renders into a temporary
-staging directory first. For each context it copies `makedb.php` and the selected
+staging directory first. Normal contexts receive `makedb.php` and the selected
 entrypoint from `src/runtime/`. A series-specific
 `docker-entrypoint-SERIES.sh` can override the common entrypoint when such a file
 exists; `SERIES` here denotes the configured series name.
 
-The resulting context contains its own `Dockerfile`, `docker-entrypoint.sh` and
-`makedb.php`. Docker therefore needs only that context directory as its local
-input. The Dockerfile does not reach outside the context to read the repository's
-`src/` or `conf/` directories.
+Normal contexts contain `Dockerfile`, `docker-entrypoint.sh` and `makedb.php`.
+Development contexts contain only `Dockerfile`; they inherit runtime files from
+their Joomla parent. Regeneration removes the old generated runtime copies from
+selected development contexts. Neither Dockerfile reaches outside its context
+to read the repository's `src/` or `conf/` directories.
 
 ### 2. `render_dockerfile()`: choose settings for one image
 
 The renderer receives six arguments: the resolved configuration filename,
 series, state, PHP version, runtime variant and development flag.
 
-Its first jq expression builds the effective image settings in order:
+For normal images, the first jq expression merges the selected PHP profile
+with its runtime variant and attaches the release and archive extraction
+settings. Objects combine by key, arrays append entries without duplicates,
+and scalar values are replaced. The `config` map replaces the entire line list
+at a destination when a later definition supplies that file.
 
-1. Start with the selected PHP profile.
-2. Merge its `dev` settings when rendering a development image.
-3. Merge the selected runtime variant.
-4. Attach the selected release and archive extraction settings.
-
-In this merge, objects combine by key, arrays append entries without duplicates,
-and scalar values are replaced. The `config` map has a special rule: a later
-file definition replaces the entire line list at that destination.
+For development images, it selects only `dev` and derives the parent as
+`joomla:<exact-version>-php<php-version>-<variant>`. Exact versions retain alpha,
+beta and RC suffixes, so a prerelease never falls back to a stable parent.
+When needed, it reuses the normal profile's temporary PIE installer download
+settings, without repeating the parent's extension installation.
 
 The function is written with parentheses, so each invocation runs in a subshell.
 Its temporary shell variables and helper functions do not leak into another
@@ -335,7 +337,7 @@ expand. It is not permission for arbitrary shell substitutions in JSON.
 
 ### 4. Emit installation, configuration and Joomla layers
 
-The generated Dockerfile contains three principal `RUN` instructions:
+Normal Dockerfiles contain three principal `RUN` instructions:
 
 | Layer | Work performed when Docker builds the image |
 | --- | --- |
@@ -352,10 +354,11 @@ the download and verification commands. Joomla release declarations appear after
 the extension and configuration layers, so a Joomla-only change can reuse
 those earlier Docker build layers when their other inputs have not changed.
 
-Finally, the renderer emits volume and working-directory settings, copies the
-runtime files with explicit permissions, and writes `ENTRYPOINT` and `CMD`.
-The installed container entrypoint is a separate runtime concern; its behaviour
-is described in [using the images](usage.md).
+Normal Dockerfiles finish with volume and working-directory settings, runtime
+file copies, `ENTRYPOINT` and `CMD`. Development Dockerfiles emit only their
+additional installation and configuration layers and inherit everything else
+from the Joomla parent. Container startup is described in
+[using the images](usage.md).
 
 ### 5. Publish generated files
 
@@ -379,9 +382,12 @@ for independent work.
 
 Release manifest generation is deliberately separate from generation. The root
 script reads the resolved configuration and shared context plan, checks each
-selected context is committed and clean, and verifies its PHP parent and Joomla
-version. It obtains architecture metadata for the PHP parents and writes the
-Official Images fields, including each context's directory and commit.
+selected context is committed and clean, and verifies normal PHP parents and
+Joomla versions or exact matching Joomla parents for development images. It
+obtains architecture metadata for the PHP parents; development images use the
+architectures of their corresponding normal context. It writes the Official
+Images fields, including each context's directory and commit. Official Images
+resolves the dependencies between normal and development images when building.
 
 The global `Builder: buildkit` field selects the modern builder used by CI and
 publication. The `Generated by` URL identifies `release.sh` at the current

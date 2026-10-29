@@ -92,6 +92,21 @@ for change in '.states.stable.aliases = []' '.states.stable.aliases = null' 'del
     jq "$change" "$work/settings.json" > "$work/valid.json"
     check "$work/valid.json"
 done
+test_case="dev extensions reuse the temporary PIE installer definition"
+jq '.phpVersions[.states.stable.php].dev = {pie: {"xdebug/xdebug": "3.5.3"}}' \
+    "$work/settings.json" > "$work/valid.json"
+check "$work/valid.json"
+test_case="dev-only PIE installation can provide its own temporary installer"
+jq '.phpVersions[.states.stable.php] |= (
+        .dev = {pie: {"xdebug/xdebug": "3.5.3"}, download: {pie: .download.pie}}
+        | del(.pie, .download.pie))' "$work/settings.json" > "$work/valid.json"
+check "$work/valid.json"
+reject '.phpVersions[.states.stable.php] |= (
+    .dev = {pie: {"xdebug/xdebug": "3.5.3"}, download: {pie: .download.pie}}
+    | .dev.download.pie.temporary = false)'
+reject '.phpVersions[.states.stable.php] |= (
+    .dev = {pie: {"xdebug/xdebug": "3.5.3"}} | del(.pie, .download.pie))'
+
 test_case="accept PHP module names and literal command arguments"
 jq '.phpVersions[.states.stable.php].extensions.check = ["Zend OPcache", "xdebug"]
     | .phpVersions[.states.stable.php].checks = [["php", "-r", "echo \"a quoted argument\";"]]' \

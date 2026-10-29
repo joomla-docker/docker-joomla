@@ -39,11 +39,13 @@ reliably identify the last commit affecting each context; fetch its history
 with `git fetch --unshallow` before running `release.sh`.
 
 The script requires its release inputs and each selected context to be tracked
-and clean. It checks the
-configured PHP parent and Joomla version against each Dockerfile, derives tags
-and directories from the shared tag plan, and reads the official PHP manifest to
-determine the parent architectures. Each context has its own `GitCommit`, based
-on the last commit affecting that directory. Unchanged contexts retain their
+and clean. It checks each normal Dockerfile's PHP parent and Joomla version,
+and each development Dockerfile's exact matching Joomla parent. Tags and
+directories come from the shared tag plan. The official PHP manifest supplies
+architectures for normal images; development images inherit their matching
+normal image's architectures. The Official Images build system resolves these
+parent/child build dependencies automatically. Each context has its own
+`GitCommit`, based on the last commit affecting that directory. Unchanged contexts retain their
 existing pins even when another image changes. A source edit must therefore be
 regenerated and committed before it can appear in an image release.
 

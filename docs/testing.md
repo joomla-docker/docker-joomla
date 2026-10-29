@@ -119,9 +119,16 @@ context="$(jq -ce --arg directory "$directory" \
 variant="$(jq -r '.variant' <<<"$context")"
 development="$(jq -r '.development' <<<"$context")"
 image=joomla-test:candidate
+pull=(--pull)
+if [[ "$development" == true ]]; then
+  parent="$(jq -r '"joomla:\(.version)-php\(.php)-\(.variant)"' <<<"$context")"
+  docker buildx build --builder default --load --pull --progress=plain \
+    --tag "$parent" "${directory%-dev}"
+  pull=()
+fi
 
-docker buildx build --load --pull --progress=plain --tag "$image" "$directory" \
-  2>&1 | tee /tmp/joomla-candidate-build.log
+docker buildx build --builder default --load "${pull[@]}" --progress=plain \
+  --tag "$image" "$directory" 2>&1 | tee /tmp/joomla-candidate-build.log
 ./tests/test-images.sh "$image" "$variant" "$development"
 ./tests/test-joomla.sh "$image" "$variant"
 ./tests/test-joomla.sh "$image" "$variant" true
@@ -131,10 +138,14 @@ docker history "$image"
 
 `joomla-test:candidate` is a local validation tag. The parentheses scope the shell
 failure settings, and `pipefail` preserves a failed build's status when its log
-is also written by `tee`. `--pull` refreshes the PHP parent image. `--load` makes
-the built image available to the local Docker daemon for the runtime tests. Keep
-the log when reporting a failure, together with the context directory, source commit
-and host architecture. The next run replaces this candidate tag and log.
+is also written by `tee`. For a development image, the example first builds its
+normal context and tags it with the exact official reference used by `FROM`.
+It uses `--pull` only for the normal build, then uses that local parent for the
+development build. The default builder and `--load` keep both images available
+in the local Docker daemon. A published matching Joomla parent can also be used
+when testing development-only changes. Keep the log when reporting a failure,
+together with the context directory, source commit and host architecture.
+The next run replaces this candidate tag and log.
 
 The first test checks PHP modules and the tooling appropriate to that image.
 The second starts a disposable database and verifies an actual Joomla install,
@@ -166,16 +177,22 @@ while IFS= read -r context; do
   image="joomla-test:$(jq -r '.tags[0]' <<<"$context")"
   variant="$(jq -r '.variant' <<<"$context")"
   development="$(jq -r '.development' <<<"$context")"
-  docker buildx build --load --pull --progress=plain --tag "$image" "$directory"
+  parent="$(jq -r '"joomla:\(.version)-php\(.php)-\(.variant)"' <<<"$context")"
+  options=()
+  if [[ "$development" == false ]]; then options=(--pull --tag "$parent"); fi
+  docker buildx build --builder default --load "${options[@]}" --progress=plain \
+    --tag "$image" "$directory"
   ./tests/test-images.sh "$image" "$variant" "$development"
   if jq -e '.tags | index("latest") != null' <<<"$context" > /dev/null; then
     ./tests/test-joomla.sh "$image" "$variant"
     ./tests/test-joomla.sh "$image" "$variant" true
   fi
-done < <(jq -c '.[]' "$plan_file")
+done < <(jq -c 'sort_by(.development)[]' "$plan_file")
 )
 ```
 
+Normal images are built first and receive the exact `joomla:` tags needed by
+the development Dockerfiles. Development builds use those local parents.
 The parentheses keep the failure settings and exit trap in a subshell.
 `set -e` stops at the first failure, and the trap removes the temporary plan.
 The test containers and
@@ -219,10 +236,12 @@ verifies that every manifest pin contains the same context tree as the reviewed
 checkout. The manifest is retained as the `publication-manifest` workflow
 artifact for inspection; regenerate it from the publication checkout before
 submission, as branch CI does not validate remote fetchability. Each matrix job
-extracts its context with `git archive` from that
-exact pin and builds it using native Docker Buildx. This exercises the committed
-inputs selected for publication, rather than an uncommitted generated directory.
-No Bashbrew installation is required.
+extracts its context with `git archive` from that exact pin and builds it using
+the default Docker Buildx builder. Development jobs first build the matching
+normal context from its own publication pin and tag it with the exact Joomla
+parent reference. They then build the development image without `--pull`, using
+that local parent. Both builds therefore exercise the committed inputs selected
+for publication. No Bashbrew installation is required.
 
 After building, CI runs the Docker Official Images test suite and this
 repository's runtime tests, plus the Joomla installation check for `latest`.

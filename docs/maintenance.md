@@ -172,8 +172,9 @@ remain. Correct the failure and rerun generation before committing.
 
 Open the matching file under `conf/php/`. It is shared by every Joomla series
 selecting that PHP version. Changes to its base settings affect normal and
-matching development images; changes under `dev` affect development images.
-Per-variant settings apply last.
+matching development images through inheritance; changes under `dev` affect
+only development images. Keep `dev` limited to additions and overrides needed
+for development. Per-variant settings apply to the normal parent.
 
 When changing a base-image tag, update the corresponding `variants` entries and
 check compatibility with the selected PHP extensions, distribution package names
@@ -294,7 +295,7 @@ checks cannot establish that a package builds on every supported base. Review
 normal and development contexts and both distribution families when a shared
 profile changes.
 
-Changes to `src/runtime/` are copied into generated contexts by `build.sh`.
-The generated directories are self-contained for local builds and Official
-Images publication. Never change those copies independently or replace them
-with links outside the Docker build context.
+Changes to `src/runtime/` are copied into normal image contexts by `build.sh`.
+Development contexts contain only a Dockerfile and inherit those runtime files
+from their matching normal image. Never change generated copies independently
+or replace them with links outside the Docker build context.

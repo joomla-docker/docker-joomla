@@ -62,9 +62,20 @@ jobs:
           jq -e --argjson pins "$pins" \
             'length == ($pins | length) and all(.[]; $pins[.directory] != null)' \
             "$RUNNER_TEMP/contexts.json" > /dev/null
-          matrix=$(jq -c --argjson pins "$pins" \
-            '{include: map({directory, commit: $pins[.directory], variant, development, latest: (.tags | index("latest") != null), image: ("joomla:" + .tags[0])})}' \
-            "$RUNNER_TEMP/contexts.json")
+          matrix=$(jq -c --argjson pins "$pins" '
+            . as $contexts
+            | {include: map(. as $context
+                | {directory, commit: $pins[.directory], variant, development,
+                    latest: (.tags | index("latest") != null), image: ("joomla:" + .tags[0])}
+                  + (if .development then
+                      ($contexts | map(select(.development == false
+                        and .series == $context.series and .state == $context.state
+                        and .php == $context.php and .variant == $context.variant))
+                        | if length == 1 then .[0] else error("Missing matching normal context") end) as $parent
+                      | {parentImage: ("joomla:" + $parent.version + "-php" + $parent.php + "-" + $parent.variant),
+                          parentDirectory: $parent.directory, parentCommit: $pins[$parent.directory]}
+                    else {} end))}
+          ' "$RUNNER_TEMP/contexts.json")
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -95,10 +106,22 @@ jobs:
           IMAGE: ${{ matrix.image }}
           CONTEXT: ${{ matrix.directory }}
           COMMIT: ${{ matrix.commit }}
+          PARENT_IMAGE: ${{ matrix.parentImage }}
+          PARENT_CONTEXT: ${{ matrix.parentDirectory }}
+          PARENT_COMMIT: ${{ matrix.parentCommit }}
         run: |
+          pull=(--pull)
+          if [[ -n "$PARENT_IMAGE" ]]; then
+            mkdir -p "$RUNNER_TEMP/parent-context"
+            git archive "$PARENT_COMMIT:$PARENT_CONTEXT" | tar -x -C "$RUNNER_TEMP/parent-context"
+            docker buildx build --builder default --load --pull --progress=plain \
+              --tag "$PARENT_IMAGE" "$RUNNER_TEMP/parent-context"
+            pull=()
+          fi
           mkdir -p "$RUNNER_TEMP/build-context"
           git archive "$COMMIT:$CONTEXT" | tar -x -C "$RUNNER_TEMP/build-context"
-          docker buildx build --load --pull --progress=plain --tag "$IMAGE" "$RUNNER_TEMP/build-context"
+          docker buildx build --builder default --load "${pull[@]}" --progress=plain \
+            --tag "$IMAGE" "$RUNNER_TEMP/build-context"
       - name: Official Images tests
         env:
           IMAGE: ${{ matrix.image }}

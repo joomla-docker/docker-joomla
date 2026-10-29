@@ -59,8 +59,8 @@ for group in phpVersions joomlaVersions; do
     jq -s 'add' "$work/$group.ndjson" > "$work/$group.json"
 done
 
-# Source overrides replace arrays; the renderer separately composes normal,
-# development and variant settings using its existing additive package lists.
+# Source overrides replace arrays. The renderer combines normal and variant
+# settings for the base image; development settings describe only its additions.
 jq -en --slurpfile archives "$work/archives.json" \
     --slurpfile profiles "$work/phpVersions.json" --slurpfile series "$work/joomlaVersions.json" '
     def require($condition; $message):

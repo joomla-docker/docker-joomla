@@ -141,7 +141,7 @@ runtime metadata and base variants.
 | `variants` | Named variant settings including an official `php:` base image and runtime `command` array |
 | `apache.modules`, `apache.enable` | Apache modules and configuration names to enable |
 | `apache.remoteAddress` | Whether to replace Apache log `%h` fields with `%a` for configured remote-IP handling |
-| `dev` | Additional installation, configuration and runtime settings for development images |
+| `dev` | Only the extra packages, extensions, downloads, environment variables and configuration for development images |
 | `volume`, `workdir`, `entrypoint` | Docker runtime metadata |
 
 Version pins in `pie`, `pecl`, `npm` and `download` currently use numeric
@@ -160,16 +160,22 @@ Source assembly and image selection serve different purposes:
    shared PHP profile. Objects merge recursively; arrays and scalar values
    replace the original value. This is the place to replace a whole package
    list for one Joomla series.
-2. **Image selection:** the renderer starts with the assembled PHP profile,
-   applies `dev` for a development context, then applies the selected variant.
-   Objects merge recursively, arrays append with duplicates removed, and scalar
-   values replace earlier values. For `config`, each file's complete line array
-   is replaced rather than appended.
+2. **Normal image selection:** the renderer merges the assembled PHP profile
+   with the selected variant. Objects merge recursively, arrays append with
+   duplicates removed, and scalar values replace earlier values. For `config`,
+   each file's complete line array is replaced rather than appended.
+
+Development images use only `dev` settings and extend
+`joomla:<exact-version>-php<php-version>-<variant>`. The matching parent supplies
+Joomla, normal extensions, configuration and runtime metadata, so do not repeat
+those fields under `dev`. The renderer derives the parent for every configured
+release state, including alpha, beta and RC releases.
 
 An empty development package list does not remove packages inherited from the
-normal image. Remove a package in its shared source list, or replace the list in
-a series override. Variant settings are applied last; review their effect when
-changing settings also present in `dev`.
+normal image. To change the shared packages, edit the normal profile or a series
+override. Use later-loading INI files for changed development settings so the
+inherited normal configuration remains in place. Writing to an existing path
+replaces that whole file.
 
 ## Direct downloads and hashes
 
@@ -212,7 +218,11 @@ APT, APK, PIE, PECL and npm package installations do not get duplicate source
 URLs or artifact hashes in this JSON. Their installation pipelines manage their
 own downloads. `download.pie` is the temporary PIE installer itself, while
 `pie` lists the extensions it installs. The PIE download must be a temporary
-binary whenever PIE extensions are selected.
+binary whenever PIE extensions are selected. When `dev.pie` needs PIE and
+`dev.download.pie` is omitted, the renderer reuses the normal profile's PIE
+download settings. It downloads the installer again because the parent removes
+that temporary binary after its own build; it does not reinstall the parent's
+PIE extensions.
 
 ## Extension enablement and checks
 
@@ -249,8 +259,9 @@ container. `${DEB_BUILD_MULTIARCH}` is the one supported build-time substitution
 in bundled extension configure arguments; it expands inside the Debian image,
 not on the generation host.
 
-The Dockerfile has three installation/configuration layers: PHP extensions and
-tools with cleanup; runtime configuration and checks; then Joomla extraction
-with cleanup. Joomla release metadata is emitted after the first two layers,
-allowing a release-only change to reuse their cache. See the
-[build walkthrough](generation.md) for the corresponding script flow.
+Normal Dockerfiles have three installation/configuration layers: PHP extensions
+and tools with cleanup; runtime configuration and checks; then Joomla extraction
+with cleanup. Development Dockerfiles add only their tools and configuration
+layers to the matching Joomla parent. They inherit the Joomla files, entrypoint,
+command, working directory and volume. See the [build walkthrough](generation.md)
+for the corresponding script flow.

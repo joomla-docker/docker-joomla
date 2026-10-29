@@ -67,27 +67,48 @@ run_commands() {
     ' "$1"
 }
 
-jq -c -f src/build/lib/tags.jq conf/versions.json | jq -c '.[]' >"$work/contexts"
+contexts="$(jq -c -f src/build/lib/tags.jq conf/versions.json)"
+jq -c '.[]' <<<"$contexts" >"$work/contexts"
 while IFS= read -r context; do
     directory="$(jq -r '.directory' <<<"$context")"
     [[ "$directory" == images/* ]]
-    cmp src/runtime/docker-entrypoint.sh "$directory/docker-entrypoint.sh"
-    cmp src/runtime/makedb.php "$directory/makedb.php"
-    [[ "$(stat -c '%a' "$directory/docker-entrypoint.sh")" == 755 ]]
-    [[ "$(stat -c '%a' "$directory/makedb.php")" == 644 ]]
+    development="$(jq -r '.development' <<<"$context")"
+    if [[ "$development" == true ]]; then
+        [[ "$(find "$directory" -maxdepth 1 -type f | wc -l)" == 1 ]]
+        [[ ! -e "$directory/docker-entrypoint.sh" && ! -e "$directory/makedb.php" ]]
+    else
+        cmp src/runtime/docker-entrypoint.sh "$directory/docker-entrypoint.sh"
+        cmp src/runtime/makedb.php "$directory/makedb.php"
+        [[ "$(stat -c '%a' "$directory/docker-entrypoint.sh")" == 755 ]]
+        [[ "$(stat -c '%a' "$directory/makedb.php")" == 644 ]]
+    fi
     dockerfile="$directory/Dockerfile"
-    # These expected fields are maps with scalar/array leaves. Object merging
-    # selects per-variant overrides after any per-PHP development additions.
+    # Normal images configure the runtime; dev images install only their additions.
     image="$(jq -c --argjson context "$context" '
         .[$context.series].phpVersions[$context.php] as $base
-        | (if $context.development then $base.dev else {} end) as $dev
-        | $base * $dev * $base.variants[$context.variant]
+        | if $context.development then
+            $base.dev
+            | if (.pie // {} | length) > 0 and .download.pie == null then
+                .download.pie = $base.download.pie
+              else . end
+          else $base * $base.variants[$context.variant] end
     ' conf/versions.json)"
-    contains "$dockerfile" "FROM $(jq -r '.base' <<<"$image")"
+    if [[ "$development" == true ]]; then
+        parent="$(jq -r '"joomla:\(.version)-php\(.php)-\(.variant)"' <<<"$context")"
+        contains "$dockerfile" "FROM $parent"
+        jq -e --arg parent "${parent#joomla:}" --arg directory "${directory%-dev}" '
+            any(.[]; .directory == $directory and (.tags | index($parent) != null))
+        ' <<<"$contexts" >/dev/null
+    else
+        contains "$dockerfile" "FROM $(jq -r '.base' <<<"$image")"
+    fi
     run_block "$dockerfile" 1 >"$work/install-run"
     run_block "$dockerfile" 2 >"$work/config-run"
     run_block "$dockerfile" 3 >"$work/joomla-run"
-    [[ "$(grep -c '^RUN ' "$dockerfile")" == 3 ]]
+    expected_runs=3
+    release_downloads=1
+    if [[ "$development" == true ]]; then expected_runs=2; release_downloads=0; fi
+    [[ "$(grep -c '^RUN ' "$dockerfile")" == "$expected_runs" ]]
     while IFS= read -r value; do
         contains "$dockerfile" "$value"
         [[ "$(count "$dockerfile" "$value")" == 1 ]]
@@ -105,7 +126,7 @@ while IFS= read -r context; do
     excludes "$dockerfile" '--working-dir=/tmp/extension-'
     excludes "$dockerfile" '--skip-enable-extension'
     excludes "$dockerfile" '/tmp/extension-'
-    [[ "$(count "$dockerfile" 'curl --fail')" -eq "$(jq '(.download | length) + 1' <<<"$image")" ]]
+    [[ "$(count "$dockerfile" 'curl --fail')" -eq "$(jq --argjson release "$release_downloads" '(.download | length) + $release' <<<"$image")" ]]
     while IFS= read -r value; do
         contains "$work/config-run" "$value"
     done < <(jq -r '.config | to_entries[] | .key, .value[]' <<<"$image")
@@ -117,7 +138,7 @@ while IFS= read -r context; do
         run_commands "$dockerfile" | grep -F 'php --ri ' | grep -Fq -- "$module"
     done < <(jq -r --argjson context "$context" '
         .[$context.series].phpVersions[$context.php] as $base
-        | [$base, (if $context.development then $base.dev else {} end), $base.variants[$context.variant]]
+        | if $context.development then [$base.dev] else [$base, $base.variants[$context.variant]] end
         | [ .[] | (.extensions.install // [])[], (.extensions.check // [])[] ] | unique[]
     ' conf/versions.json)
     manager=apt
@@ -126,27 +147,42 @@ while IFS= read -r context; do
         contains_entry "$dockerfile" "$entry"
     done < <(jq -r --argjson context "$context" --arg manager "$manager" '
         .[$context.series].phpVersions[$context.php] as $base
-        | [$base, (if $context.development then $base.dev else {} end), $base.variants[$context.variant]]
+        | if $context.development then [$base.dev] else [$base, $base.variants[$context.variant]] end
         | [ .[] | (.[$manager] // [])[], (.build[$manager] // [])[], (.extensions.install // [])[] ] | unique[]
     ' conf/versions.json)
     while IFS= read -r check; do
         contains "$work/config-run" "$check"
     done < <(jq -r --argjson context "$context" '
         .[$context.series].phpVersions[$context.php] as $base
-        | [$base, (if $context.development then $base.dev else {} end), $base.variants[$context.variant]]
+        | if $context.development then [$base.dev] else [$base, $base.variants[$context.variant]] end
         | [ .[] | (.checks // [])[] | join(" ") ] | unique[]
     ' conf/versions.json)
-    while IFS= read -r package; do
-        contains "$work/joomla-run" "$package"
-    done < <(jq -r --argjson context "$context" --arg manager "$manager" '
-        .[$context.series] | .archives[.states[$context.state].packageType][$manager][]
-    ' conf/versions.json)
-    contains "$dockerfile" 'COPY docker-entrypoint.sh /entrypoint.sh'
-    contains "$dockerfile" 'COPY makedb.php /makedb.php'
+    if [[ "$development" == false ]]; then
+        while IFS= read -r package; do
+            contains "$work/joomla-run" "$package"
+        done < <(jq -r --argjson context "$context" --arg manager "$manager" '
+            .[$context.series] | .archives[.states[$context.state].packageType][$manager][]
+        ' conf/versions.json)
+        contains "$dockerfile" 'COPY docker-entrypoint.sh /entrypoint.sh'
+        contains "$dockerfile" 'COPY makedb.php /makedb.php'
+    else
+        for inherited in 'COPY ' 'ENTRYPOINT ' 'CMD ' 'VOLUME ' 'WORKDIR ' \
+            'JOOMLA_VERSION' 'JOOMLA_SHA512' 'JOOMLA_URL' 'joomla-hardening.ini' \
+            'a2enmod ' 'JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK' \
+            'imagick/imagick:' 'phpredis/phpredis:' 'ghostscript'; do
+            excludes "$dockerfile" "$inherited"
+        done
+        if [[ "$manager" == apk ]]; then
+            contains "$work/install-run" '.joomla-dev-phpexts-rundeps'
+            excludes "$work/install-run" '--virtual .joomla-phpexts-rundeps'
+        fi
+    fi
     excludes "$dockerfile" 'COPY --chmod='
     excludes "$dockerfile" 'SHELL '
     excludes "$dockerfile" 'DEBIAN_FRONTEND'
-    contains "$dockerfile" 'LABEL org.opencontainers.image.authors='
+    if [[ "$development" == false ]]; then
+        contains "$dockerfile" 'LABEL org.opencontainers.image.authors='
+    fi
     excludes "$dockerfile" 'LABEL maintainer='
     contains "$dockerfile" "printf '%s *%s\\n'"
     excludes "$dockerfile" "printf '%s  %s\\n'"
@@ -154,17 +190,19 @@ while IFS= read -r context; do
         # shellcheck disable=SC2016
         excludes "$dockerfile" 'ldd "$extDir"/*.so | grep "not found"'
     fi
-    # Release metadata must not invalidate the extensions or configuration layers.
-    awk '
-        /^RUN / { runs++ }
-        /^ENV JOOMLA_VERSION=/ { if (runs != 2) exit 1; version++ }
-        /^ENV JOOMLA_SHA512=/ { if (runs != 2) exit 1; checksum++ }
-        /^ARG JOOMLA_URL=/ { if (runs != 2) exit 1; url++ }
-        END { if (version != 1 || checksum != 1 || url != 1) exit 1 }
-    ' "$dockerfile"
-    contains "$work/joomla-run" 'JOOMLA_URL'
-    contains "$work/joomla-run" 'JOOMLA_SHA512'
-    contains "$work/joomla-run" 'rm -f /tmp/joomla.'
+    if [[ "$development" == false ]]; then
+        # Release metadata must not invalidate the extensions or configuration layers.
+        awk '
+            /^RUN / { runs++ }
+            /^ENV JOOMLA_VERSION=/ { if (runs != 2) exit 1; version++ }
+            /^ENV JOOMLA_SHA512=/ { if (runs != 2) exit 1; checksum++ }
+            /^ARG JOOMLA_URL=/ { if (runs != 2) exit 1; url++ }
+            END { if (version != 1 || checksum != 1 || url != 1) exit 1 }
+        ' "$dockerfile"
+        contains "$work/joomla-run" 'JOOMLA_URL'
+        contains "$work/joomla-run" 'JOOMLA_SHA512'
+        contains "$work/joomla-run" 'rm -f /tmp/joomla.'
+    fi
     excludes "$dockerfile" 'COPY zz-'
     if [[ "$(jq -r '.development' <<<"$context")" == false ]]; then
         excludes "$dockerfile" xdebug
@@ -303,6 +341,28 @@ jq --arg series "$series" --arg php "$php" '
 render "$work/without-dev.json" 100.0 0 "$work/without-dev"
 excludes "$work/without-dev" sentinel-dev-package
 
+# Development parents follow exact release versions for every state and runtime.
+# A prerelease must never silently inherit the stable release or default PHP.
+jq --arg fixture synthetic -f "$repo/tests/fixtures.jq" conf/versions.json \
+    | jq --slurpfile maintained conf/versions.json '
+        ([$maintained[0][] | .phpVersions | to_entries[] | select(.value.dev != null)][0]) as $profile
+        | {"100.0": .["100.0"]}
+        | .["100.0"].phpVersions = {($profile.key): $profile.value}
+        | .["100.0"].states |= map_values(.php = $profile.key)
+    ' >"$work/prereleases.json"
+jq -f src/build/lib/tags.jq "$work/prereleases.json" >"$work/prerelease-plan"
+while IFS= read -r context; do
+    IFS=$'\t' read -r release_series release_state release_php release_variant parent_tag < <(
+        jq -r '[.series, .state, .php, .variant, (.version + "-php" + .php + "-" + .variant)] | @tsv' <<<"$context"
+    )
+    render_dockerfile "$work/prereleases.json" "$release_series" "$release_state" "$release_php" "$release_variant" 1 >"$work/prerelease-dev"
+    grep -Fxq "FROM joomla:$parent_tag" "$work/prerelease-dev"
+    excludes "$work/prerelease-dev" 'JOOMLA_URL'
+    jq -e --arg parent "$parent_tag" --arg directory "$(jq -r '.directory | rtrimstr("-dev")' <<<"$context")" '
+        any(.[]; .directory == $directory and .development == false and (.tags | index($parent) != null))
+    ' "$work/prerelease-plan" >/dev/null
+done < <(jq -c '.[] | select(.development)' "$work/prerelease-plan")
+
 # A package without PIE support can use PECL and the PHP image's enable helper.
 jq --arg series "$series" --arg php "$php" '
     .[$series].phpVersions[$php].pecl = {example: "100.0.0"}
@@ -318,8 +378,19 @@ awk '
 ' "$work/pecl"
 excludes "$work/pecl" /tmp/extension-
 
+# Regeneration removes stale generated helpers from dev contexts, while keeping
+# unrelated files and every normal runtime copy.
+while IFS= read -r directory; do
+    cp src/runtime/docker-entrypoint.sh "$directory/docker-entrypoint.sh"
+    cp src/runtime/makedb.php "$directory/makedb.php"
+    printf 'preserve\n' >"$directory/notes.txt"
+done < <(jq -r 'select(.development) | .directory' "$work/contexts")
 find . -name Dockerfile -print0 | sort -z | xargs -0 sha256sum >"$work/before"
 ./src/build/build.sh >/dev/null
+while IFS= read -r directory; do
+    [[ ! -e "$directory/docker-entrypoint.sh" && ! -e "$directory/makedb.php" ]]
+    printf 'preserve\n' | cmp - "$directory/notes.txt"
+done < <(jq -r 'select(.development) | .directory' "$work/contexts")
 find . -name Dockerfile -print0 | sort -z | xargs -0 sha256sum >"$work/after"
 cmp "$work/before" "$work/after"
 if ./src/build/build.sh unknown/state >"$work/log" 2>&1; then echo 'Unknown selector accepted' >&2; exit 1; fi

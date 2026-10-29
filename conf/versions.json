@@ -614,7 +614,6 @@
             "patch",
             "unzip",
             "zip",
-            "zlib",
             "nodejs",
             "python3",
             "make",
@@ -641,6 +640,7 @@
           ],
           "build": {
             "apk": [
+              "linux-headers",
               "npm"
             ],
             "apt": [
@@ -666,7 +666,6 @@
               "error_reporting = E_ALL",
               "display_errors = On",
               "display_startup_errors = On",
-              "log_errors = On",
               "ignore_repeated_errors = Off",
               "opcache.validate_timestamps = 1",
               "opcache.revalidate_freq = 0",
@@ -944,7 +943,6 @@
             "patch",
             "unzip",
             "zip",
-            "zlib",
             "nodejs",
             "python3",
             "make",
@@ -971,6 +969,7 @@
           ],
           "build": {
             "apk": [
+              "linux-headers",
               "npm"
             ],
             "apt": [
@@ -996,7 +995,6 @@
               "error_reporting = E_ALL",
               "display_errors = On",
               "display_startup_errors = On",
-              "log_errors = On",
               "ignore_repeated_errors = Off",
               "opcache.validate_timestamps = 1",
               "opcache.revalidate_freq = 0",
@@ -1274,7 +1272,6 @@
             "patch",
             "unzip",
             "zip",
-            "zlib",
             "nodejs",
             "python3",
             "make",
@@ -1301,6 +1298,7 @@
           ],
           "build": {
             "apk": [
+              "linux-headers",
               "npm"
             ],
             "apt": [
@@ -1326,7 +1324,6 @@
               "error_reporting = E_ALL",
               "display_errors = On",
               "display_startup_errors = On",
-              "log_errors = On",
               "ignore_repeated_errors = Off",
               "opcache.validate_timestamps = 1",
               "opcache.revalidate_freq = 0",

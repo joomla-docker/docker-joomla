@@ -119,8 +119,8 @@ while IFS= read -r context; do
   [[ -z "$(git status --porcelain --untracked-files=all -- "$directory")" ]] \
     || die "uncommitted changes in $directory; commit generated files before creating the publication manifest"
 
-  # There is one official PHP parent. Reject unsupported dependency structures rather than
-  # silently declaring architectures for an unrecognised image dependency.
+  # Normal images have one PHP parent; development images have their matching
+  # Joomla parent from this same plan. Reject any other dependency structure.
   parent="$(awk '
     /^[[:space:]]*#/ { next }
     {
@@ -128,7 +128,7 @@ while IFS= read -r context; do
       if (sub(/\\[[:space:]]*$/, " ", line)) next
       $0 = line
       line = ""
-      if (toupper($1) == "FROM") { count++; if (NF != 2 || $2 !~ /^php:[A-Za-z0-9_.-]+$/) bad = 1; image = $2 }
+      if (toupper($1) == "FROM") { count++; if (NF != 2 || $2 !~ /^(php|joomla):[A-Za-z0-9_.-]+$/) bad = 1; image = $2 }
       if (toupper($1) == "COPY" && /--from[=[:space:]]/) bad = 1
       if (toupper($1) == "RUN" && /--mount=.*from=/) bad = 1
     }
@@ -136,9 +136,9 @@ while IFS= read -r context; do
   ' "$directory/Dockerfile")" || die "unsupported image dependencies in $directory/Dockerfile"
 
   expected_parent="$(jq -r --argjson context "$context" '
-    .[$context.series].phpVersions[$context.php]
-    | if $context.development then . * .dev else . end
-    | .variants[$context.variant].base
+    if $context.development then
+      "joomla:\($context.version)-php\($context.php)-\($context.variant)"
+    else .[$context.series].phpVersions[$context.php].variants[$context.variant].base end
   ' <<<"$configuration")"
   [[ "$parent" == "$expected_parent" ]] || die "$directory/Dockerfile has parent $parent, expected $expected_parent; regenerate it"
   expected_version="$(jq -r '.version' <<<"$context")"
@@ -146,7 +146,15 @@ while IFS= read -r context; do
     $1 == "ENV" && $2 == "JOOMLA_VERSION" { print $3 }
     $1 == "ENV" && $2 ~ /^JOOMLA_VERSION=/ { sub(/^JOOMLA_VERSION=/, "", $2); print $2 }
   ' "$directory/Dockerfile")"
-  [[ "$actual_version" == "$expected_version" ]] || die "$directory/Dockerfile does not contain Joomla $expected_version; regenerate it"
+  if [[ "$(jq -r '.development' <<<"$context")" == true ]]; then
+    [[ -z "$actual_version" ]] || die "$directory/Dockerfile must inherit Joomla $expected_version from its parent; regenerate it"
+    # tags.jq emits each normal context before its development child. Reuse its
+    # validated architectures, even when the release has not been published yet.
+    [[ -v "parent_architectures[$parent]" ]] \
+      || die "missing matching normal image for $parent in the publication plan"
+  else
+    [[ "$actual_version" == "$expected_version" ]] || die "$directory/Dockerfile does not contain Joomla $expected_version; regenerate it"
+  fi
 
   if [[ ! -v "parent_architectures[$parent]" ]]; then
     if [[ ! -s "$metadata" ]]; then
@@ -167,6 +175,12 @@ while IFS= read -r context; do
       esac
     done
     parent_architectures[$parent]="${architecture_list[*]}"
+  fi
+
+  if [[ "$(jq -r '.development' <<<"$context")" == false ]]; then
+    while IFS= read -r tag; do
+      parent_architectures["joomla:$tag"]="${parent_architectures[$parent]}"
+    done < <(jq -r '.tags[]' <<<"$context")
   fi
 
   # Resolve each context independently, including every copied runtime file.
