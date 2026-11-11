@@ -118,10 +118,13 @@ Before either path, it applies the optional [PHP hardening profile](#security-ha
 
 For a normal server start, it:
 
-1. Reads database settings and, when configured, the password file.
-2. Copies the packaged Joomla files from `/usr/src/joomla` into the working
-   directory when neither `index.php` nor `libraries/src/Version.php` exists.
-3. Connects to the configured database server and ensures the database exists.
+1. Detects an existing configured Joomla installation and skips initialization.
+2. For a new installation, reads database settings and, when configured, the
+   password file, then connects to the server and ensures the database exists.
+3. Uses an existing complete Joomla installation package, or copies the packaged
+   files from `/usr/src/joomla` into the working directory. The directory does not
+   need to be empty; unrelated entries such as `lost+found` and `.DS_Store` do not
+   prevent copying. Package files at matching paths are replaced when copying.
 4. If the Joomla installer is present and all automatic-installation settings
    pass validation, runs that installer and removes its installation directory.
 5. After successful automatic installation, processes extension installation,

@@ -71,7 +71,7 @@ RUN set -eux; \
 		| sort -u \
 		| xargs -rt apt-mark manual; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+	apt-get dist-clean
 
 # Configure and check PHP, extensions, tools and the web server after cleanup.
 RUN set -eux; \
@@ -157,7 +157,7 @@ RUN set -eux; \
 	apt-mark auto '.*' > /dev/null; \
 	[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+	apt-get dist-clean
 
 VOLUME ["/var/www/html"]
 WORKDIR /var/www/html

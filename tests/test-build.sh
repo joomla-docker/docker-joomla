@@ -143,6 +143,15 @@ while IFS= read -r context; do
     ' conf/versions.json)
     manager=apt
     if [[ "$(jq -r '.variant' <<<"$context")" == *alpine* ]]; then manager=apk; fi
+    if [[ "$manager" == apt ]]; then
+        contains "$work/install-run" 'apt-get dist-clean'
+        if [[ "$development" == false ]]; then
+            contains "$work/joomla-run" 'apt-get dist-clean'
+        fi
+        excludes "$dockerfile" 'rm -rf /var/lib/apt/lists/'
+    else
+        excludes "$dockerfile" 'apt-get '
+    fi
     while IFS= read -r entry; do
         contains_entry "$dockerfile" "$entry"
     done < <(jq -r --argjson context "$context" --arg manager "$manager" '

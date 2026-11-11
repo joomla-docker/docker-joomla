@@ -10,6 +10,7 @@ DPKG_QUERY_BIN="$(command -v dpkg-query)"
 export DPKG_QUERY_BIN
 export TEST_DPKG_DB="$work/dpkg" TEST_LDD_OUTPUT="$work/ldd-output"
 export TEST_PACKAGE_MARKS="$work/package-marks" TEST_APK_CALLS="$work/apk-calls"
+export TEST_APT_CALLS="$work/apt-calls"
 export extDir="$work/extensions"
 touch "$extDir/example.so"
 
@@ -63,6 +64,12 @@ set -Eeuo pipefail
 printf '%s\n' "$@" >"$TEST_PACKAGE_MARKS"
 exit "${TEST_APT_MARK_STATUS:-0}"
 MOCK
+cat >"$work/bin/apt-get" <<'MOCK'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+printf '%s\n' "$*" >>"$TEST_APT_CALLS"
+if [[ $1 == dist-clean ]]; then exit "${TEST_APT_CLEAN_STATUS:-0}"; fi
+MOCK
 cat >"$work/bin/scanelf" <<'MOCK'
 #!/usr/bin/env bash
 set -Eeuo pipefail
@@ -105,6 +112,20 @@ cmp "$work/expected-marks" "$work/package-marks"
 test_case='failed Debian runtime package marking fails the cleanup'
 if TEST_APT_MARK_STATUS=7 sh -eu "$work/apt-pipeline" >"$work/output" 2>"$work/error"; then
     echo 'Failed runtime package marking accepted' >&2
+    exit 1
+fi
+
+test_case='Debian purges temporary packages and delegates list cleanup to APT'
+savedAptMark=runtime-library:amd64 sh -eu "$repo/src/build/lib/cleanup-apt.inc"
+printf '%s\n' \
+    'purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false' \
+    'dist-clean' >"$work/expected-apt"
+cmp "$work/expected-apt" "$work/apt-calls"
+
+test_case='failed APT list cleanup fails the build'
+if savedAptMark=runtime-library:amd64 TEST_APT_CLEAN_STATUS=7 \
+    sh -eu "$repo/src/build/lib/cleanup-apt.inc" >"$work/output" 2>"$work/error"; then
+    echo 'Failed APT list cleanup accepted' >&2
     exit 1
 fi
 

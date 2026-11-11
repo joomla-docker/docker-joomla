@@ -51,9 +51,8 @@ regenerated and committed before it can appear in an image release.
 
 The generated comment links to `release.sh` at the checkout's current `HEAD`,
 identifying the generator used to produce the manifest. That commit can differ
-from the individual context pins. The global `Builder: buildkit` field selects
-the supported BuildKit builder through Bashbrew for every image. Keep this field
-so publication uses the same builder as CI.
+from the individual context pins. The manifest leaves builder selection to the
+Official Images build system; the Dockerfiles require no BuildKit-specific syntax.
 
 ## Prepare the neighbouring Official Images checkout
 
@@ -80,7 +79,7 @@ git -C ../official-images diff -- library/joomla
 ```
 
 Use an available branch name if `joomla-update` already exists. Review the tags,
-architectures, `GitRepo`, `Builder`, `GitCommit` and `Directory` fields. Directory
+architectures, `GitRepo`, `GitCommit` and `Directory` fields. Directory
 paths must point into the committed `images/` tree. Only proceed if the release command
 succeeded: shell redirection opens the destination before the script runs, so a
 failed command can leave an empty destination. Correct the error and rerun it.

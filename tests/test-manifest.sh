@@ -118,11 +118,9 @@ jq -r '.[] | .directory + " " + (if .variant == "fpm-alpine" then "amd64" else "
 awk '$1 == "Architectures:" { sub(/^Architectures: /, ""); arches = $0 } $1 == "Directory:" { print $2 " " arches }' \
   "$temporary/manifest" | sort >"$temporary/actual-architectures"
 cmp "$temporary/expected-architectures" "$temporary/actual-architectures"
-test_case="manifest names the committed generator and selects BuildKit globally"
+test_case="manifest names the committed generator and leaves builder selection to Official Images"
 assert_header "$temporary/manifest"
-[[ "$(grep -c '^Builder:' "$temporary/manifest")" == 1 ]]
-grep -qx 'Builder: buildkit' "$temporary/manifest"
-awk '/^Tags:/ { exit } /^Builder: buildkit$/ { found = 1 } END { exit !found }' "$temporary/manifest"
+awk '/^Builder:/ { exit 1 }' "$temporary/manifest"
 test_case="download metadata once for all parent images"
 [[ "$(wc -l <"$PHP_METADATA_TEST_LOG")" == 1 ]]
 grep -q '^Architectures: amd64, arm64v8$' "$temporary/manifest"

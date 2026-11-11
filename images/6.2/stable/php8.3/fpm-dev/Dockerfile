@@ -61,7 +61,7 @@ RUN set -eux; \
 		| sort -u \
 		| xargs -rt apt-mark manual; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+	apt-get dist-clean
 
 # Configure and check the added development tools and PHP extensions.
 RUN set -eux; \

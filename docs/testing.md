@@ -73,7 +73,7 @@ host.
 | `test-config.sh` | Configuration schema, required values and invalid combinations |
 | `test-versions.sh` | Download URL expansion, hashes, caching, selective force refresh and preservation of the previous resolved file on failure |
 | `test-tags.sh` | Release states, aliases, PHP defaults, development tags, collisions and context paths |
-| `test-manifest.sh` | BuildKit publication metadata, generator provenance, architecture parsing, selected contexts and independent committed-context pins |
+| `test-manifest.sh` | Publication metadata, default builder selection, generator provenance, architecture parsing, selected contexts and independent committed-context pins |
 | `test-build.sh` | Dockerfile contents, runtime file copies, installation/check/cleanup order, quoting and deterministic generation |
 | `test-cleanup.sh` | Debian and Alpine dependency retention and removal behaviour |
 | `test-makedb.sh` | PostgreSQL connection-string quoting, query parameters, database identifiers and failure handling using isolated PHP stubs |
@@ -209,8 +209,7 @@ overrides; and real debugger protocol exchanges from CLI and HTTP/FastCGI
 requests. The tests check that temporary installers and bootstrap files were
 removed.
 
-`test-joomla.sh` starts a disposable database, automatically installs Joomla
-through the normal entrypoint, requests a page, and runs the installed Joomla
+`test-joomla.sh` starts a disposable database, requests a page, and runs the installed Joomla
 CLI as the web user. The database image reference is maintained in that test
 script. Its optional third argument enables hardening when set to `true`.
 CI runs this installation check both with and without hardening for the context owning `latest`; it does
@@ -231,8 +230,8 @@ together.
 
 [`ci.yml`](../.github/workflows/ci.yml) creates its matrix from the shared
 context plan, checks deterministic generation and rejects uncommitted outputs.
-It then runs `release.sh` with full Git history, checks `Builder: buildkit`, and
-verifies that every manifest pin contains the same context tree as the reviewed
+It then runs `release.sh` with full Git history, checks that no builder override
+is emitted, and verifies that every manifest pin contains the same context tree as the reviewed
 checkout. The manifest is retained as the `publication-manifest` workflow
 artifact for inspection; regenerate it from the publication checkout before
 submission, as branch CI does not validate remote fetchability. Each matrix job
@@ -261,9 +260,8 @@ verify it separately with:
 Review the result before following [Publishing](publishing.md). Generating a
 manifest does not publish an image. Its comment identifies `release.sh` at the
 checkout's `HEAD`; the image entries retain their independent context commits.
-The global `Builder: buildkit` field makes Bashbrew use the same modern builder
-as the image tests. Omitting it selects Bashbrew's legacy backend, even when
-ordinary local Docker builds use BuildKit by default.
+The manifest leaves builder selection to the Official Images build system.
+Local image tests continue to use Docker Buildx.
 
 ## Before requesting publication
 
@@ -292,7 +290,6 @@ ordinary local Docker builds use BuildKit by default.
 | Generated-output check fails in CI | Run `./generate.sh`, inspect `git diff`, and commit both configuration and generated output. Do not edit Dockerfiles directly. |
 | Manifest reports an untracked or dirty context | Commit the generated context, including its copied runtime files, before running `release.sh`. |
 | Manifest reports shallow Git history | Run `git fetch --unshallow`, then regenerate the manifest so unchanged image contexts retain their own commit pins. |
-| Publication uses a different builder from CI | Confirm the generated manifest includes the global `Builder: buildkit` field. |
 | Container cannot connect to the database | Check host/port, network, credentials, readiness and database permissions; inspect `docker compose logs`. |
 | A new container still serves the old Joomla release | Inspect the persistent site volume. Image replacement does not overwrite an installed site. See [Using the images](usage.md). |
 | Xdebug loads but the IDE does not stop | Check the trigger, outbound address/port, listener and path mappings using [Development images](development.md#check-an-ide-connection). |

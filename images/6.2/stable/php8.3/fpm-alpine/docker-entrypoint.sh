@@ -397,8 +397,6 @@ joomla_initialize() {
     fi
     if [[ -f index.php && -f libraries/src/Version.php && -f installation/joomla.php ]]; then
         : # An existing uninstalled package can be initialized without recopying it.
-    elif [[ -n $(find . -mindepth 1 -maxdepth 1 -print -quit) ]]; then
-        joomla_die 'The webroot is nonempty but is not a complete Joomla installation package; refusing to overwrite it.'
     else
         [[ -f $joomla_source/index.php && -f $joomla_source/libraries/src/Version.php && -f $joomla_source/installation/joomla.php ]] ||
             joomla_die 'The image does not contain a complete Joomla source package.'

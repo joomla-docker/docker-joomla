@@ -49,8 +49,7 @@ jobs:
             exit 1
           fi
           ./release.sh > "$RUNNER_TEMP/joomla-library"
-          [[ "$(grep -c '^Builder:' "$RUNNER_TEMP/joomla-library")" == 1 ]]
-          grep -qx 'Builder: buildkit' "$RUNNER_TEMP/joomla-library"
+          awk '/^Builder:/ { exit 1 }' "$RUNNER_TEMP/joomla-library"
           awk '$1 == "GitCommit:" { commit = $2 } $1 == "Directory:" { print $2 "\t" commit }' \
             "$RUNNER_TEMP/joomla-library" > "$RUNNER_TEMP/context-pins.tsv"
           while IFS=$'\t' read -r directory commit; do
