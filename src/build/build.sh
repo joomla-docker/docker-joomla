@@ -274,7 +274,7 @@ render_dockerfile() (
     step "apt-mark auto '.*' > /dev/null"
     step '[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark'
     step 'apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false'
-    step 'rm -rf /var/lib/apt/lists/*'
+    step 'apt-get dist-clean'
   elif (( ${#packages[@]} )); then
     step 'apk del --no-network .joomla-extract-deps'
   fi
